@@ -26,11 +26,16 @@ Route::middleware(['auth', 'status'])->group(function () {
         Route::put('/admin/user/{user}/disable', [AdminController::class, 'disableUser'])->name('admin.user.disable');
         Route::put('/admin/user/{user}/enable', [AdminController::class, 'enableUser'])->name('admin.user.enable');
         Route::delete('/admin/user/{user}', [AdminController::class, 'deleteUser'])->name('admin.user.delete');
+        Route::delete('/admin/users/bulk-delete', [AdminController::class, 'bulkDeleteUsers'])->name('admin.user.bulk-delete');
+        Route::delete('/admin/ndas/bulk-delete', [AdminController::class, 'bulkDeleteNdas'])->name('admin.nda.bulk-delete');
     });
 
     Route::middleware(['role:user'])->group(function () {
         Route::get('/user/dashboard', [UserController::class, 'dashboard'])->name('user.dashboard');
         Route::get('/user/nda/{nda}/detail', [UserController::class, 'showDetail'])->name('user.nda.detail');
+        Route::get('/user/download-all-files', [UserController::class, 'downloadAllFiles'])->name('user.download.all');
+        Route::get('/user/export-to-excel', [UserController::class, 'exportToExcel'])->name('user.export.excel');
+        Route::get('/user/print-report', [UserController::class, 'printReport'])->name('user.print.report');
     });
 });
 

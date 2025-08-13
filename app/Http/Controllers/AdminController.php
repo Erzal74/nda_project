@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class AdminController extends Controller
 {
@@ -161,5 +162,80 @@ class AdminController extends Controller
         }
         $user->delete();
         return redirect()->route('admin.dashboard')->with('success', 'User berhasil dihapus.');
+    }
+
+    public function bulkDeleteUsers(Request $request)
+    {
+        $request->validate([
+            'user_ids' => 'required|array',
+            'user_ids.*' => 'exists:users,id',
+        ], [
+            'user_ids.required' => 'Pilih setidaknya satu pengguna untuk dihapus.',
+            'user_ids.*.exists' => 'Pengguna yang dipilih tidak valid.',
+        ]);
+
+        try {
+            $users = User::whereIn('id', $request->user_ids)->get();
+            $errors = [];
+            $deletedCount = 0;
+
+            foreach ($users as $user) {
+                if ($user->role === 'admin') {
+                    $errors[] = "Pengguna {$user->name} tidak dapat dihapus karena merupakan admin.";
+                    continue;
+                }
+                if (!in_array($user->status, ['rejected', 'disabled'])) {
+                    $errors[] = "Pengguna {$user->name} tidak dapat dihapus karena statusnya bukan rejected atau disabled.";
+                    continue;
+                }
+                $user->delete();
+                $deletedCount++;
+            }
+
+            if ($deletedCount > 0) {
+                $message = "$deletedCount pengguna berhasil dihapus.";
+                if (!empty($errors)) {
+                    $message .= ' Namun, beberapa pengguna gagal dihapus.';
+                    return redirect()->route('admin.dashboard')->with('error', $message)->withErrors($errors);
+                }
+                return redirect()->route('admin.dashboard')->with('success', $message);
+            }
+
+            return redirect()->route('admin.dashboard')->with('error', 'Tidak ada pengguna yang berhasil dihapus.')->withErrors($errors);
+        } catch (\Exception $e) {
+            Log::error('Error during bulk delete users: ' . $e->getMessage());
+            return redirect()->route('admin.dashboard')->with('error', 'Terjadi kesalahan saat menghapus pengguna.');
+        }
+    }
+
+    public function bulkDeleteNdas(Request $request)
+    {
+        $request->validate([
+            'nda_ids' => 'required|array',
+            'nda_ids.*' => 'exists:ndas,id',
+        ], [
+            'nda_ids.required' => 'Pilih setidaknya satu proyek NDA untuk dihapus.',
+            'nda_ids.*.exists' => 'Proyek NDA yang dipilih tidak valid.',
+        ]);
+
+        try {
+            $ndas = Nda::whereIn('id', $request->nda_ids)->get();
+            $deletedCount = 0;
+
+            foreach ($ndas as $nda) {
+                Storage::disk('public')->delete($nda->file_path);
+                $nda->delete();
+                $deletedCount++;
+            }
+
+            if ($deletedCount > 0) {
+                return redirect()->route('admin.dashboard')->with('success', "$deletedCount proyek NDA berhasil dihapus.");
+            }
+
+            return redirect()->route('admin.dashboard')->with('error', 'Tidak ada proyek NDA yang berhasil dihapus.');
+        } catch (\Exception $e) {
+            Log::error('Error during bulk delete NDAs: ' . $e->getMessage());
+            return redirect()->route('admin.dashboard')->with('error', 'Terjadi kesalahan saat menghapus proyek NDA.');
+        }
     }
 }
