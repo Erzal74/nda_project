@@ -6,20 +6,20 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    public function up(): void
+    public function up()
     {
         Schema::create('ndas', function (Blueprint $table) {
             $table->id();
-            $table->string('title');
-            $table->string('file_path');
+            $table->string('title'); // Akan direname menjadi project_name di migration berikutnya
+            $table->text('description')->nullable();
+            $table->string('token')->unique()->nullable(); // Tetap ada di sini
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }
 
-    public function down(): void
+    public function down()
     {
         Schema::dropIfExists('ndas');
     }
 };
-?>

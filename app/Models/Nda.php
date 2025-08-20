@@ -17,23 +17,28 @@ class Nda extends Model
         'project_duration',
         'nda_signature_date',
         'description',
-        'file_path',
         'token',
         'user_id',
+        'members',
     ];
 
     protected $casts = [
         'start_date' => 'date',
         'end_date' => 'date',
         'nda_signature_date' => 'date',
+        'members' => 'array',
     ];
 
-    public function user()
+    public function creator()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 
-    // Accessor untuk mendapatkan durasi proyek yang sudah diformat
+    public function files()
+    {
+        return $this->hasMany(NdaFile::class);
+    }
+
     public function getFormattedDurationAttribute()
     {
         if ($this->project_duration) {
@@ -42,7 +47,6 @@ class Nda extends Model
         return '-';
     }
 
-    // Method untuk menghitung durasi proyek
     public function calculateProjectDuration()
     {
         if ($this->start_date && $this->end_date) {
@@ -53,7 +57,6 @@ class Nda extends Model
         return null;
     }
 
-    // Boot method untuk auto-calculate duration
     protected static function boot()
     {
         parent::boot();

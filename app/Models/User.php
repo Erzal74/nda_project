@@ -13,8 +13,6 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'role',
-        'status',
     ];
 
     protected $hidden = [
@@ -24,6 +22,11 @@ class User extends Authenticatable
 
     public function ndas()
     {
-        return $this->hasMany(Nda::class);
+        return $this->hasMany(Nda::class); // NDA yang dibuat user ini
+    }
+
+    public function assignedNdas()
+    {
+        return $this->belongsToMany(Nda::class, 'nda_user'); // NDA di mana user ini adalah anggota
     }
 }

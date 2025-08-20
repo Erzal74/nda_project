@@ -11,7 +11,8 @@
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
 
     <style>
         :root {
@@ -22,9 +23,9 @@
             --warning-color: #f59e0b;
             --danger-color: #ef4444;
             --dark-color: #1f2937;
-            --light-bg: #f8fafc;
+            --light-bg: #f9fafb;
             --border-color: #e5e7eb;
-            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.05);
             --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
             --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
         }
@@ -45,48 +46,91 @@
             min-height: 100vh;
         }
 
-        /* Ensure content takes available space */
         .page-content {
             flex: 1 0 auto;
+            padding: 1.5rem 0;
         }
 
         /* Custom scrollbar */
         ::-webkit-scrollbar {
-            width: 6px;
+            width: 8px;
         }
 
         ::-webkit-scrollbar-track {
-            background: #f1f1f1;
+            background: #f1f5f9;
         }
 
         ::-webkit-scrollbar-thumb {
-            background: #c1c1c1;
-            border-radius: 3px;
+            background: #d1d5db;
+            border-radius: 4px;
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background: #a8a8a8;
+            background: #9ca3af;
         }
 
         /* Header */
         .admin-header {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
-            padding: 1.5rem 0;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            padding: 1rem 0;
             box-shadow: var(--shadow-md);
-            margin-bottom: 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
         }
 
-        .admin-header h1 {
+        .admin-header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .admin-header .logo {
+            display: flex;
+            align-items: center;
+        }
+
+        .admin-header .logo i {
+            font-size: 1.5rem;
             color: white;
-            font-weight: 600;
-            font-size: 1.875rem;
-            margin: 0;
+            margin-right: 0.5rem;
         }
 
-        .admin-header .subtitle {
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 0.875rem;
-            margin-top: 0.25rem;
+        .admin-header .logo h1 {
+            color: white;
+            font-weight: 700;
+            font-size: 1.75rem;
+            margin: 0;
+            letter-spacing: -0.5px;
+        }
+
+        .admin-header .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .admin-header .nav-links a {
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: color 0.2s ease;
+        }
+
+        .admin-header .nav-links a:hover {
+            color: white;
+        }
+
+        .admin-header .user-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .admin-header .user-section span {
+            color: rgba(255, 255, 255, 0.75);
+            font-size: 0.9rem;
         }
 
         /* Cards */
@@ -100,14 +144,14 @@
         }
 
         .modern-card:hover {
-            transform: translateY(-2px);
+            transform: translateY(-3px);
             box-shadow: var(--shadow-lg);
         }
 
         .modern-card .card-header {
             background: white;
             border-bottom: 1px solid var(--border-color);
-            padding: 1.5rem;
+            padding: 1.25rem 1.5rem;
             font-weight: 600;
             font-size: 1.125rem;
             color: var(--dark-color);
@@ -137,28 +181,48 @@
         }
 
         .btn-primary-modern {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
             color: white;
+        }
+
+        .btn-primary-modern:hover {
+            background: linear-gradient(135deg, #4338ca, #2f2a7d);
         }
 
         .btn-success-modern {
-            background: linear-gradient(135deg, var(--success-color) 0%, #059669 100%);
+            background: linear-gradient(135deg, var(--success-color), #059669);
             color: white;
+        }
+
+        .btn-success-modern:hover {
+            background: linear-gradient(135deg, #0d9a74, #047857);
         }
 
         .btn-warning-modern {
-            background: linear-gradient(135deg, var(--warning-color) 0%, #d97706 100%);
+            background: linear-gradient(135deg, var(--warning-color), #d97706);
             color: white;
+        }
+
+        .btn-warning-modern:hover {
+            background: linear-gradient(135deg, #e08a0c, #c25b05);
         }
 
         .btn-danger-modern {
-            background: linear-gradient(135deg, var(--danger-color) 0%, #dc2626 100%);
+            background: linear-gradient(135deg, var(--danger-color), #dc2626);
             color: white;
         }
 
+        .btn-danger-modern:hover {
+            background: linear-gradient(135deg, #e53e3e, #b91c1c);
+        }
+
         .btn-secondary-modern {
-            background: linear-gradient(135deg, var(--secondary-color) 0%, #4b5563 100%);
+            background: linear-gradient(135deg, var(--secondary-color), #4b5563);
             color: white;
+        }
+
+        .btn-secondary-modern:hover {
+            background: linear-gradient(135deg, #4b5563, #374151);
         }
 
         .btn-outline-modern {
@@ -170,6 +234,7 @@
         .btn-outline-modern:hover {
             border-color: var(--primary-color);
             color: var(--primary-color);
+            background: #f3f4f6;
         }
 
         /* Tables */
@@ -186,7 +251,7 @@
         }
 
         .modern-table .table thead th {
-            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            background: linear-gradient(135deg, #f9fafb, #f3f4f6);
             border: none;
             padding: 1rem 1.5rem;
             font-weight: 600;
@@ -203,7 +268,7 @@
         }
 
         .modern-table .table tbody tr:hover {
-            background-color: rgba(79, 70, 229, 0.02);
+            background-color: rgba(79, 70, 229, 0.04);
         }
 
         /* Form Controls */
@@ -239,18 +304,29 @@
             display: flex;
             align-items: center;
             gap: 0.75rem;
+            animation: fadeIn 0.3s ease-in;
         }
 
         .alert-success-modern {
-            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+            background: linear-gradient(135deg, #ecfdf5, #d1fae5);
             color: #065f46;
             border-left: 4px solid var(--success-color);
         }
 
         .alert-danger-modern {
-            background: linear-gradient(135deg, #fef2f2 0%, #fecaca 100%);
+            background: linear-gradient(135deg, #fef2f2, #fecaca);
             color: #991b1b;
             border-left: 4px solid var(--danger-color);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
         }
 
         /* Status badges */
@@ -261,6 +337,9 @@
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.05em;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
         }
 
         .status-pending {
@@ -285,7 +364,7 @@
 
         /* Footer */
         .admin-footer {
-            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-color) 100%);
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
             color: white;
             padding: 2rem 0;
             margin-top: 2rem;
@@ -293,32 +372,54 @@
             flex-shrink: 0;
         }
 
-        .admin-footer a {
-            color: rgba(255, 255, 255, 0.8);
-            text-decoration: none;
-            transition: color 0.2s ease;
+        .admin-footer .container {
+            text-align: center;
         }
 
-        .admin-footer a:hover {
-            color: white;
-            text-decoration: underline;
-        }
-
-        .admin-footer .footer-links {
+        .admin-footer .footer-logo {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
             display: flex;
-            gap: 1.5rem;
-            margin-bottom: 1rem;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .admin-footer .footer-logo i {
+            color: var(--success-color);
         }
 
         .admin-footer .footer-text {
             font-size: 0.875rem;
+            color: rgba(255, 255, 255, 0.75);
+            margin-bottom: 0.75rem;
+        }
+
+        .admin-footer .footer-links a {
             color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            font-size: 0.875rem;
+            margin: 0 0.75rem;
+            transition: color 0.2s ease;
+        }
+
+        .admin-footer .footer-links a:hover {
+            color: white;
+            text-decoration: underline;
         }
 
         /* Responsive */
         @media (max-width: 768px) {
-            .admin-header h1 {
+            .admin-header .logo h1 {
                 font-size: 1.5rem;
+            }
+
+            .admin-header .nav-links {
+                display: none;
+            }
+
+            .admin-header .user-section {
+                gap: 0.75rem;
             }
 
             .modern-card {
@@ -339,7 +440,6 @@
             .admin-footer .footer-links {
                 flex-direction: column;
                 gap: 0.5rem;
-                text-align: center;
             }
         }
 
@@ -351,6 +451,7 @@
             border-top: 2px solid var(--primary-color);
             border-radius: 50%;
             animation: spin 1s linear infinite;
+            display: inline-block;
         }
 
         @keyframes spin {
@@ -384,14 +485,15 @@
 
 <body>
     <!-- Header -->
-    <div class="admin-header">
+    <header class="admin-header">
         <div class="container">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h1><i class="bi bi-shield-lock me-2"></i>NDA Management System</h1>
+            <div class="d-flex justify-content-between align-items-center w-100">
+                <div class="logo">
+                    <i class="bi bi-shield-lock"></i>
+                    <h1>NDA Management System</h1>
                 </div>
-                <div class="d-flex align-items-center gap-3">
-                    <span class="text-white-50">
+                <div class="user-section">
+                    <span>
                         <i class="bi bi-person-circle me-1"></i>
                         {{ Auth::user()->name ?? 'Admin' }}
                     </span>
@@ -404,7 +506,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </header>
 
     <!-- Main Content -->
     <div class="container page-content">
@@ -436,7 +538,11 @@
     <!-- Footer -->
     <footer class="admin-footer">
         <div class="container">
-            <div class="footer-text text-center">
+            <div class="footer-logo">
+                <i class="bi bi-shield-lock"></i>
+                <span>NDA Management</span>
+            </div>
+            <div class="footer-text">
                 &copy; {{ date('Y') }} NDA Management System. All rights reserved.
             </div>
         </div>
@@ -447,7 +553,6 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
-        // Enhanced SweetAlert2 configurations
         const Swal2 = Swal.mixin({
             customClass: {
                 confirmButton: 'btn btn-modern btn-primary-modern me-2',
@@ -462,29 +567,33 @@
             }
         });
 
-        // Make Swal2 available globally
         window.Swal2 = Swal2;
 
-        // Add loading states to buttons (except logout)
         document.addEventListener('DOMContentLoaded', function() {
             const buttons = document.querySelectorAll('.btn-modern:not(.no-loading)');
             buttons.forEach(button => {
-                button.addEventListener('click', function() {
+                button.addEventListener('click', function(e) {
                     if (this.type === 'submit') {
+                        e.preventDefault();
                         const originalText = this.innerHTML;
                         this.innerHTML = '<div class="loading-spinner me-2"></div>Loading...';
                         this.disabled = true;
 
-                        // Re-enable after 3 seconds (fallback)
+                        const form = this.closest('form');
+                        if (form) {
+                            setTimeout(() => {
+                                form.submit();
+                            }, 500);
+                        }
+
                         setTimeout(() => {
                             this.innerHTML = originalText;
                             this.disabled = false;
-                        }, 3000);
+                        }, 5000);
                     }
                 });
             });
 
-            // Logout confirmation
             const logoutButton = document.querySelector('.logout-btn');
             const logoutForm = document.getElementById('logout-form');
             if (logoutButton && logoutForm) {
@@ -506,7 +615,6 @@
                 });
             }
 
-            // Auto-hide flash messages
             setTimeout(() => {
                 const alerts = document.querySelectorAll('.alert-modern');
                 alerts.forEach(alert => {

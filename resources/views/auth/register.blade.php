@@ -1,29 +1,29 @@
 @extends('layouts.guest')
 
-@section('title', 'Register')
+@section('title', 'Daftar Admin')
 
 @section('content')
     <div class="page-header">
-        <h1 class="page-title">Create Account</h1>
-        <p class="page-subtitle">Join the NDA System today</p>
+        <h1 class="page-title">Daftar Admin Baru</h1>
+        <p class="page-subtitle">Buat akun admin untuk mengakses NDA System</p>
     </div>
 
     <form method="POST" action="{{ route('register') }}" id="registerForm">
         @csrf
 
         <div class="form-group">
-            <label for="name" class="form-label">Full Name</label>
+            <label for="name" class="form-label">Nama Lengkap</label>
             <input type="text" id="name" name="name" class="form-control @error('name') is-invalid @enderror"
-                value="{{ old('name') }}" placeholder="Enter your full name" required autofocus>
+                value="{{ old('name') }}" placeholder="Masukkan nama lengkap" required autofocus>
             @error('name')
                 <div class="error-message">{{ $message }}</div>
             @enderror
         </div>
 
         <div class="form-group">
-            <label for="email" class="form-label">Email Address</label>
+            <label for="email" class="form-label">Alamat Email</label>
             <input type="email" id="email" name="email" class="form-control @error('email') is-invalid @enderror"
-                value="{{ old('email') }}" placeholder="Enter your email" required>
+                value="{{ old('email') }}" placeholder="Masukkan email" required>
             @error('email')
                 <div class="error-message">{{ $message }}</div>
             @enderror
@@ -32,33 +32,26 @@
         <div class="form-group">
             <label for="password" class="form-label">Password</label>
             <input type="password" id="password" name="password"
-                class="form-control @error('password') is-invalid @enderror" placeholder="Create a password" required>
+                class="form-control @error('password') is-invalid @enderror" placeholder="Buat password" required>
             @error('password')
                 <div class="error-message">{{ $message }}</div>
             @enderror
         </div>
 
         <div class="form-group">
-            <label for="password_confirmation" class="form-label">Confirm Password</label>
+            <label for="password_confirmation" class="form-label">Konfirmasi Password</label>
             <input type="password" id="password_confirmation" name="password_confirmation" class="form-control"
-                placeholder="Confirm your password" required>
+                placeholder="Konfirmasi password" required>
         </div>
 
-        <div class="form-check">
-            <input class="form-check-input" type="checkbox" id="terms" required>
-            <label class="form-check-label" for="terms">
-                I agree to the <a href="#" class="text-link">Terms & Conditions</a>
-            </label>
-        </div>
-
-        <button type="submit" class="btn-primary" disabled>Create Account</button>
+        <button type="submit" class="btn-primary">Daftar</button>
 
         <div class="divider">
-            <span>Already have an account?</span>
+            <span>Sudah punya akun?</span>
         </div>
 
         <a href="{{ route('login') }}" class="btn-outline">
-            Sign In
+            Masuk
         </a>
     </form>
 @endsection

@@ -1,721 +1,656 @@
 @extends('layouts.app')
 
-@section('title', 'Admin Dashboard')
+@section('title', 'Dashboard Admin')
 
 @section('content')
-    <div class="container">
-        <!-- Notifikasi -->
-        @if (session('success'))
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                {{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    <div class="container-fluid py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h3 text-gray-900 mb-1">Proyek NDA</h1>
+                <p class="text-muted mb-0">Kelola dokumen Non-Disclosure Agreement dan detail proyek Anda.</p>
             </div>
-        @endif
-        @if (session('error'))
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                {{ session('error') }}
-                @if ($errors->any())
-                    <ul class="mb-0">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                @endif
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        @endif
+            <a href="{{ route('admin.nda.create') }}" class="btn btn-primary btn-modern">
+                <i class="bi bi-plus-lg me-2"></i>Proyek Baru
+            </a>
+        </div>
 
-        <!-- Quick Stats -->
-        <div class="row g-4 mb-4">
-            <div class="col-lg-3 col-md-6">
-                <div class="modern-card text-center">
+        <div class="row mb-4">
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card stat-card border-0 h-100">
                     <div class="card-body">
-                        <div class="rounded-circle d-flex align-items-center justify-content-center mb-3"
-                            style="width: 60px; height: 60px; background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);">
-                            <i class="bi bi-people-fill text-white fs-4"></i>
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon bg-primary-soft">
+                                <i class="bi bi-folder-fill text-primary"></i>
+                            </div>
+                            <div class="ms-3">
+                                <div class="stat-number">{{ $ndas->total() }}</div>
+                                <div class="stat-label">Total Proyek</div>
+                            </div>
                         </div>
-                        <h3 class="mb-1">{{ $users->count() }}</h3>
-                        <p class="text-muted mb-0">Total Pengguna</p>
                     </div>
                 </div>
             </div>
-
-            <div class="col-lg-3 col-md-6">
-                <div class="modern-card text-center">
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card stat-card border-0 h-100">
                     <div class="card-body">
-                        <div class="rounded-circle d-flex align-items-center justify-content-center mb-3"
-                            style="width: 60px; height: 60px; background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
-                            <i class="bi bi-file-earmark-lock-fill text-white fs-4"></i>
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon bg-success-soft">
+                                <i class="bi bi-check-circle-fill text-success"></i>
+                            </div>
+                            <div class="ms-3">
+                                <div class="stat-number">{{ $ndas->where('nda_signature_date', '!=', null)->count() }}</div>
+                                <div class="stat-label">NDA Ditandatangani</div>
+                            </div>
                         </div>
-                        <h3 class="mb-1">{{ $ndas->count() }}</h3>
-                        <p class="text-muted mb-0">Proyek NDA</p>
                     </div>
                 </div>
             </div>
-
-            <div class="col-lg-3 col-md-6">
-                <div class="modern-card text-center">
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card stat-card border-0 h-100">
                     <div class="card-body">
-                        <div class="rounded-circle d-flex align-items-center justify-content-center mb-3"
-                            style="width: 60px; height: 60px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
-                            <i class="bi bi-hourglass-split text-white fs-4"></i>
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon bg-info-soft">
+                                <i class="bi bi-files text-info"></i>
+                            </div>
+                            <div class="ms-3">
+                                <div class="stat-number">{{ $ndas->sum(function ($nda) {return $nda->files->count();}) }}
+                                </div>
+                                <div class="stat-label">Total Berkas</div>
+                            </div>
                         </div>
-                        <h3 class="mb-1">{{ $users->where('status', 'pending')->count() }}</h3>
-                        <p class="text-muted mb-0">Pengguna Pending</p>
                     </div>
                 </div>
             </div>
-
-            <div class="col-lg-3 col-md-6">
-                <div class="modern-card text-center">
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card stat-card border-0 h-100">
                     <div class="card-body">
-                        <div class="rounded-circle d-flex align-items-center justify-content-center mb-3"
-                            style="width: 60px; height: 60px; background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
-                            <i class="bi bi-check-circle-fill text-white fs-4"></i>
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon bg-warning-soft">
+                                <i class="bi bi-person-fill text-warning"></i>
+                            </div>
+                            <div class="ms-3">
+                                <div class="stat-number">
+                                    {{ $ndas->sum(function ($nda) {
+                                        return is_array($nda->members)
+                                            ? count($nda->members)
+                                            : (is_string($nda->members) && json_decode($nda->members) !== null
+                                                ? count(json_decode($nda->members, true))
+                                                : 0);
+                                    }) }}
+                                </div>
+                                <div class="stat-label">Total Anggota</div>
+                            </div>
                         </div>
-                        <h3 class="mb-1">{{ $users->where('status', 'approved')->count() }}</h3>
-                        <p class="text-muted mb-0">Pengguna Aktif</p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Users Management -->
-        <div class="modern-card mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <div>
-                    <h5 class="mb-0"><i class="bi bi-people me-2"></i>Manajemen Pengguna</h5>
-                    <small class="text-muted">Kelola pendaftaran dan izin pengguna</small>
-                </div>
-                <div class="d-flex gap-2">
-                    <select class="form-select form-select-sm" id="userStatusFilter" style="width: auto;">
-                        <option value="">Semua Status</option>
-                        <option value="pending">Pending</option>
-                        <option value="approved">Approved</option>
-                        <option value="rejected">Rejected</option>
-                        <option value="disabled">Disabled</option>
-                    </select>
-                    <form action="{{ route('admin.user.bulk-delete') }}" method="POST" id="bulkDeleteUsersForm">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-sm btn-danger-modern" id="bulkDeleteUsersBtn" disabled>
-                            <i class="bi bi-trash"></i> Hapus Terpilih
-                        </button>
-                    </form>
-                </div>
-            </div>
-            <div class="modern-table">
-                <table class="table table-hover mb-0" id="usersTable">
-                    <thead>
-                        <tr>
-                            <th style="width: 50px;">
-                                <input type="checkbox" id="selectAllUsers">
-                            </th>
-                            <th><i class="bi bi-person me-1"></i>Nama</th>
-                            <th><i class="bi bi-envelope me-1"></i>Email</th>
-                            <th><i class="bi bi-flag me-1"></i>Status</th>
-                            <th><i class="bi bi-calendar me-1"></i>Terdaftar</th>
-                            <th class="text-center"><i class="bi bi-gear me-1"></i>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($users as $user)
-                            <tr data-status="{{ $user->status }}">
-                                <td>
-                                    @if (in_array($user->status, ['rejected', 'disabled']) && $user->role !== 'admin')
-                                        <input type="checkbox" name="user_ids[]" value="{{ $user->id }}"
-                                            class="user-checkbox" form="bulkDeleteUsersForm">
-                                    @endif
-                                </td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <div class="rounded-circle d-flex align-items-center justify-content-center me-3"
-                                            style="width: 40px; height: 40px; background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);">
-                                            <i class="bi bi-person-fill text-primary"></i>
-                                        </div>
-                                        <div>
-                                            <div class="fw-medium">{{ $user->name }}</div>
-                                            <small class="text-muted">ID: {{ $user->id }}</small>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>{{ $user->email }}</td>
-                                <td>
-                                    <span class="status-badge status-{{ $user->status }}">
-                                        @if ($user->status == 'pending')
-                                            <i class="bi bi-clock me-1"></i>
-                                        @elseif($user->status == 'approved')
-                                            <i class="bi bi-check-circle me-1"></i>
-                                        @elseif($user->status == 'rejected')
-                                            <i class="bi bi-x-circle me-1"></i>
-                                        @elseif($user->status == 'disabled')
-                                            <i class="bi bi-pause-circle me-1"></i>
-                                        @endif
-                                        {{ ucfirst($user->status) }}
-                                    </span>
-                                </td>
-                                <td>
-                                    <div>{{ $user->created_at->format('d M Y') }}</div>
-                                    <small class="text-muted">{{ $user->created_at->diffForHumans() }}</small>
-                                </td>
-                                <td>
-                                    <div class="d-flex justify-content-center gap-1">
-                                        @if ($user->status == 'pending')
-                                            <form action="{{ route('admin.user.approve', $user) }}" method="POST"
-                                                class="d-inline">
-                                                @csrf
-                                                @method('PUT')
-                                                <button type="submit"
-                                                    class="btn btn-sm btn-modern btn-success-modern approve-btn"
-                                                    title="Setujui Pengguna">
-                                                    <i class="bi bi-check"></i>
-                                                </button>
-                                            </form>
-                                            <form action="{{ route('admin.user.reject', $user) }}" method="POST"
-                                                class="d-inline">
-                                                @csrf
-                                                @method('PUT')
-                                                <button type="submit"
-                                                    class="btn btn-sm btn-modern btn-danger-modern reject-btn"
-                                                    title="Tolak Pengguna">
-                                                    <i class="bi bi-x"></i>
-                                                </button>
-                                            </form>
-                                        @elseif ($user->status == 'approved')
-                                            @if (Route::has('admin.user.disable'))
-                                                <form action="{{ route('admin.user.disable', $user) }}" method="POST"
-                                                    class="d-inline">
-                                                    @csrf
-                                                    @method('PUT')
-                                                    <button type="submit"
-                                                        class="btn btn-sm btn-modern btn-warning-modern disable-btn"
-                                                        title="Nonaktifkan Pengguna">
-                                                        <i class="bi bi-pause"></i>
-                                                    </button>
-                                                </form>
-                                            @endif
-                                        @elseif ($user->status == 'disabled')
-                                            @if (Route::has('admin.user.enable'))
-                                                <form action="{{ route('admin.user.enable', $user) }}" method="POST"
-                                                    class="d-inline">
-                                                    @csrf
-                                                    @method('PUT')
-                                                    <button type="submit"
-                                                        class="btn btn-sm btn-modern btn-success-modern enable-btn"
-                                                        title="Aktifkan Pengguna">
-                                                        <i class="bi bi-play"></i>
-                                                    </button>
-                                                </form>
-                                            @endif
-                                        @endif
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h5 class="mb-0">Daftar Proyek</h5>
+                    </div>
+                    <div class="col-auto">
+                        <div class="d-flex gap-2 flex-wrap">
+                            <!-- Search Bar -->
+                            <div class="position-relative">
+                                <input type="search" class="form-control form-control-sm ps-4" placeholder="Cari proyek..."
+                                    id="projectSearch" style="width: 200px;" value="{{ request('search') }}">
+                                <i
+                                    class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-2 text-muted"></i>
+                            </div>
 
-                                        @if (in_array($user->status, ['rejected', 'disabled']))
-                                            @if (Route::has('admin.user.delete'))
-                                                <form action="{{ route('admin.user.delete', $user) }}" method="POST"
-                                                    class="d-inline">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit"
-                                                        class="btn btn-sm btn-modern btn-danger-modern delete-btn"
-                                                        title="Hapus Pengguna">
-                                                        <i class="bi bi-trash"></i>
-                                                    </button>
-                                                </form>
-                                            @endif
-                                        @endif
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="6" class="text-center py-4">
-                                    <div class="text-muted">
-                                        <i class="bi bi-inbox fs-1 mb-3 d-block"></i>
-                                        <p class="mb-0">Tidak ada pengguna ditemukan</p>
-                                    </div>
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-        </div>
+                            <!-- Month Filter -->
+                            <select class="form-select form-select-sm" id="monthFilter" style="width: 150px;">
+                                <option value="">Semua Bulan</option>
+                                <option value="01" {{ request('month') == '01' ? 'selected' : '' }}>Januari</option>
+                                <option value="02" {{ request('month') == '02' ? 'selected' : '' }}>Februari</option>
+                                <option value="03" {{ request('month') == '03' ? 'selected' : '' }}>Maret</option>
+                                <option value="04" {{ request('month') == '04' ? 'selected' : '' }}>April</option>
+                                <option value="05" {{ request('month') == '05' ? 'selected' : '' }}>Mei</option>
+                                <option value="06" {{ request('month') == '06' ? 'selected' : '' }}>Juni</option>
+                                <option value="07" {{ request('month') == '07' ? 'selected' : '' }}>Juli</option>
+                                <option value="08" {{ request('month') == '08' ? 'selected' : '' }}>Agustus</option>
+                                <option value="09" {{ request('month') == '09' ? 'selected' : '' }}>September</option>
+                                <option value="10" {{ request('month') == '10' ? 'selected' : '' }}>Oktober</option>
+                                <option value="11" {{ request('month') == '11' ? 'selected' : '' }}>November</option>
+                                <option value="12" {{ request('month') == '12' ? 'selected' : '' }}>Desember</option>
+                            </select>
 
-        <!-- NDA Projects -->
-        <div class="modern-card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <div>
-                    <h5 class="mb-0"><i class="bi bi-file-earmark-lock me-2"></i>Proyek NDA</h5>
-                    <small class="text-muted">Kelola dokumen NDA dan detail proyek</small>
-                </div>
-                <div class="d-flex gap-2">
-                    <input type="search" class="form-control form-control-sm" placeholder="Cari proyek..."
-                        id="projectSearch" style="width: 200px;">
-                    <form action="{{ route('admin.nda.bulk-delete') }}" method="POST" id="bulkDeleteNdasForm">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-sm btn-danger-modern" id="bulkDeleteNdasBtn" disabled>
-                            <i class="bi bi-trash"></i> Hapus Terpilih
-                        </button>
-                    </form>
-                    <a href="{{ route('admin.nda.create') }}" class="btn btn-sm btn-modern btn-primary-modern">
-                        <i class="bi bi-plus"></i> Proyek Baru
-                    </a>
+                            <!-- Clear Filters -->
+                            <button type="button" class="btn btn-outline-secondary btn-sm" id="clearFilters">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+
+                            <!-- Bulk Delete Button -->
+                            <button type="button" class="btn btn-outline-danger btn-sm" id="bulkDeleteNdasBtn" disabled>
+                                <i class="bi bi-trash me-1"></i>Hapus Terpilih
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="modern-table">
-                <table class="table table-hover mb-0" id="ndaTable">
-                    <thead>
-                        <tr>
-                            <th style="width: 50px;">
-                                <input type="checkbox" id="selectAllNdas">
-                            </th>
-                            <th><i class="bi bi-folder me-1"></i>Nama Proyek</th>
-                            <th><i class="bi bi-calendar-range me-1"></i>Durasi</th>
-                            <th><i class="bi bi-calendar-check me-1"></i>Tanda Tangan NDA</th>
-                            <th><i class="bi bi-file-pdf me-1"></i>File</th>
-                            <th class="text-center"><i class="bi bi-gear me-1"></i>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($ndas as $nda)
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0" id="ndaTable">
+                        <thead class="table-light">
                             <tr>
-                                <td>
-                                    <input type="checkbox" name="nda_ids[]" value="{{ $nda->id }}"
-                                        class="nda-checkbox" form="bulkDeleteNdasForm">
-                                </td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <div class="rounded-circle d-flex align-items-center justify-content-center me-3"
-                                            style="width: 40px; height: 40px; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);">
-                                            <i class="bi bi-folder-fill text-warning"></i>
-                                        </div>
-                                        <div>
-                                            <div class="fw-medium">{{ $nda->project_name }}</div>
-                                            <small class="text-muted">{{ Str::limit($nda->description, 50) }}</small>
-                                        </div>
+                                <th width="40">No.</th>
+                                <th width="40">
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" id="selectAllNdas">
                                     </div>
-                                </td>
-                                <td>
-                                    <div>
+                                </th>
+                                <th>Proyek</th>
+                                <th>Durasi</th>
+                                <th>NDA Ditandatangani</th>
+                                <th>Anggota</th>
+                                <th>Berkas</th>
+                                <th width="120" class="text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse ($ndas as $key => $nda)
+                                <tr class="project-row">
+                                    <td>{{ $ndas->firstItem() + $key }}</td>
+                                    <td>
+                                        <div class="form-check">
+                                            <input type="checkbox" class="form-check-input nda-checkbox"
+                                                value="{{ $nda->id }}">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="project-avatar">
+                                                <i class="bi bi-folder-fill"></i>
+                                            </div>
+                                            <div class="ms-3">
+                                                <div class="fw-semibold text-gray-900 project-name">
+                                                    {{ $nda->project_name }}</div>
+                                                <div class="small text-muted project-description">
+                                                    {{ Str::limit($nda->description, 40) }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="project-duration">
                                         @if ($nda->start_date && $nda->end_date)
-                                            <div class="small">{{ $nda->start_date->format('d M Y') }} -
+                                            <div class="small text-gray-900">{{ $nda->start_date->format('d M') }} -
                                                 {{ $nda->end_date->format('d M Y') }}</div>
-                                            <small class="text-muted">{{ $nda->formatted_duration }}</small>
+                                            <div class="small text-muted">{{ $nda->formatted_duration }}</div>
                                         @else
                                             <span class="text-muted">-</span>
                                         @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    @if ($nda->nda_signature_date)
-                                        <div>{{ $nda->nda_signature_date->format('d M Y') }}</div>
-                                        <small class="text-muted">{{ $nda->nda_signature_date->diffForHumans() }}</small>
-                                    @else
-                                        <span class="text-muted">Belum ditandatangani</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    @if ($nda->token)
-                                        <a href="{{ route('file.preview', $nda->token) }}" target="_blank"
-                                            class="btn btn-sm btn-modern btn-outline-modern">
-                                            <i class="bi bi-eye"></i> Pratinjau
-                                        </a>
-                                    @else
-                                        <span class="text-muted">Tidak ada file</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    <div class="d-flex justify-content-center gap-1">
-                                        <a href="{{ route('admin.nda.detail', $nda) }}"
-                                            class="btn btn-sm btn-modern btn-primary-modern" title="Lihat Detail">
-                                            <i class="bi bi-eye"></i>
-                                        </a>
-                                        <a href="{{ route('admin.nda.edit', $nda) }}"
-                                            class="btn btn-sm btn-modern btn-warning-modern" title="Edit Proyek">
-                                            <i class="bi bi-pencil"></i>
-                                        </a>
-                                        <form action="{{ route('admin.nda.delete', $nda) }}" method="POST"
-                                            class="d-inline">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit"
-                                                class="btn btn-sm btn-modern btn-danger-modern delete-btn"
-                                                title="Hapus Proyek">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="6" class="text-center py-4">
-                                    <div class="text-muted">
-                                        <i class="bi bi-folder-x fs-1 mb-3 d-block"></i>
-                                        <p class="mb-0">Tidak ada proyek NDA ditemukan</p>
-                                        <a href="{{ route('admin.nda.create') }}"
-                                            class="btn btn-modern btn-primary-modern mt-2">
-                                            <i class="bi bi-plus-circle"></i> Buat Proyek Pertama
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                                    </td>
+                                    <td class="project-nda-date"
+                                        data-month="{{ $nda->nda_signature_date ? $nda->nda_signature_date->format('m') : '' }}">
+                                        @if ($nda->nda_signature_date)
+                                            <div class="badge bg-success-soft text-success">
+                                                {{ $nda->nda_signature_date->format('d M Y') }}</div>
+                                        @else
+                                            <div class="badge bg-warning-soft text-warning">Menunggu</div>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @php
+                                            $members = is_array($nda->members)
+                                                ? $nda->members
+                                                : (is_string($nda->members) && json_decode($nda->members) !== null
+                                                    ? json_decode($nda->members, true)
+                                                    : []);
+                                        @endphp
+                                        @if (!empty($members))
+                                            <ul class="mb-0 small member-list">
+                                                @foreach ($members as $member)
+                                                    <li>{{ $member }}</li>
+                                                @endforeach
+                                            </ul>
+                                        @else
+                                            <span class="text-muted">Tidak ada</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if ($nda->files->isNotEmpty())
+                                            <ul class="list-unstyled mb-0 file-list">
+                                                @foreach ($nda->files as $file)
+                                                    <li>
+                                                        <a href="{{ Storage::url($file->file_path) }}" target="_blank"
+                                                            class="small text-primary text-truncate d-block">
+                                                            <i
+                                                                class="bi bi-file-earmark-text me-1"></i>{{ basename($file->file_path) }}
+                                                        </a>
+                                                    </li>
+                                                @endforeach
+                                            </ul>
+                                        @else
+                                            <span class="text-muted">Tidak ada</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <div class="d-flex gap-1 justify-content-center">
+                                            <a href="{{ route('admin.nda.detail', $nda) }}"
+                                                class="btn btn-sm btn-outline-primary" title="Lihat Detail">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            <a href="{{ route('admin.nda.edit', $nda) }}"
+                                                class="btn btn-sm btn-outline-warning" title="Edit">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <form action="{{ route('admin.nda.delete', $nda) }}" method="POST"
+                                                class="d-inline delete-form">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="button"
+                                                    class="btn btn-sm btn-outline-danger delete-single-btn"
+                                                    data-project-name="{{ $nda->project_name }}" title="Hapus">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr id="emptyState">
+                                    <td colspan="8" class="text-center py-5">
+                                        <div class="empty-state">
+                                            <i class="bi bi-folder-x display-4 text-muted mb-3"></i>
+                                            <h5 class="text-muted">Tidak Ada Proyek Ditemukan</h5>
+                                            <p class="text-muted mb-3">Mulai dengan membuat proyek NDA pertama Anda.</p>
+                                            <a href="{{ route('admin.nda.create') }}" class="btn btn-primary btn-modern">
+                                                <i class="bi bi-plus-lg me-2"></i>Buat Proyek Pertama
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            @if ($ndas->hasPages())
+                <div class="card-footer bg-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="text-muted small">
+                            Menampilkan {{ $ndas->firstItem() }} sampai {{ $ndas->lastItem() }} dari {{ $ndas->total() }}
+                            hasil
+                        </div>
+                        <div>
+                            {{ $ndas->appends(request()->query())->links('pagination::bootstrap-4') }}
+                        </div>
+                    </div>
+                </div>
+            @endif
+        </div>
+    </div>
+
+    <!-- Hidden form for bulk delete -->
+    <form id="bulkDeleteForm" action="{{ route('admin.nda.bulk-delete') }}" method="POST" style="display: none;">
+        @csrf
+        @method('DELETE')
+        <div id="selectedIds"></div>
+    </form>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel">Konfirmasi Hapus</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="deleteMessage"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Hapus</button>
+                </div>
             </div>
         </div>
     </div>
 
-    @push('styles')
-        <style>
-            .modern-card {
-                border-radius: 12px;
-                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-                border: none;
-            }
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elements
+            const selectAllCheckbox = document.getElementById('selectAllNdas');
+            const ndaCheckboxes = document.querySelectorAll('.nda-checkbox');
+            const bulkDeleteBtn = document.getElementById('bulkDeleteNdasBtn');
+            const projectSearch = document.getElementById('projectSearch');
+            const monthFilter = document.getElementById('monthFilter');
+            const clearFiltersBtn = document.getElementById('clearFilters');
+            const projectRows = document.querySelectorAll('.project-row');
+            const emptyState = document.getElementById('emptyState');
 
-            .modern-table {
-                overflow-x: auto;
-            }
+            // Search functionality
+            function performSearch() {
+                const searchTerm = projectSearch.value.toLowerCase().trim();
+                const selectedMonth = monthFilter.value;
+                let visibleCount = 0;
 
-            .status-badge {
-                padding: 4px 10px;
-                border-radius: 12px;
-                font-size: 12px;
-                font-weight: 500;
-            }
+                projectRows.forEach(row => {
+                    const projectName = row.querySelector('.project-name')?.textContent.toLowerCase() || '';
+                    const projectDescription = row.querySelector('.project-description')?.textContent
+                        .toLowerCase() || '';
+                    const projectDuration = row.querySelector('.project-duration')?.textContent
+                        .toLowerCase() || '';
+                    const ndaDateElement = row.querySelector('.project-nda-date');
+                    const ndaMonth = ndaDateElement?.dataset.month || '';
 
-            .status-pending {
-                background: #fef3c7;
-                color: #d97706;
-            }
+                    const matchesSearch = searchTerm === '' ||
+                        projectName.includes(searchTerm) ||
+                        projectDescription.includes(searchTerm) ||
+                        projectDuration.includes(searchTerm);
 
-            .status-approved {
-                background: #d1fae5;
-                color: #059669;
-            }
+                    const matchesMonth = selectedMonth === '' || ndaMonth === selectedMonth;
 
-            .status-rejected {
-                background: #fee2e2;
-                color: #dc2626;
-            }
-
-            .status-disabled {
-                background: #e5e7eb;
-                color: #4b5563;
-            }
-
-            .btn-modern {
-                border-radius: 8px;
-                padding: 6px 12px;
-                font-weight: 500;
-                transition: all 0.2s;
-            }
-
-            .btn-primary-modern {
-                background: #4f46e5;
-                border-color: #4f46e5;
-                color: white;
-            }
-
-            .btn-primary-modern:hover {
-                background: #4338ca;
-                border-color: #4338ca;
-            }
-
-            .btn-success-modern {
-                background: #10b981;
-                border-color: #10b981;
-                color: white;
-            }
-
-            .btn-success-modern:hover {
-                background: #059669;
-                border-color: #059669;
-            }
-
-            .btn-warning-modern {
-                background: #f59e0b;
-                border-color: #f59e0b;
-                color: white;
-            }
-
-            .btn-warning-modern:hover {
-                background: #d97706;
-                border-color: #d97706;
-            }
-
-            .btn-danger-modern {
-                background: #ef4444;
-                border-color: #ef4444;
-                color: white;
-            }
-
-            .btn-danger-modern:hover {
-                background: #dc2626;
-                border-color: #dc2626;
-            }
-
-            .btn-outline-modern {
-                border-color: #4f46e5;
-                color: #4f46e5;
-            }
-
-            .btn-outline-modern:hover {
-                background: #f1f5f9;
-                border-color: #4f46e5;
-            }
-
-            .alert {
-                position: relative;
-                z-index: 1000;
-            }
-        </style>
-    @endpush
-
-    @push('scripts')
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                // Select All untuk User Management
-                const selectAllUsers = document.getElementById('selectAllUsers');
-                const userCheckboxes = document.querySelectorAll('.user-checkbox');
-                const bulkDeleteUsersBtn = document.getElementById('bulkDeleteUsersBtn');
-                const bulkDeleteUsersForm = document.getElementById('bulkDeleteUsersForm');
-
-                if (selectAllUsers && userCheckboxes && bulkDeleteUsersBtn) {
-                    selectAllUsers.addEventListener('change', function() {
-                        userCheckboxes.forEach(checkbox => {
-                            checkbox.checked = this.checked;
-                        });
-                        bulkDeleteUsersBtn.disabled = !Array.from(userCheckboxes).some(cb => cb.checked);
-                    });
-
-                    userCheckboxes.forEach(checkbox => {
-                        checkbox.addEventListener('change', function() {
-                            selectAllUsers.checked = Array.from(userCheckboxes).every(cb => cb.checked);
-                            bulkDeleteUsersBtn.disabled = !Array.from(userCheckboxes).some(cb => cb
-                                .checked);
-                        });
-                    });
-
-                    bulkDeleteUsersForm.addEventListener('submit', function(e) {
-                        e.preventDefault();
-                        const checkedCount = Array.from(userCheckboxes).filter(cb => cb.checked).length;
-                        if (checkedCount === 0) {
-                            Swal2.fire({
-                                title: 'Pilih Pengguna',
-                                text: 'Silakan pilih setidaknya satu pengguna untuk dihapus.',
-                                icon: 'warning',
-                                confirmButtonText: 'OK'
-                            });
-                            return;
-                        }
-                        Swal2.fire({
-                            title: `Hapus ${checkedCount} Pengguna?`,
-                            text: 'Tindakan ini tidak dapat dibatalkan!',
-                            icon: 'warning',
-                            showCancelButton: true,
-                            confirmButtonText: '<i class="bi bi-trash me-1"></i>Hapus',
-                            cancelButtonText: '<i class="bi bi-arrow-left me-1"></i>Batal',
-                            confirmButtonColor: '#ef4444'
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                this.submit();
-                            }
-                        });
-                    });
-                }
-
-                // Select All untuk NDA Projects
-                const selectAllNdas = document.getElementById('selectAllNdas');
-                const ndaCheckboxes = document.querySelectorAll('.nda-checkbox');
-                const bulkDeleteNdasBtn = document.getElementById('bulkDeleteNdasBtn');
-                const bulkDeleteNdasForm = document.getElementById('bulkDeleteNdasForm');
-
-                if (selectAllNdas && ndaCheckboxes && bulkDeleteNdasBtn) {
-                    selectAllNdas.addEventListener('change', function() {
-                        ndaCheckboxes.forEach(checkbox => {
-                            checkbox.checked = this.checked;
-                        });
-                        bulkDeleteNdasBtn.disabled = !Array.from(ndaCheckboxes).some(cb => cb.checked);
-                    });
-
-                    ndaCheckboxes.forEach(checkbox => {
-                        checkbox.addEventListener('change', function() {
-                            selectAllNdas.checked = Array.from(ndaCheckboxes).every(cb => cb.checked);
-                            bulkDeleteNdasBtn.disabled = !Array.from(ndaCheckboxes).some(cb => cb
-                                .checked);
-                        });
-                    });
-
-                    bulkDeleteNdasForm.addEventListener('submit', function(e) {
-                        e.preventDefault();
-                        const checkedCount = Array.from(ndaCheckboxes).filter(cb => cb.checked).length;
-                        if (checkedCount === 0) {
-                            Swal2.fire({
-                                title: 'Pilih Proyek NDA',
-                                text: 'Silakan pilih setidaknya satu proyek NDA untuk dihapus.',
-                                icon: 'warning',
-                                confirmButtonText: 'OK'
-                            });
-                            return;
-                        }
-                        Swal2.fire({
-                            title: `Hapus ${checkedCount} Proyek NDA?`,
-                            text: 'Tindakan ini tidak dapat dibatalkan!',
-                            icon: 'warning',
-                            showCancelButton: true,
-                            confirmButtonText: '<i class="bi bi-trash me-1"></i>Hapus',
-                            cancelButtonText: '<i class="bi bi-arrow-left me-1"></i>Batal',
-                            confirmButtonColor: '#ef4444'
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                this.submit();
-                            }
-                        });
-                    });
-                }
-
-                // User status filter
-                const userStatusFilter = document.getElementById('userStatusFilter');
-                const usersTable = document.getElementById('usersTable');
-
-                if (userStatusFilter && usersTable) {
-                    userStatusFilter.addEventListener('change', function() {
-                        const filterValue = this.value;
-                        const rows = usersTable.querySelectorAll('tbody tr[data-status]');
-                        rows.forEach(row => {
-                            if (filterValue === '' || row.dataset.status === filterValue) {
-                                row.style.display = '';
-                            } else {
-                                row.style.display = 'none';
-                            }
-                        });
-                        // Reset select all dan tombol hapus saat filter berubah
-                        selectAllUsers.checked = false;
-                        userCheckboxes.forEach(cb => cb.checked = false);
-                        bulkDeleteUsersBtn.disabled = true;
-                    });
-                }
-
-                // Project search
-                const projectSearch = document.getElementById('projectSearch');
-                const ndaTable = document.getElementById('ndaTable');
-
-                if (projectSearch && ndaTable) {
-                    projectSearch.addEventListener('input', function() {
-                        const searchTerm = this.value.toLowerCase();
-                        const rows = ndaTable.querySelectorAll('tbody tr');
-                        rows.forEach(row => {
-                            const projectName = row.querySelector('td:nth-child(2) .fw-medium');
-                            if (projectName) {
-                                const text = projectName.textContent.toLowerCase();
-                                row.style.display = text.includes(searchTerm) ? '' : 'none';
-                            }
-                        });
-                        // Reset select all dan tombol hapus saat pencarian
-                        selectAllNdas.checked = false;
-                        ndaCheckboxes.forEach(cb => cb.checked = false);
-                        bulkDeleteNdasBtn.disabled = true;
-                    });
-                }
-
-                // SweetAlert untuk tombol aksi individu
-                document.querySelectorAll('.approve-btn').forEach(button => {
-                    button.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        Swal2.fire({
-                            title: 'Setujui Pengguna?',
-                            text: 'Pengguna ini akan mendapatkan akses ke sistem.',
-                            icon: 'question',
-                            showCancelButton: true,
-                            confirmButtonText: '<i class="bi bi-check me-1"></i>Setujui',
-                            cancelButtonText: '<i class="bi bi-x me-1"></i>Batal'
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                this.closest('form').submit();
-                            }
-                        });
-                    });
+                    if (matchesSearch && matchesMonth) {
+                        row.style.display = '';
+                        visibleCount++;
+                    } else {
+                        row.style.display = 'none';
+                        // Uncheck hidden rows
+                        const checkbox = row.querySelector('.nda-checkbox');
+                        if (checkbox) checkbox.checked = false;
+                    }
                 });
 
-                document.querySelectorAll('.reject-btn').forEach(button => {
-                    button.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        Swal2.fire({
-                            title: 'Tolak Pengguna?',
-                            text: 'Pengguna ini akan ditolak akses ke sistem.',
-                            icon: 'warning',
-                            showCancelButton: true,
-                            confirmButtonText: '<i class="bi bi-x me-1"></i>Tolak',
-                            cancelButtonText: '<i class="bi bi-arrow-left me-1"></i>Batal'
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                this.closest('form').submit();
-                            }
-                        });
-                    });
+                // Show/hide empty state
+                if (emptyState) {
+                    emptyState.style.display = visibleCount === 0 ? '' : 'none';
+                }
+
+                // Update bulk delete button state
+                updateBulkDeleteButton();
+                // Update select all checkbox
+                updateSelectAllCheckbox();
+            }
+
+            // Search input event
+            projectSearch.addEventListener('input', performSearch);
+
+            // Month filter event
+            monthFilter.addEventListener('change', function() {
+                // Update URL with filter parameters
+                const url = new URL(window.location);
+                if (this.value) {
+                    url.searchParams.set('month', this.value);
+                } else {
+                    url.searchParams.delete('month');
+                }
+                if (projectSearch.value) {
+                    url.searchParams.set('search', projectSearch.value);
+                } else {
+                    url.searchParams.delete('search');
+                }
+                window.history.pushState({}, '', url);
+                performSearch();
+            });
+
+            // Clear filters
+            clearFiltersBtn.addEventListener('click', function() {
+                projectSearch.value = '';
+                monthFilter.value = '';
+                const url = new URL(window.location);
+                url.searchParams.delete('search');
+                url.searchParams.delete('month');
+                window.history.pushState({}, '', url);
+                performSearch();
+            });
+
+            // Select all functionality
+            selectAllCheckbox.addEventListener('change', function() {
+                const visibleCheckboxes = Array.from(ndaCheckboxes).filter(checkbox => {
+                    return checkbox.closest('.project-row').style.display !== 'none';
                 });
 
-                document.querySelectorAll('.disable-btn').forEach(button => {
-                    button.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        Swal2.fire({
-                            title: 'Nonaktifkan Pengguna?',
-                            text: 'Pengguna ini akan dinonaktifkan sementara dari sistem.',
-                            icon: 'warning',
-                            showCancelButton: true,
-                            confirmButtonText: '<i class="bi bi-pause me-1"></i>Nonaktifkan',
-                            cancelButtonText: '<i class="bi bi-arrow-left me-1"></i>Batal'
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                this.closest('form').submit();
-                            }
-                        });
-                    });
+                visibleCheckboxes.forEach(checkbox => {
+                    checkbox.checked = this.checked;
                 });
+                updateBulkDeleteButton();
+            });
 
-                document.querySelectorAll('.enable-btn').forEach(button => {
-                    button.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        Swal2.fire({
-                            title: 'Aktifkan Pengguna?',
-                            text: 'Pengguna ini akan diaktifkan kembali di sistem.',
-                            icon: 'question',
-                            showCancelButton: true,
-                            confirmButtonText: '<i class="bi bi-play me-1"></i>Aktifkan',
-                            cancelButtonText: '<i class="bi bi-arrow-left me-1"></i>Batal'
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                this.closest('form').submit();
-                            }
-                        });
-                    });
-                });
-
-                document.querySelectorAll('.delete-btn').forEach(button => {
-                    button.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        Swal2.fire({
-                            title: 'Hapus Permanen?',
-                            text: 'Tindakan ini tidak dapat dibatalkan!',
-                            icon: 'error',
-                            showCancelButton: true,
-                            confirmButtonText: '<i class="bi bi-trash me-1"></i>Hapus',
-                            cancelButtonText: '<i class="bi bi-arrow-left me-1"></i>Batal',
-                            confirmButtonColor: '#ef4444'
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                this.closest('form').submit();
-                            }
-                        });
-                    });
+            // Individual checkbox change
+            ndaCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    updateSelectAllCheckbox();
+                    updateBulkDeleteButton();
                 });
             });
-        </script>
-    @endpush
+
+            // Update select all checkbox state
+            function updateSelectAllCheckbox() {
+                const visibleCheckboxes = Array.from(ndaCheckboxes).filter(checkbox => {
+                    return checkbox.closest('.project-row').style.display !== 'none';
+                });
+                const checkedVisibleCount = visibleCheckboxes.filter(cb => cb.checked).length;
+
+                if (visibleCheckboxes.length === 0) {
+                    selectAllCheckbox.indeterminate = false;
+                    selectAllCheckbox.checked = false;
+                } else if (checkedVisibleCount === 0) {
+                    selectAllCheckbox.indeterminate = false;
+                    selectAllCheckbox.checked = false;
+                } else if (checkedVisibleCount === visibleCheckboxes.length) {
+                    selectAllCheckbox.indeterminate = false;
+                    selectAllCheckbox.checked = true;
+                } else {
+                    selectAllCheckbox.indeterminate = true;
+                    selectAllCheckbox.checked = false;
+                }
+            }
+
+            // Update bulk delete button state
+            function updateBulkDeleteButton() {
+                const checkedCount = Array.from(ndaCheckboxes).filter(cb => cb.checked).length;
+                bulkDeleteBtn.disabled = checkedCount === 0;
+            }
+
+            // Bulk delete functionality
+            bulkDeleteBtn.addEventListener('click', function() {
+                const checkedBoxes = Array.from(ndaCheckboxes).filter(cb => cb.checked);
+
+                if (checkedBoxes.length === 0) {
+                    alert('Pilih setidaknya satu proyek untuk dihapus.');
+                    return;
+                }
+
+                const deleteMessage =
+                    `Apakah Anda yakin ingin menghapus ${checkedBoxes.length} proyek yang dipilih? Tindakan ini akan menghapus data secara permanen.`;
+                document.getElementById('deleteMessage').textContent = deleteMessage;
+
+                const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+                deleteModal.show();
+
+                document.getElementById('confirmDeleteBtn').onclick = function() {
+                    // Clear previous hidden inputs
+                    const selectedIdsContainer = document.getElementById('selectedIds');
+                    selectedIdsContainer.innerHTML = '';
+
+                    // Add selected IDs to form
+                    checkedBoxes.forEach(checkbox => {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = 'nda_ids[]';
+                        input.value = checkbox.value;
+                        selectedIdsContainer.appendChild(input);
+                    });
+
+                    // Submit form
+                    document.getElementById('bulkDeleteForm').submit();
+                };
+            });
+
+            // Single delete functionality
+            document.querySelectorAll('.delete-single-btn').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+
+                    const projectName = this.dataset.projectName;
+                    const form = this.closest('form');
+
+                    const deleteMessage =
+                        `Apakah Anda yakin ingin menghapus proyek "${projectName}"? Tindakan ini akan menghapus data secara permanen.`;
+                    document.getElementById('deleteMessage').textContent = deleteMessage;
+
+                    const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+                    deleteModal.show();
+
+                    document.getElementById('confirmDeleteBtn').onclick = function() {
+                        form.submit();
+                    };
+                });
+            });
+
+            // Initial load
+            performSearch();
+        });
+    </script>
+
+    <style>
+        .project-row {
+            transition: opacity 0.3s ease;
+        }
+
+        .project-row[style*="none"] {
+            opacity: 0;
+        }
+
+        .btn-modern {
+            border-radius: 8px;
+            font-weight: 500;
+            padding: 8px 16px;
+        }
+
+        .stat-card {
+            border-radius: 12px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .project-avatar {
+            width: 40px;
+            height: 40px;
+            background: #f3f4f6;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280;
+        }
+
+        .bg-primary-soft {
+            background-color: rgba(59, 130, 246, 0.1);
+        }
+
+        .bg-success-soft {
+            background-color: rgba(34, 197, 94, 0.1);
+        }
+
+        .bg-info-soft {
+            background-color: rgba(6, 182, 212, 0.1);
+        }
+
+        .bg-warning-soft {
+            background-color: rgba(245, 158, 11, 0.1);
+        }
+
+        .badge.bg-success-soft {
+            background-color: rgba(34, 197, 94, 0.1) !important;
+            color: #059669 !important;
+        }
+
+        .badge.bg-warning-soft {
+            background-color: rgba(245, 158, 11, 0.1) !important;
+            color: #d97706 !important;
+        }
+
+        .table th {
+            font-weight: 600;
+            color: #374151;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .table td {
+            vertical-align: middle;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .table tbody tr:hover {
+            background-color: #f9fafb;
+        }
+
+        .empty-state i {
+            opacity: 0.5;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+        }
+
+        .member-list {
+            padding-left: 20px;
+            /* Ruang untuk bullet */
+            margin: 0;
+            font-size: 0.875rem;
+            /* Ukuran font kecil */
+            line-height: 1.2;
+            /* Jarak antar baris kecil */
+            max-height: 100px;
+            /* Batas tinggi, scroll jika banyak */
+            overflow-y: auto;
+        }
+
+        .member-list li {
+            margin-bottom: 2px;
+            /* Jarak kecil antar item */
+        }
+
+        .file-list {
+            margin: 0;
+            padding: 0;
+            font-size: 0.875rem;
+            line-height: 1.2;
+        }
+
+        .file-list li {
+            margin-bottom: 2px;
+        }
+
+        .file-list a {
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    </style>
 @endsection

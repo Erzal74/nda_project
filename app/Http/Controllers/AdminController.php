@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Nda;
+use App\Models\NdaFile;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -10,14 +11,35 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use Maatwebsite\Excel\Facades\Excel;
+use Barryvdh\DomPDF\Facade\Pdf;
+use App\Exports\NdaExport;
 
 class AdminController extends Controller
 {
-    public function dashboard()
+    public function dashboard(Request $request)
     {
-        $users = User::where('role', 'user')->get();
-        $ndas = Nda::all();
-        return view('admin.index', compact('users', 'ndas'));
+        $query = Nda::query();
+
+        // Apply search filter
+        if ($request->has('search') && !empty($request->search)) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('project_name', 'LIKE', "%{$search}%")
+                ->orWhere('description', 'LIKE', "%{$search}%");
+            });
+        }
+
+        // Apply month filter
+        if ($request->has('month') && !empty($request->month)) {
+            $month = $request->month;
+            $query->whereMonth('nda_signature_date', $month);
+        }
+
+        // Get paginated results
+        $ndas = $query->orderBy('created_at', 'desc')->paginate(20);
+
+        return view('admin.index', compact('ndas'));
     }
 
     public function showCreateForm()
@@ -33,35 +55,48 @@ class AdminController extends Controller
             'end_date' => 'required|date|after:start_date',
             'nda_signature_date' => 'required|date',
             'description' => 'nullable|string',
-            'file' => 'required|mimes:pdf|max:2048',
+            'files.*' => 'required|mimes:pdf|max:2048',
+            'members.*.name' => 'required|string|max:255',
         ], [
             'project_name.required' => 'Nama proyek wajib diisi.',
             'start_date.required' => 'Tanggal mulai proyek wajib diisi.',
             'end_date.required' => 'Tanggal selesai proyek wajib diisi.',
             'end_date.after' => 'Tanggal selesai proyek harus setelah tanggal mulai.',
             'nda_signature_date.required' => 'Tanggal tanda tangan NDA wajib diisi.',
-            'file.required' => 'File PDF wajib diunggah.',
-            'file.mimes' => 'File harus berformat PDF.',
+            'files.*.required' => 'File PDF wajib diunggah.',
+            'files.*.mimes' => 'File harus berformat PDF.',
+            'members.*.name.required' => 'Nama anggota wajib diisi.',
         ]);
 
         if (!Auth::check()) {
             return redirect()->route('login')->with('error', 'Anda harus login terlebih dahulu.');
         }
 
-        $file = $request->file('file');
-        $fileName = time() . '_' . Str::random(10) . '.pdf';
-        $filePath = $file->storeAs('ndas', $fileName, 'public');
-
-        Nda::create([
+        $nda = Nda::create([
             'project_name' => $request->project_name,
             'start_date' => $request->start_date,
             'end_date' => $request->end_date,
             'nda_signature_date' => $request->nda_signature_date,
             'description' => $request->description,
-            'file_path' => $filePath,
             'token' => Str::uuid(),
             'user_id' => Auth::id(),
         ]);
+
+        if ($request->has('members')) {
+            $membersArray = array_column($request->members, 'name');
+            $nda->update(['members' => json_encode($membersArray)]);
+        }
+
+        if ($request->hasFile('files')) {
+            foreach ($request->file('files') as $file) {
+                $fileName = time() . '_' . Str::random(10) . '.pdf';
+                $filePath = $file->storeAs('ndas', $fileName, 'public');
+                NdaFile::create([
+                    'nda_id' => $nda->id,
+                    'file_path' => $filePath,
+                ]);
+            }
+        }
 
         return redirect()->route('admin.dashboard')->with('success', 'Proyek NDA berhasil ditambahkan.');
     }
@@ -79,14 +114,17 @@ class AdminController extends Controller
             'end_date' => 'required|date|after:start_date',
             'nda_signature_date' => 'required|date',
             'description' => 'nullable|string',
-            'file' => 'nullable|mimes:pdf|max:2048',
+            'files.*' => 'nullable|mimes:pdf|max:2048',
+            'members.*.name' => 'required|string|max:255',
+            'delete_files.*' => 'boolean', // Validasi untuk checkbox penghapusan file
         ], [
             'project_name.required' => 'Nama proyek wajib diisi.',
             'start_date.required' => 'Tanggal mulai proyek wajib diisi.',
             'end_date.required' => 'Tanggal selesai proyek wajib diisi.',
             'end_date.after' => 'Tanggal selesai proyek harus setelah tanggal mulai.',
             'nda_signature_date.required' => 'Tanggal tanda tangan NDA wajib diisi.',
-            'file.mimes' => 'File harus berformat PDF.',
+            'files.*.mimes' => 'File harus berformat PDF.',
+            'members.*.name.required' => 'Nama anggota wajib diisi.',
         ]);
 
         $data = [
@@ -97,15 +135,34 @@ class AdminController extends Controller
             'description' => $request->description,
         ];
 
-        if ($request->hasFile('file')) {
-            Storage::disk('public')->delete($nda->file_path);
-            $file = $request->file('file');
-            $fileName = time() . '_' . Str::random(10) . '.pdf';
-            $data['file_path'] = $file->storeAs('ndas', $fileName, 'public');
-            $data['token'] = Str::uuid();
+        $nda->update($data);
+
+        if ($request->has('members')) {
+            $membersArray = array_column($request->members, 'name');
+            $nda->update(['members' => json_encode($membersArray)]);
         }
 
-        $nda->update($data);
+        // Handle file uploads and deletions
+        if ($request->has('delete_files')) {
+            foreach ($request->delete_files as $index => $shouldDelete) {
+                if ($shouldDelete && isset($nda->files[$index])) {
+                    Storage::disk('public')->delete($nda->files[$index]->file_path);
+                    $nda->files[$index]->delete();
+                }
+            }
+        }
+
+        if ($request->hasFile('files')) {
+            $existingFileCount = $nda->files->count();
+            foreach ($request->file('files') as $index => $file) {
+                $fileName = time() . '_' . Str::random(10) . '.pdf';
+                $filePath = $file->storeAs('ndas', $fileName, 'public');
+                NdaFile::create([
+                    'nda_id' => $nda->id,
+                    'file_path' => $filePath,
+                ]);
+            }
+        }
 
         return redirect()->route('admin.dashboard')->with('success', 'Proyek NDA berhasil diperbarui.');
     }
@@ -117,95 +174,12 @@ class AdminController extends Controller
 
     public function deleteNda(Nda $nda)
     {
-        Storage::disk('public')->delete($nda->file_path);
+        foreach ($nda->files as $file) {
+            Storage::disk('public')->delete($file->file_path);
+            $file->delete();
+        }
         $nda->delete();
         return redirect()->route('admin.dashboard')->with('success', 'Proyek NDA berhasil dihapus.');
-    }
-
-    public function approveUser(User $user)
-    {
-        $user->update(['status' => 'approved']);
-        return redirect()->route('admin.dashboard')->with('success', 'User berhasil disetujui.');
-    }
-
-    public function rejectUser(User $user)
-    {
-        $user->update(['status' => 'rejected']);
-        return redirect()->route('admin.dashboard')->with('success', 'User ditolak.');
-    }
-
-    public function disableUser(User $user)
-    {
-        if ($user->role === 'admin') {
-            return redirect()->route('admin.dashboard')->with('error', 'Admin tidak dapat dinonaktifkan.');
-        }
-        $user->update(['status' => 'disabled']);
-        return redirect()->route('admin.dashboard')->with('success', 'User berhasil dinonaktifkan.');
-    }
-
-    public function enableUser(User $user)
-    {
-        if ($user->role === 'admin') {
-            return redirect()->route('admin.dashboard')->with('error', 'Admin tidak dapat diaktifkan kembali karena tidak dinonaktifkan.');
-        }
-        $user->update(['status' => 'approved']);
-        return redirect()->route('admin.dashboard')->with('success', 'User berhasil diaktifkan.');
-    }
-
-    public function deleteUser(User $user)
-    {
-        if ($user->role === 'admin') {
-            return redirect()->route('admin.dashboard')->with('error', 'Admin tidak dapat dihapus.');
-        }
-        if (!in_array($user->status, ['rejected', 'disabled'])) {
-            return redirect()->route('admin.dashboard')->with('error', 'Hanya user dengan status rejected atau disabled yang dapat dihapus.');
-        }
-        $user->delete();
-        return redirect()->route('admin.dashboard')->with('success', 'User berhasil dihapus.');
-    }
-
-    public function bulkDeleteUsers(Request $request)
-    {
-        $request->validate([
-            'user_ids' => 'required|array',
-            'user_ids.*' => 'exists:users,id',
-        ], [
-            'user_ids.required' => 'Pilih setidaknya satu pengguna untuk dihapus.',
-            'user_ids.*.exists' => 'Pengguna yang dipilih tidak valid.',
-        ]);
-
-        try {
-            $users = User::whereIn('id', $request->user_ids)->get();
-            $errors = [];
-            $deletedCount = 0;
-
-            foreach ($users as $user) {
-                if ($user->role === 'admin') {
-                    $errors[] = "Pengguna {$user->name} tidak dapat dihapus karena merupakan admin.";
-                    continue;
-                }
-                if (!in_array($user->status, ['rejected', 'disabled'])) {
-                    $errors[] = "Pengguna {$user->name} tidak dapat dihapus karena statusnya bukan rejected atau disabled.";
-                    continue;
-                }
-                $user->delete();
-                $deletedCount++;
-            }
-
-            if ($deletedCount > 0) {
-                $message = "$deletedCount pengguna berhasil dihapus.";
-                if (!empty($errors)) {
-                    $message .= ' Namun, beberapa pengguna gagal dihapus.';
-                    return redirect()->route('admin.dashboard')->with('error', $message)->withErrors($errors);
-                }
-                return redirect()->route('admin.dashboard')->with('success', $message);
-            }
-
-            return redirect()->route('admin.dashboard')->with('error', 'Tidak ada pengguna yang berhasil dihapus.')->withErrors($errors);
-        } catch (\Exception $e) {
-            Log::error('Error during bulk delete users: ' . $e->getMessage());
-            return redirect()->route('admin.dashboard')->with('error', 'Terjadi kesalahan saat menghapus pengguna.');
-        }
     }
 
     public function bulkDeleteNdas(Request $request)
@@ -223,7 +197,10 @@ class AdminController extends Controller
             $deletedCount = 0;
 
             foreach ($ndas as $nda) {
-                Storage::disk('public')->delete($nda->file_path);
+                foreach ($nda->files as $file) {
+                    Storage::disk('public')->delete($file->file_path);
+                    $file->delete();
+                }
                 $nda->delete();
                 $deletedCount++;
             }
@@ -237,5 +214,22 @@ class AdminController extends Controller
             Log::error('Error during bulk delete NDAs: ' . $e->getMessage());
             return redirect()->route('admin.dashboard')->with('error', 'Terjadi kesalahan saat menghapus proyek NDA.');
         }
+    }
+
+    public function downloadFile(Nda $nda, NdaFile $file)
+    {
+        // Pastikan file milik NDA ini (security check)
+        if ($file->nda_id !== $nda->id) {
+            abort(404);
+        }
+
+        $filePath = storage_path('app/public/' . $file->file_path);
+        if (!file_exists($filePath)) {
+            return redirect()->back()->with('error', 'File tidak ditemukan.');
+        }
+
+        return response()->download($filePath, basename($file->file_path), [
+            'Content-Type' => 'application/pdf',
+        ]);
     }
 }

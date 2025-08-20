@@ -21,15 +21,7 @@ class AuthController extends Controller
 
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
-
-            if (Auth::user()->role === 'admin') {
-                return redirect()->route('admin.dashboard');
-            } elseif (Auth::user()->role === 'user' && Auth::user()->status === 'approved') {
-                return redirect()->route('user.dashboard');
-            } else {
-                Auth::logout();
-                return redirect()->route('login')->with('error', 'Akun Anda belum disetujui atau dinonaktifkan.');
-            }
+            return redirect()->route('admin.dashboard')->with('success', 'Berhasil login! Anda sekarang bisa mengakses dashboard.');
         }
 
         return back()->withErrors([
@@ -54,13 +46,11 @@ class AuthController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => bcrypt($request->password),
-            'role' => 'user',
-            'status' => 'pending',
         ]);
 
         Auth::login($user);
 
-        return redirect()->route('user.dashboard');
+        return redirect()->route('admin.dashboard')->with('success', 'Registrasi berhasil! Anda sekarang bisa mengakses dashboard.');
     }
 
     public function logout(Request $request)
@@ -71,3 +61,4 @@ class AuthController extends Controller
         return redirect()->route('login');
     }
 }
+
