@@ -55,7 +55,7 @@ class AdminController extends Controller
             'end_date' => 'required|date|after:start_date',
             'nda_signature_date' => 'required|date',
             'description' => 'nullable|string',
-            'files.*' => 'required|mimes:pdf|max:2048',
+            'files.*' => 'required|file|mimetypes:application/pdf|max:2048',
             'members.*.name' => 'required|string|max:255',
         ], [
             'project_name.required' => 'Nama proyek wajib diisi.',
@@ -64,7 +64,7 @@ class AdminController extends Controller
             'end_date.after' => 'Tanggal selesai proyek harus setelah tanggal mulai.',
             'nda_signature_date.required' => 'Tanggal tanda tangan NDA wajib diisi.',
             'files.*.required' => 'File PDF wajib diunggah.',
-            'files.*.mimes' => 'File harus berformat PDF.',
+            'files.*.mimetypes' => 'File harus berformat PDF yang valid.',
             'members.*.name.required' => 'Nama anggota wajib diisi.',
         ]);
 
