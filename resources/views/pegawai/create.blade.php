@@ -4,18 +4,16 @@
 
 @section('content')
     <div class="container-fluid py-5">
-        <!-- Header -->
         <div class="d-flex justify-content-between align-items-center mb-5">
             <div>
                 <h1 class="h2 fw-bold text-gray-900 mb-2">Buat Proyek Baru</h1>
                 <p class="text-muted mb-0">Tambahkan proyek NDA baru ke portofolio Anda</p>
             </div>
-            <a href="{{ route('admin.dashboard') }}" class="btn btn-outline-secondary btn-sm">
+            <a href="{{ route('pegawai.dashboard') }}" class="btn btn-outline-secondary btn-sm">
                 <i class="bi bi-arrow-left me-2"></i>Kembali ke Dashboard
             </a>
         </div>
 
-        <!-- Form Card -->
         <div class="card border-0 shadow-sm rounded-3">
             <div class="card-header bg-white p-4 border-bottom">
                 <div class="d-flex align-items-center gap-3">
@@ -29,7 +27,8 @@
                 </div>
             </div>
             <div class="card-body p-4 p-lg-5">
-                <form method="POST" action="{{ route('admin.nda.store') }}" enctype="multipart/form-data" id="projectForm">
+                <form method="POST" action="{{ route('pegawai.nda.store') }}" enctype="multipart/form-data"
+                    id="projectForm">
                     @csrf
 
                     <!-- Basic Information -->
@@ -43,15 +42,12 @@
                                 <p class="text-muted small mb-0">Masukkan nama dan deskripsi proyek</p>
                             </div>
                         </div>
-
                         <div class="row g-4">
                             <div class="col-12">
                                 <div class="form-group">
                                     <label for="project_name" class="form-label fw-medium required">Nama Proyek</label>
                                     <div class="input-group">
-                                        <span class="input-group-text">
-                                            <i class="bi bi-folder"></i>
-                                        </span>
+                                        <span class="input-group-text"><i class="bi bi-folder"></i></span>
                                         <input type="text" name="project_name" id="project_name"
                                             class="form-control rounded-end @error('project_name') is-invalid @enderror"
                                             value="{{ old('project_name') }}"
@@ -61,27 +57,21 @@
                                     @error('project_name')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @else
-                                        <div class="form-text small">
-                                            Masukkan nama proyek yang jelas dan deskriptif (maksimal 255 karakter)
-                                        </div>
+                                        <div class="form-text small">Masukkan nama proyek yang jelas dan deskriptif (maksimal
+                                            255 karakter)</div>
                                     @enderror
                                 </div>
                             </div>
-
                             <div class="col-12">
                                 <div class="form-group">
                                     <label for="description" class="form-label fw-medium">Deskripsi Proyek</label>
-                                    <div class="input-wrapper position-relative">
-                                        <textarea name="description" id="description" class="form-control rounded-2 @error('description') is-invalid @enderror"
-                                            rows="5" placeholder="Deskripsikan tujuan, lingkup, dan detail penting lainnya dari proyek ini..."
-                                            maxlength="1000">{{ old('description') }}</textarea>
-                                    </div>
+                                    <textarea name="description" id="description" class="form-control rounded-2 @error('description') is-invalid @enderror"
+                                        rows="5" placeholder="Deskripsikan tujuan, lingkup, dan detail penting lainnya dari proyek ini..."
+                                        maxlength="1000">{{ old('description') }}</textarea>
                                     @error('description')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @else
-                                        <div class="form-text small">
-                                            <span id="descriptionCount">0</span>/1000 karakter
-                                        </div>
+                                        <div class="form-text small"><span id="descriptionCount">0</span>/1000 karakter</div>
                                     @enderror
                                 </div>
                             </div>
@@ -99,15 +89,12 @@
                                 <p class="text-muted small mb-0">Tentukan waktu pelaksanaan proyek</p>
                             </div>
                         </div>
-
                         <div class="row g-4">
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label for="start_date" class="form-label fw-medium required">Tanggal Mulai</label>
                                     <div class="input-group">
-                                        <span class="input-group-text">
-                                            <i class="bi bi-calendar-event"></i>
-                                        </span>
+                                        <span class="input-group-text"><i class="bi bi-calendar-event"></i></span>
                                         <input type="date" name="start_date" id="start_date"
                                             class="form-control rounded-end @error('start_date') is-invalid @enderror"
                                             value="{{ old('start_date') }}" required>
@@ -117,14 +104,11 @@
                                     @enderror
                                 </div>
                             </div>
-
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label for="end_date" class="form-label fw-medium required">Tanggal Berakhir</label>
                                     <div class="input-group">
-                                        <span class="input-group-text">
-                                            <i class="bi bi-calendar-check"></i>
-                                        </span>
+                                        <span class="input-group-text"><i class="bi bi-calendar-check"></i></span>
                                         <input type="date" name="end_date" id="end_date"
                                             class="form-control rounded-end @error('end_date') is-invalid @enderror"
                                             value="{{ old('end_date') }}" required>
@@ -134,7 +118,6 @@
                                     @enderror
                                 </div>
                             </div>
-
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label class="form-label fw-medium">Durasi Proyek</label>
@@ -144,8 +127,8 @@
                                             <span>Akan dihitung otomatis</span>
                                         </div>
                                     </div>
-                                    <div class="form-text small">Durasi akan dihitung berdasarkan tanggal mulai dan
-                                        berakhir</div>
+                                    <div class="form-text small">Durasi akan dihitung berdasarkan tanggal mulai dan berakhir
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -162,16 +145,13 @@
                                 <p class="text-muted small mb-0">Detail terkait Non-Disclosure Agreement</p>
                             </div>
                         </div>
-
                         <div class="row g-4">
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="nda_signature_date" class="form-label fw-medium required">Tanggal
                                         Penandatanganan NDA</label>
                                     <div class="input-group">
-                                        <span class="input-group-text">
-                                            <i class="bi bi-pen"></i>
-                                        </span>
+                                        <span class="input-group-text"><i class="bi bi-pen"></i></span>
                                         <input type="date" name="nda_signature_date" id="nda_signature_date"
                                             class="form-control rounded-end @error('nda_signature_date') is-invalid @enderror"
                                             value="{{ old('nda_signature_date') }}" required>
@@ -197,7 +177,7 @@
                         </div>
                     </div>
 
-                    <!-- Team Members -->
+                    <!-- Section Anggota + Berkas Terintegrasi -->
                     <div class="form-section mb-5">
                         <div class="section-header d-flex align-items-center justify-content-between gap-3 mb-4">
                             <div class="d-flex align-items-center gap-3">
@@ -205,8 +185,9 @@
                                     <i class="bi bi-people text-purple fs-5"></i>
                                 </div>
                                 <div>
-                                    <h6 class="fw-semibold mb-1">Anggota Tim</h6>
-                                    <p class="text-muted small mb-0">Tambahkan anggota yang akan terlibat dalam proyek</p>
+                                    <h6 class="fw-semibold mb-1">Anggota Tim & Berkas NDA</h6>
+                                    <p class="text-muted small mb-0">Tambahkan anggota tim, setiap anggota wajib punya 1
+                                        berkas NDA</p>
                                 </div>
                             </div>
                             <button type="button" class="btn btn-outline-primary btn-sm rounded-2" id="add-member">
@@ -215,20 +196,27 @@
                         </div>
 
                         <div id="member-container">
+                            <!-- Row awal -->
                             <div class="member-item mb-3">
                                 <div class="member-card border rounded-2 p-3">
-                                    <div class="d-flex align-items-center gap-3">
+                                    <div class="d-flex align-items-start gap-3">
                                         <div
-                                            class="member-avatar bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center">
+                                            class="member-avatar bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center mt-1">
                                             <i class="bi bi-person"></i>
                                         </div>
                                         <div class="flex-grow-1">
                                             <input type="text" name="members[0][name]"
-                                                class="form-control member-input rounded-2"
+                                                class="form-control member-input rounded-2 mb-2"
                                                 placeholder="Nama lengkap anggota tim" maxlength="100" required>
+                                            <input type="file" name="files[0]" class="form-control file-input"
+                                                accept="application/pdf" required>
+                                            @error('files.0')
+                                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                                            @enderror
                                         </div>
                                         <button type="button"
-                                            class="btn btn-outline-danger btn-sm remove-member d-none rounded-2">
+                                            class="btn btn-outline-danger btn-sm remove-member rounded-2 d-none"
+                                            style="margin-top: 1rem;">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </div>
@@ -237,63 +225,8 @@
                         </div>
                         <div class="form-text small">
                             <i class="bi bi-lightbulb me-1"></i>
-                            Minimal satu anggota tim diperlukan. Anda dapat menambahkan lebih banyak anggota sesuai
-                            kebutuhan.
+                            Minimal 1 anggota dengan 1 berkas PDF. Setiap anggota wajib punya berkas NDA.
                         </div>
-                    </div>
-
-                    <!-- Files -->
-                    <div class="form-section mb-5">
-                        <div class="section-header d-flex align-items-center justify-content-between gap-3 mb-4">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="section-icon bg-danger bg-opacity-10 rounded-2">
-                                    <i class="bi bi-file-earmark-pdf text-danger fs-5"></i>
-                                </div>
-                                <div>
-                                    <h6 class="fw-semibold mb-1">Dokumen NDA</h6>
-                                    <p class="text-muted small mb-0">Unggah dokumen Non-Disclosure Agreement</p>
-                                </div>
-                            </div>
-                            <button type="button" class="btn btn-outline-primary btn-sm rounded-2" id="add-file">
-                                <i class="bi bi-file-plus me-1"></i>Tambah File
-                            </button>
-                        </div>
-
-                        <div id="file-container">
-                            <div class="file-item mb-3">
-                                <div class="file-upload-card border border-2 border-dashed rounded-2 p-3">
-                                    <div class="d-flex align-items-center gap-3">
-                                        <input type="file" name="files[0]" class="form-control file-input d-none"
-                                            accept="application/pdf" required id="file-0">
-                                        <label for="file-0"
-                                            class="file-upload-label d-flex align-items-center gap-3 flex-grow-1 mb-0">
-                                            <div
-                                                class="file-upload-icon bg-white rounded-2 shadow-sm d-flex align-items-center justify-content-center">
-                                                <i class="bi bi-cloud-upload"></i>
-                                            </div>
-                                            <div class="file-upload-text">
-                                                <span class="file-name fw-medium">Pilih file PDF</span>
-                                                <small class="text-muted d-block">atau seret dan letakkan file di
-                                                    sini</small>
-                                            </div>
-                                        </label>
-                                        <button type="button"
-                                            class="btn btn-outline-danger btn-sm remove-file d-none rounded-2">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </div>
-                                    <div class="file-requirements mt-2 pt-2 border-top small">
-                                        <small class="text-muted">
-                                            <i class="bi bi-info-circle me-1"></i>
-                                            Hanya file PDF yang diizinkan. Maksimal 10MB per file.
-                                        </small>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        @error('files.*')
-                            <div class="text-danger small mt-2">{{ $message }}</div>
-                        @enderror
                     </div>
 
                     <!-- Actions -->
@@ -302,7 +235,7 @@
                             <button type="submit" class="btn btn-primary btn-modern rounded-2" id="submitBtn">
                                 <i class="bi bi-check-lg me-2"></i>Buat Proyek
                             </button>
-                            <a href="{{ route('admin.dashboard') }}" class="btn btn-outline-secondary rounded-2">
+                            <a href="{{ route('pegawai.dashboard') }}" class="btn btn-outline-secondary rounded-2">
                                 <i class="bi bi-x-lg me-2"></i>Batal
                             </a>
                         </div>
@@ -796,7 +729,6 @@
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 let memberCount = 1;
-                let fileCount = 1;
 
                 // Character counter for description
                 const descriptionTextarea = document.getElementById('description');
@@ -815,17 +747,18 @@
                     newItem.className = 'member-item mb-3';
                     newItem.innerHTML = `
                         <div class="member-card border rounded-2 p-3">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="member-avatar bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center">
+                            <div class="d-flex align-items-start gap-3">
+                                <div class="member-avatar bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center mt-1">
                                     <i class="bi bi-person"></i>
                                 </div>
                                 <div class="flex-grow-1">
-                                    <input type="text" name="members[${memberCount}][name]"
-                                        class="form-control member-input rounded-2"
-                                        placeholder="Nama lengkap anggota tim"
-                                        maxlength="100" required>
+                                    <input type="text" name="members[${memberCount}][name]" class="form-control member-input rounded-2 mb-2" placeholder="Nama lengkap anggota tim" maxlength="100" required>
+                                    <input type="file" name="files[${memberCount}]" class="form-control file-input" accept="application/pdf" required>
+                                    @error('files.${memberCount}')
+                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                    @enderror
                                 </div>
-                                <button type="button" class="btn btn-outline-danger btn-sm remove-member rounded-2">
+                                <button type="button" class="btn btn-outline-danger btn-sm remove-member rounded-2 d-none" style="margin-top: 1rem;">
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </div>
@@ -834,51 +767,12 @@
                     container.appendChild(newItem);
                     memberCount++;
                     updateRemoveButtons();
-                    newItem.querySelector('.member-input').focus();
-                });
-
-                // Add File
-                document.getElementById('add-file').addEventListener('click', function() {
-                    const container = document.getElementById('file-container');
-                    const newItem = document.createElement('div');
-                    newItem.className = 'file-item mb-3';
-                    newItem.innerHTML = `
-                        <div class="file-upload-card border border-2 border-dashed rounded-2 p-3">
-                            <div class="d-flex align-items-center gap-3">
-                                <input type="file" name="files[${fileCount}]" class="form-control file-input d-none"
-                                    accept="application/pdf" required id="file-${fileCount}">
-                                <label for="file-${fileCount}" class="file-upload-label d-flex align-items-center gap-3 flex-grow-1 mb-0">
-                                    <div class="file-upload-icon bg-white rounded-2 shadow-sm d-flex align-items-center justify-content-center">
-                                        <i class="bi bi-cloud-upload"></i>
-                                    </div>
-                                    <div class="file-upload-text">
-                                        <span class="file-name fw-medium">Pilih file PDF</span>
-                                        <small class="text-muted d-block">atau seret dan letakkan file di sini</small>
-                                    </div>
-                                </label>
-                                <button type="button" class="btn btn-outline-danger btn-sm remove-file rounded-2">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </div>
-                            <div class="file-requirements mt-2 pt-2 border-top small">
-                                <small class="text-muted">
-                                    <i class="bi bi-info-circle me-1"></i>
-                                    Hanya file PDF yang diizinkan. Maksimal 10MB per file.
-                                </small>
-                            </div>
-                        </div>
-                    `;
-                    container.appendChild(newItem);
-                    fileCount++;
-                    updateRemoveButtons();
                     attachFileValidation(newItem.querySelector('.file-input'));
                 });
 
                 // Update Remove Buttons
                 function updateRemoveButtons() {
                     const memberItems = document.querySelectorAll('.member-item');
-                    const fileItems = document.querySelectorAll('.file-item');
-
                     memberItems.forEach((item, index) => {
                         const removeBtn = item.querySelector('.remove-member');
                         if (memberItems.length > 1) {
@@ -886,33 +780,7 @@
                             removeBtn.onclick = function() {
                                 Swal.fire({
                                     title: 'Hapus Anggota',
-                                    text: 'Apakah Anda yakin ingin menghapus anggota ini?',
-                                    icon: 'question',
-                                    showCancelButton: true,
-                                    confirmButtonColor: '#ef4444',
-                                    cancelButtonColor: '#6b7280',
-                                    confirmButtonText: 'Hapus',
-                                    cancelButtonText: 'Batal'
-                                }).then((result) => {
-                                    if (result.isConfirmed) {
-                                        item.remove();
-                                        updateRemoveButtons();
-                                    }
-                                });
-                            };
-                        } else {
-                            removeBtn.classList.add('d-none');
-                        }
-                    });
-
-                    fileItems.forEach((item, index) => {
-                        const removeBtn = item.querySelector('.remove-file');
-                        if (fileItems.length > 1) {
-                            removeBtn.classList.remove('d-none');
-                            removeBtn.onclick = function() {
-                                Swal.fire({
-                                    title: 'Hapus File',
-                                    text: 'Apakah Anda yakin ingin menghapus file ini?',
+                                    text: 'Apakah Anda yakin ingin menghapus anggota ini dan berkasnya?',
                                     icon: 'question',
                                     showCancelButton: true,
                                     confirmButtonColor: '#ef4444',
@@ -1030,9 +898,6 @@
                     input.addEventListener('change', function() {
                         if (this.files.length > 0) {
                             const file = this.files[0];
-                            const label = this.nextElementSibling;
-                            const fileNameSpan = label.querySelector('.file-name');
-
                             if (file.type !== 'application/pdf') {
                                 Swal.fire({
                                     icon: 'error',
@@ -1042,157 +907,54 @@
                                     confirmButtonColor: '#6366f1'
                                 });
                                 this.value = '';
-                                fileNameSpan.textContent = 'Pilih file PDF';
                                 return;
                             }
 
-                            const maxSize = 10 * 1024 * 1024;
+                            const maxSize = 2 * 1024 * 1024; // PERBAIKAN: Max 2MB per file
                             if (file.size > maxSize) {
                                 Swal.fire({
                                     icon: 'error',
                                     title: 'File Terlalu Besar',
-                                    text: 'Ukuran file maksimal 10MB.',
+                                    text: 'Ukuran file maksimal 2MB.',
                                     confirmButtonText: 'Mengerti',
                                     confirmButtonColor: '#6366f1'
                                 });
                                 this.value = '';
-                                fileNameSpan.textContent = 'Pilih file PDF';
                                 return;
                             }
-
-                            fileNameSpan.textContent = file.name;
-                            const uploadIcon = label.querySelector('.file-upload-icon i');
-                            uploadIcon.className = 'bi bi-check-circle-fill text-success';
                         }
                     });
-
-                    const uploadCard = input.closest('.file-upload-card');
-                    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-                        uploadCard.addEventListener(eventName, preventDefaults, false);
-                    });
-
-                    function preventDefaults(e) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                    }
-
-                    ['dragenter', 'dragover'].forEach(eventName => {
-                        uploadCard.addEventListener(eventName, highlight, false);
-                    });
-
-                    ['dragleave', 'drop'].forEach(eventName => {
-                        uploadCard.addEventListener(eventName, unhighlight, false);
-                    });
-
-                    function highlight() {
-                        uploadCard.style.borderColor = 'var(--primary)';
-                        uploadCard.style.backgroundColor = 'rgba(99, 102, 241, 0.05)';
-                    }
-
-                    function unhighlight() {
-                        uploadCard.style.borderColor = 'var(--gray-300)';
-                        uploadCard.style.backgroundColor = 'var(--gray-50)';
-                    }
-
-                    uploadCard.addEventListener('drop', handleDrop, false);
-
-                    function handleDrop(e) {
-                        const dt = e.dataTransfer;
-                        const files = dt.files;
-                        if (files.length > 0) {
-                            input.files = files;
-                            input.dispatchEvent(new Event('change'));
-                        }
-                    }
                 }
 
                 // Form Validation (diperkuat untuk dynamic fields)
                 function validateForm() {
                     const form = document.getElementById('projectForm');
-                    // Ambil semua input required, termasuk dynamic
                     const inputs = form.querySelectorAll('input[required], textarea[required]');
                     let isValid = true;
-                    let firstInvalidInput = null;
 
                     inputs.forEach(input => {
                         if (!input.value.trim()) {
                             input.classList.add('is-invalid');
-                            if (!firstInvalidInput) {
-                                firstInvalidInput = input;
-                            }
                             isValid = false;
                         } else {
                             input.classList.remove('is-invalid');
                         }
                     });
 
-                    // Check dynamic members
-                    const memberInputs = form.querySelectorAll('input[name^="members["]');
-                    memberInputs.forEach(input => {
-                        if (!input.value.trim()) {
-                            input.classList.add('is-invalid');
-                            if (!firstInvalidInput) {
-                                firstInvalidInput = input;
-                            }
-                            isValid = false;
-                        } else {
-                            input.classList.remove('is-invalid');
-                        }
-                    });
-
-                    // Check dynamic files (minimal satu file dipilih)
-                    const fileInputs = form.querySelectorAll('input[name^="files["]');
-                    let hasFile = false;
-                    fileInputs.forEach(input => {
-                        if (input.files.length > 0) {
-                            hasFile = true;
-                        }
-                    });
-                    if (!hasFile) {
-                        // Tambah invalid ke file container pertama
-                        const firstFileCard = document.querySelector('.file-upload-card');
-                        firstFileCard.classList.add('is-invalid');
-                        if (!firstInvalidInput) {
-                            firstInvalidInput = fileInputs[0];
-                        }
-                        isValid = false;
-                    } else {
-                        document.querySelectorAll('.file-upload-card').forEach(card => card.classList.remove(
-                            'is-invalid'));
-                    }
-
-                    // Check start_date dan end_date
-                    const startDate = document.getElementById('start_date').value;
-                    const endDate = document.getElementById('end_date').value;
-                    if (startDate && endDate) {
-                        const start = new Date(startDate);
-                        const end = new Date(endDate);
-                        if (end <= start) {
-                            document.getElementById('end_date').classList.add('is-invalid');
-                            if (!firstInvalidInput) {
-                                firstInvalidInput = document.getElementById('end_date');
-                            }
+                    // PERBAIKAN: Validasi setiap row anggota punya nama + file
+                    const memberRows = document.querySelectorAll('.member-item');
+                    memberRows.forEach(row => {
+                        const nameInput = row.querySelector('input[name*="members"][name*="name"]');
+                        const fileInput = row.querySelector('input[name*="files"]');
+                        if (!nameInput.value.trim()) {
+                            nameInput.classList.add('is-invalid');
                             isValid = false;
                         }
-                    }
-
-                    // Check spesifik untuk nda_signature_date
-                    const ndaDate = document.getElementById('nda_signature_date').value;
-                    if (!ndaDate) {
-                        document.getElementById('nda_signature_date').classList.add('is-invalid');
-                        if (!firstInvalidInput) {
-                            firstInvalidInput = document.getElementById('nda_signature_date');
+                        if (!fileInput.files.length) {
+                            fileInput.classList.add('is-invalid');
+                            isValid = false;
                         }
-                        isValid = false;
-                    }
-
-                    if (!isValid && firstInvalidInput) {
-                        firstInvalidInput.focus();
-                        firstInvalidInput.scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'center'
-                        });
-                    }
+                    });
 
                     return isValid;
                 }
@@ -1251,8 +1013,7 @@
 
                 // Initial setup
                 updateRemoveButtons();
-                attachFileValidation(document.querySelector('.file-input'));
-                updateNDAStatus();
+                document.querySelectorAll('.file-input').forEach(input => attachFileValidation(input));
 
                 // Real-time validation
                 document.querySelectorAll('input[required], textarea[required]').forEach(input => {

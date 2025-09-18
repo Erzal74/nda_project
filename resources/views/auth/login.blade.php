@@ -18,10 +18,10 @@
         @csrf
 
         <div class="form-group">
-            <label for="email" class="form-label">Alamat Email</label>
-            <input type="email" id="email" name="email" class="form-control @error('email') is-invalid @enderror"
-                value="{{ old('email') }}" placeholder="Masukkan email" required autofocus>
-            @error('email')
+            <label for="nip" class="form-label">NIP (8 Digit)</label>
+            <input type="text" id="nip" name="nip" class="form-control @error('nip') is-invalid @enderror"
+                value="{{ old('nip') }}" placeholder="Masukkan NIP" required autofocus maxlength="8">
+            @error('nip')
                 <div class="error-message">{{ $message }}</div>
             @enderror
         </div>
@@ -53,12 +53,6 @@
             Masuk
         </button>
 
-        <div class="divider">
-            <span>Belum punya akun?</span>
-        </div>
-
-        <a href="{{ route('register') }}" class="btn-outline">
-            Daftar
-        </a>
+        <!-- PERBAIKAN: Hapus link register -->
     </form>
 @endsection

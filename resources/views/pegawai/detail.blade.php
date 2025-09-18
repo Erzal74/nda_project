@@ -11,17 +11,25 @@
                 <p class="text-muted mb-0">Informasi lengkap dan terperinci tentang proyek</p>
             </div>
             <div class="d-flex gap-2">
-                <a href="{{ route('admin.nda.edit', $nda) }}" class="btn btn-warning btn-modern rounded-2">
+                <a href="{{ route('pegawai.nda.edit', $nda) }}" class="btn btn-warning btn-modern rounded-2">
                     <i class="bi bi-pencil-square me-2"></i>Edit Proyek
                 </a>
-                <a href="{{ route('admin.dashboard') }}" class="btn btn-outline-secondary btn-sm">
+                <form action="{{ route('pegawai.nda.delete', $nda) }}" method="POST" class="d-inline delete-form">
+                    @csrf
+                    @method('DELETE')
+                    <button type="button" class="btn btn-danger btn-modern rounded-2 delete-single-btn"
+                        data-project-name="{{ $nda->project_name }}">
+                        <i class="bi bi-trash me-2"></i>Hapus Proyek
+                    </button>
+                </form>
+                <a href="{{ route('pegawai.dashboard') }}" class="btn btn-outline-secondary btn-modern rounded-2">
                     <i class="bi bi-arrow-left me-2"></i>Kembali ke Dashboard
                 </a>
             </div>
         </div>
 
         <!-- Project Overview Card -->
-        <div class="card border-0 shadow-sm rounded-3 mb-4">
+        <div class="card border-0 shadow-sm rounded-3 mb-5">
             <div class="card-header bg-primary bg-gradient text-white p-4 border-bottom-0">
                 <div class="d-flex align-items-center gap-3">
                     <div class="project-icon bg-white bg-opacity-25 rounded-circle p-3">
@@ -32,12 +40,12 @@
                         <div class="d-flex align-items-center gap-3 opacity-90">
                             <span class="badge bg-white bg-opacity-25 text-white px-3 py-2">
                                 <i class="bi bi-calendar-event me-1"></i>
-                                {{ $nda->start_date ? $nda->start_date->format('d M Y') : 'Belum ditentukan' }}
+                                {{ $nda->start_date ? $nda->start_date->translatedFormat('d M Y') : 'Belum ditentukan' }}
                             </span>
                             @if ($nda->end_date)
                                 <span class="badge bg-white bg-opacity-25 text-white px-3 py-2">
                                     <i class="bi bi-calendar-check me-1"></i>
-                                    {{ $nda->end_date->format('d M Y') }}
+                                    {{ $nda->end_date->translatedFormat('d M Y') }}
                                 </span>
                             @endif
                         </div>
@@ -93,7 +101,7 @@
                                         @if ($nda->start_date)
                                             <div class="d-flex align-items-center gap-2">
                                                 <i class="bi bi-calendar-event text-success"></i>
-                                                <span>{{ $nda->start_date->format('d F Y') }}</span>
+                                                <span>{{ $nda->start_date->translatedFormat('d F Y') }}</span>
                                             </div>
                                         @else
                                             <span class="text-muted">Belum ditentukan</span>
@@ -109,7 +117,7 @@
                                         @if ($nda->end_date)
                                             <div class="d-flex align-items-center gap-2">
                                                 <i class="bi bi-calendar-check text-danger"></i>
-                                                <span>{{ $nda->end_date->format('d F Y') }}</span>
+                                                <span>{{ $nda->end_date->translatedFormat('d F Y') }}</span>
                                             </div>
                                         @else
                                             <span class="text-muted">Belum ditentukan</span>
@@ -143,10 +151,10 @@
                                         @if ($nda->nda_signature_date)
                                             <div class="d-flex align-items-center gap-2">
                                                 <i class="bi bi-pen text-success"></i>
-                                                <span>{{ $nda->nda_signature_date->format('d F Y') }}</span>
+                                                <span>{{ $nda->nda_signature_date->translatedFormat('d F Y') }}</span>
                                             </div>
                                         @else
-                                            <span class="badge bg-warning text-dark">
+                                            <span class="badge bg-warning bg-opacity-10 text-warning">
                                                 <i class="bi bi-exclamation-triangle me-1"></i>
                                                 Belum ditandatangani
                                             </span>
@@ -185,9 +193,13 @@
                         @php
                             $members = [];
                             if (is_array($nda->members)) {
-                                $members = $nda->members;
+                                $members = array_map(function ($member) {
+                                    return is_array($member) && isset($member['name']) ? $member['name'] : $member;
+                                }, $nda->members);
                             } elseif (is_string($nda->members) && json_decode($nda->members) !== null) {
-                                $members = json_decode($nda->members, true);
+                                $members = array_map(function ($member) {
+                                    return is_array($member) && isset($member['name']) ? $member['name'] : $member;
+                                }, json_decode($nda->members, true));
                             }
                         @endphp
 
@@ -240,7 +252,8 @@
                                 <div class="status-indicator bg-success bg-opacity-10 rounded-3 p-3 text-center">
                                     <i class="bi bi-check-circle-fill text-success fs-2"></i>
                                     <h6 class="fw-semibold text-success mt-2 mb-1">Sudah Ditandatangani</h6>
-                                    <p class="small text-muted mb-0">{{ $nda->nda_signature_date->format('d F Y') }}</p>
+                                    <p class="small text-muted mb-0">
+                                        {{ $nda->nda_signature_date->translatedFormat('d F Y') }}</p>
                                 </div>
                             </div>
                         @else
@@ -271,7 +284,7 @@
                     <div class="card-body p-4">
                         @if ($nda->files->isNotEmpty())
                             <div class="documents-list">
-                                @foreach ($nda->files as $file)
+                                @foreach ($nda->files as $index => $file)
                                     <div class="document-item d-flex align-items-center gap-3 p-3 border rounded-2 mb-3">
                                         <div class="document-icon bg-danger bg-opacity-10 rounded-2 p-2">
                                             <i class="bi bi-file-earmark-pdf text-danger fs-5"></i>
@@ -279,14 +292,14 @@
                                         <div class="flex-grow-1">
                                             <div class="document-name fw-medium small">{{ basename($file->file_path) }}
                                             </div>
-                                            <div class="document-actions mt-2">
+                                            <div class="document-actions mt-2 d-flex gap-2">
                                                 <a href="{{ Storage::url($file->file_path) }}" target="_blank"
                                                     class="btn btn-sm btn-outline-primary rounded-2">
-                                                    <i class="bi bi-eye me-1"></i>Lihat File
+                                                    <i class="bi bi-eye me-1"></i>Lihat
                                                 </a>
-                                                <a href="{{ route('admin.nda.download-file', ['nda' => $nda, 'file' => $file]) }}"
+                                                <a href="{{ route('pegawai.nda.download-file', ['nda' => $nda, 'file' => $file]) }}"
                                                     class="btn btn-sm btn-primary rounded-2">
-                                                    <i class="bi bi-download me-1"></i>Download File
+                                                    <i class="bi bi-download me-1"></i>Unduh
                                                 </a>
                                             </div>
                                         </div>
@@ -317,10 +330,19 @@
                     </div>
                     <div class="card-body p-4">
                         <div class="d-grid gap-2">
-                            <a href="{{ route('admin.nda.edit', $nda) }}" class="btn btn-warning btn-modern rounded-2">
+                            <a href="{{ route('pegawai.nda.edit', $nda) }}" class="btn btn-warning btn-modern rounded-2">
                                 <i class="bi bi-pencil-square me-2"></i>Edit Proyek
                             </a>
-                            <a href="{{ route('admin.dashboard') }}" class="btn btn-outline-secondary rounded-2">
+                            <form action="{{ route('pegawai.nda.delete', $nda) }}" method="POST"
+                                class="d-inline delete-form">
+                                @csrf
+                                @method('DELETE')
+                                <button type="button" class="btn btn-danger btn-modern rounded-2 delete-single-btn"
+                                    data-project-name="{{ $nda->project_name }}">
+                                    <i class="bi bi-trash me-2"></i>Hapus Proyek
+                                </button>
+                            </form>
+                            <a href="{{ route('pegawai.dashboard') }}" class="btn btn-outline-secondary rounded-2">
                                 <i class="bi bi-arrow-left me-2"></i>Kembali ke Dashboard
                             </a>
                         </div>
@@ -394,14 +416,14 @@
                 padding: 1.5rem;
             }
 
-            .bg-gradient-primary {
-                background: linear-gradient(135deg, var(--primary), #4338ca);
+            .bg-gradient {
+                background: linear-gradient(135deg, var(--primary), #4f46e5);
             }
 
             /* Project Icon */
             .project-icon {
-                width: 4rem;
-                height: 4rem;
+                width: 3rem;
+                height: 3rem;
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -495,8 +517,8 @@
             }
 
             .document-icon {
-                width: 3rem;
-                height: 3rem;
+                width: 2.5rem;
+                height: 2.5rem;
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -505,6 +527,10 @@
             .document-name {
                 color: var(--gray-800);
                 font-weight: 500;
+                max-width: 200px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
             }
 
             /* Empty States */
@@ -516,6 +542,7 @@
             .empty-state i {
                 font-size: 3rem;
                 margin-bottom: 1rem;
+                opacity: 0.5;
             }
 
             /* Buttons */
@@ -539,32 +566,26 @@
                 box-shadow: 0 4px 12px 0 rgba(99, 102, 241, 0.2);
             }
 
-            .btn-warning {
+            .btn-warning.btn-modern {
                 background-color: var(--warning);
-                border-color: var(--warning);
-                color: white;
+                box-shadow: 0 2px 4px 0 rgba(245, 158, 11, 0.1);
             }
 
-            .btn-warning:hover {
+            .btn-warning.btn-modern:hover {
                 background-color: #e08a0c;
-                border-color: #e08a0c;
-                color: white;
                 transform: translateY(-1px);
+                box-shadow: 0 4px 12px 0 rgba(245, 158, 11, 0.2);
             }
 
-            .btn-outline-secondary {
-                border: 1px solid var(--gray-300);
-                color: var(--gray-600);
-                background: white;
-                transition: all 0.2s ease;
-                font-weight: 500;
-                font-size: 0.875rem;
+            .btn-danger.btn-modern {
+                background-color: var(--danger);
+                box-shadow: 0 2px 4px 0 rgba(239, 68, 68, 0.1);
             }
 
-            .btn-outline-secondary:hover {
-                background-color: var(--gray-50);
-                border-color: var(--gray-400);
-                color: var(--gray-700);
+            .btn-danger.btn-modern:hover {
+                background-color: #dc2626;
+                transform: translateY(-1px);
+                box-shadow: 0 4px 12px 0 rgba(239, 68, 68, 0.2);
             }
 
             .btn-outline-primary {
@@ -580,6 +601,21 @@
                 background-color: var(--primary);
                 border-color: var(--primary);
                 color: white;
+            }
+
+            .btn-outline-secondary {
+                border: 1px solid var(--gray-300);
+                color: var(--gray-600);
+                background: white;
+                transition: all 0.2s ease;
+                font-weight: 500;
+                font-size: 0.875rem;
+            }
+
+            .btn-outline-secondary:hover {
+                background-color: var(--gray-50);
+                border-color: var(--gray-400);
+                color: var(--gray-700);
             }
 
             /* Badges */
@@ -600,11 +636,12 @@
                 .d-flex.justify-content-between {
                     flex-direction: column;
                     gap: 1rem;
+                    align-items: flex-start;
                 }
 
                 .project-icon {
-                    width: 3rem;
-                    height: 3rem;
+                    width: 2.5rem;
+                    height: 2.5rem;
                 }
 
                 .member-card {
@@ -619,12 +656,58 @@
 
                 .document-actions {
                     width: 100%;
+                    flex-direction: column;
+                    gap: 0.5rem;
+                }
+
+                .document-name {
+                    max-width: 100%;
                 }
 
                 .d-grid.gap-2>* {
                     width: 100%;
                 }
             }
+
+            @media (max-width: 576px) {
+                .d-flex.align-items-center.gap-3 {
+                    flex-direction: column;
+                    align-items: flex-start;
+                    text-align: left;
+                }
+            }
         </style>
+    @endpush
+
+    @push('scripts')
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // Single delete functionality
+                document.querySelectorAll('.delete-single-btn').forEach(button => {
+                    button.addEventListener('click', function(e) {
+                        e.preventDefault();
+
+                        const projectName = this.dataset.projectName;
+                        const form = this.closest('form');
+
+                        Swal.fire({
+                            title: 'Konfirmasi Hapus',
+                            text: `Apakah Anda yakin ingin menghapus proyek "${projectName}"? Tindakan ini tidak dapat dibatalkan.`,
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#ef4444',
+                            cancelButtonColor: '#6b7280',
+                            confirmButtonText: 'Hapus',
+                            cancelButtonText: 'Batal'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                form.submit();
+                            }
+                        });
+                    });
+                });
+            });
+        </script>
     @endpush
 @endsection

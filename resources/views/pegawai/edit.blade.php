@@ -10,11 +10,10 @@
                 <h1 class="h2 fw-bold text-gray-900 mb-2">Edit Proyek</h1>
                 <p class="text-muted mb-0">Perbarui informasi dan pengaturan proyek NDA</p>
             </div>
-            <a href="{{ route('admin.dashboard') }}" class="btn btn-outline-secondary btn-sm">
+            <a href="{{ route('pegawai.dashboard') }}" class="btn btn-outline-secondary btn-sm">
                 <i class="bi bi-arrow-left me-2"></i>Kembali ke Dashboard
             </a>
         </div>
-
         <!-- Form Card -->
         <div class="card border-0 shadow-sm rounded-3">
             <div class="card-header bg-white p-4 border-bottom">
@@ -29,11 +28,10 @@
                 </div>
             </div>
             <div class="card-body p-4 p-lg-5">
-                <form method="POST" action="{{ route('admin.nda.update', $nda) }}" enctype="multipart/form-data"
+                <form method="POST" action="{{ route('pegawai.nda.update', $nda) }}" enctype="multipart/form-data"
                     id="projectForm">
                     @csrf
                     @method('PUT')
-
                     <!-- Basic Information -->
                     <div class="form-section mb-5">
                         <div class="section-header d-flex align-items-center gap-3 mb-4">
@@ -45,7 +43,6 @@
                                 <p class="text-muted small mb-0">Perbarui nama dan deskripsi proyek</p>
                             </div>
                         </div>
-
                         <div class="row g-4">
                             <div class="col-12">
                                 <div class="form-group">
@@ -69,7 +66,6 @@
                                     @enderror
                                 </div>
                             </div>
-
                             <div class="col-12">
                                 <div class="form-group">
                                     <label for="description" class="form-label fw-medium">Deskripsi Proyek</label>
@@ -82,7 +78,8 @@
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @else
                                         <div class="form-text small">
-                                            <span id="descriptionCount">{{ strlen($nda->description ?? '') }}</span>/1000
+                                            <span
+                                                id="descriptionCount">{{ strlen(old('description', $nda->description ?? '')) }}</span>/1000
                                             karakter
                                         </div>
                                     @enderror
@@ -90,7 +87,6 @@
                             </div>
                         </div>
                     </div>
-
                     <!-- Timeline -->
                     <div class="form-section mb-5">
                         <div class="section-header d-flex align-items-center gap-3 mb-4">
@@ -102,7 +98,6 @@
                                 <p class="text-muted small mb-0">Perbarui waktu pelaksanaan proyek</p>
                             </div>
                         </div>
-
                         <div class="row g-4">
                             <div class="col-md-4">
                                 <div class="form-group">
@@ -121,7 +116,6 @@
                                     @enderror
                                 </div>
                             </div>
-
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label for="end_date" class="form-label fw-medium required">Tanggal Berakhir</label>
@@ -139,7 +133,6 @@
                                     @enderror
                                 </div>
                             </div>
-
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label class="form-label fw-medium">Durasi Proyek</label>
@@ -155,7 +148,6 @@
                             </div>
                         </div>
                     </div>
-
                     <!-- NDA Information -->
                     <div class="form-section mb-5">
                         <div class="section-header d-flex align-items-center gap-3 mb-4">
@@ -167,11 +159,11 @@
                                 <p class="text-muted small mb-0">Detail terkait Non-Disclosure Agreement</p>
                             </div>
                         </div>
-
                         <div class="row g-4">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="nda_signature_date" class="form-label fw-medium">Tanggal Penandatanganan
+                                    <label for="nda_signature_date" class="form-label fw-medium required">Tanggal
+                                        Penandatanganan
                                         NDA</label>
                                     <div class="input-group">
                                         <span class="input-group-text">
@@ -179,12 +171,13 @@
                                         </span>
                                         <input type="date" name="nda_signature_date" id="nda_signature_date"
                                             class="form-control rounded-end @error('nda_signature_date') is-invalid @enderror"
-                                            value="{{ old('nda_signature_date', $nda->nda_signature_date ? $nda->nda_signature_date->format('Y-m-d') : '') }}">
+                                            value="{{ old('nda_signature_date', $nda->nda_signature_date ? $nda->nda_signature_date->format('Y-m-d') : '') }}"
+                                            required>
                                     </div>
                                     @error('nda_signature_date')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @else
-                                        <div class="form-text small">Kosongkan jika NDA belum ditandatangani</div>
+                                        <div class="form-text small">Wajib diisi dengan tanggal penandatanganan NDA</div>
                                     @enderror
                                 </div>
                             </div>
@@ -197,7 +190,7 @@
                                             <span id="nda-status">
                                                 @if ($nda->nda_signature_date)
                                                     Sudah ditandatangani pada
-                                                    {{ $nda->nda_signature_date->format('d F Y') }}
+                                                    {{ $nda->nda_signature_date->translatedFormat('d F Y') }}
                                                 @else
                                                     Belum ditandatangani
                                                 @endif
@@ -208,8 +201,7 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- Team Members -->
+                    <!-- Team Members & Files Integrated -->
                     <div class="form-section mb-5">
                         <div class="section-header d-flex align-items-center justify-content-between gap-3 mb-4">
                             <div class="d-flex align-items-center gap-3">
@@ -217,198 +209,136 @@
                                     <i class="bi bi-people text-purple fs-5"></i>
                                 </div>
                                 <div>
-                                    <h6 class="fw-semibold mb-1">Anggota Tim</h6>
-                                    <p class="text-muted small mb-0">Perbarui anggota yang terlibat dalam proyek</p>
+                                    <h6 class="fw-semibold mb-1">Anggota Tim & Berkas NDA</h6>
+                                    <p class="text-muted small mb-0">Perbarui anggota tim dan berkas NDA, setiap anggota
+                                        wajib punya 1 berkas</p>
                                 </div>
                             </div>
                             <button type="button" class="btn btn-outline-primary btn-sm rounded-2" id="add-member">
                                 <i class="bi bi-person-plus me-1"></i>Tambah Anggota
                             </button>
                         </div>
-
                         <div id="member-container">
                             @php
-                                $initialMembers = [];
-                                if (is_array($nda->members)) {
-                                    $initialMembers = $nda->members;
-                                } elseif (is_string($nda->members) && json_decode($nda->members) !== null) {
-                                    $initialMembers = json_decode($nda->members, true);
+                                // Pastikan members adalah array yang valid
+                                $members = is_array($nda->members) ? $nda->members : [];
+                                if (is_string($nda->members)) {
+                                    $members = json_decode($nda->members, true) ?? [];
+                                }
+                                $membersWithFiles = [];
+                                foreach ($members as $index => $member) {
+                                    $file = null;
+                                    if (isset($member['file_id'])) {
+                                        $file = $nda->files->firstWhere('id', $member['file_id']);
+                                    }
+                                    $membersWithFiles[] = [
+                                        'name' => $member['name'] ?? '',
+                                        'file' => $file,
+                                        'file_id' => $member['file_id'] ?? null,
+                                    ];
                                 }
                             @endphp
-                            @if (!empty($initialMembers))
-                                @foreach ($initialMembers as $index => $member)
-                                    <div class="member-item mb-3">
-                                        <div class="member-card border rounded-2 p-3">
-                                            <div class="d-flex align-items-center gap-3">
-                                                <div
-                                                    class="member-avatar bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center">
-                                                    <i class="bi bi-person"></i>
-                                                </div>
-                                                <div class="flex-grow-1">
-                                                    <input type="text" name="members[{{ $index }}][name]"
-                                                        class="form-control member-input rounded-2"
-                                                        value="{{ $member }}"
-                                                        placeholder="Nama lengkap anggota tim" maxlength="100" required>
-                                                </div>
-                                                <button type="button"
-                                                    class="btn btn-outline-danger btn-sm remove-member rounded-2 {{ count($initialMembers) <= 1 ? 'd-none' : '' }}">
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            @else
+                            @forelse ($membersWithFiles as $index => $member)
                                 <div class="member-item mb-3">
                                     <div class="member-card border rounded-2 p-3">
-                                        <div class="d-flex align-items-center gap-3">
+                                        <div class="d-flex align-items-start gap-3">
                                             <div
-                                                class="member-avatar bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center">
+                                                class="member-avatar bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center mt-1">
                                                 <i class="bi bi-person"></i>
                                             </div>
                                             <div class="flex-grow-1">
-                                                <input type="text" name="members[0][name]"
-                                                    class="form-control member-input rounded-2"
+                                                <input type="text" name="members[{{ $index }}][name]"
+                                                    class="form-control member-input rounded-2 mb-2"
+                                                    value="{{ old('members.' . $index . '.name', $member['name'] ?? '') }}"
                                                     placeholder="Nama lengkap anggota tim" maxlength="100" required>
+                                                @if (isset($member['file']) && $member['file'])
+                                                    <div class="existing-file-card bg-light border rounded-2 p-3 mb-3">
+                                                        <div class="d-flex align-items-center justify-content-between">
+                                                            <div class="file-info d-flex align-items-center gap-3">
+                                                                <div
+                                                                    class="file-icon bg-danger bg-opacity-10 rounded-2 p-2">
+                                                                    <i class="bi bi-file-earmark-pdf text-danger fs-5"></i>
+                                                                </div>
+                                                                <div>
+                                                                    <div class="file-name fw-medium">
+                                                                        {{ basename($member['file']->file_path) }}</div>
+                                                                    <div class="file-actions mt-2">
+                                                                        <a href="{{ Storage::url($member['file']->file_path) }}"
+                                                                            target="_blank"
+                                                                            class="btn btn-sm btn-outline-primary rounded-2">
+                                                                            <i class="bi bi-eye me-1"></i>Lihat File
+                                                                        </a>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="form-check">
+                                                                <input type="checkbox"
+                                                                    name="delete_files[{{ $index }}]"
+                                                                    value="1" class="form-check-input"
+                                                                    id="deleteFile{{ $index }}">
+                                                                <label for="deleteFile{{ $index }}"
+                                                                    class="form-check-label text-danger small fw-medium">
+                                                                    Hapus File
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                @endif
+                                                <input type="file" name="files[{{ $index }}]"
+                                                    class="form-control file-input mb-2" accept="application/pdf">
+                                                @error("files.{$index}")
+                                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                @enderror
                                             </div>
                                             <button type="button"
-                                                class="btn btn-outline-danger btn-sm remove-member rounded-2 d-none">
+                                                class="btn btn-outline-danger btn-sm remove-member rounded-2 {{ count($membersWithFiles) > 1 ? '' : 'd-none' }}"
+                                                style="margin-top: 1rem;">
                                                 <i class="bi bi-trash"></i>
                                             </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            @endif
-                        </div>
-                        <div class="form-text small">
-                            <i class="bi bi-lightbulb me-1"></i>
-                            Minimal satu anggota tim diperlukan. Anda dapat menambahkan lebih banyak anggota sesuai
-                            kebutuhan.
-                        </div>
-                    </div>
-
-                    <!-- Files -->
-                    <div class="form-section mb-5">
-                        <div class="section-header d-flex align-items-center justify-content-between gap-3 mb-4">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="section-icon bg-danger bg-opacity-10 rounded-2">
-                                    <i class="bi bi-file-earmark-pdf text-danger fs-5"></i>
-                                </div>
-                                <div>
-                                    <h6 class="fw-semibold mb-1">Dokumen NDA</h6>
-                                    <p class="text-muted small mb-0">Perbarui atau tambahkan dokumen Non-Disclosure
-                                        Agreement</p>
-                                </div>
-                            </div>
-                            <button type="button" class="btn btn-outline-primary btn-sm rounded-2" id="add-file">
-                                <i class="bi bi-file-plus me-1"></i>Tambah File
-                            </button>
-                        </div>
-
-                        <div id="file-container">
-                            @forelse ($nda->files as $index => $file)
-                                <div class="file-item mb-3">
-                                    <!-- Existing File Display -->
-                                    <div class="existing-file-card bg-light border rounded-2 p-3 mb-3">
-                                        <div class="d-flex align-items-center justify-content-between">
-                                            <div class="file-info d-flex align-items-center gap-3">
-                                                <div class="file-icon bg-danger bg-opacity-10 rounded-2 p-2">
-                                                    <i class="bi bi-file-earmark-pdf text-danger fs-5"></i>
-                                                </div>
-                                                <div>
-                                                    <div class="file-name fw-medium">{{ basename($file->file_path) }}
-                                                    </div>
-                                                    <div class="file-actions mt-2">
-                                                        <a href="{{ Storage::url($file->file_path) }}" target="_blank"
-                                                            class="btn btn-sm btn-outline-primary rounded-2">
-                                                            <i class="bi bi-eye me-1"></i>Lihat File
-                                                        </a>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="form-check">
-                                                <input type="checkbox" name="delete_files[{{ $index }}]"
-                                                    value="1" class="form-check-input"
-                                                    id="deleteFile{{ $index }}">
-                                                <label for="deleteFile{{ $index }}"
-                                                    class="form-check-label text-danger small fw-medium">
-                                                    Hapus File
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <!-- Replace File Option -->
-                                    <div class="file-upload-card border border-2 border-dashed rounded-2 p-3">
-                                        <div class="d-flex align-items-center gap-3">
-                                            <input type="file" name="files[{{ $index }}]"
-                                                class="form-control file-input d-none" accept="application/pdf"
-                                                id="file-{{ $index }}">
-                                            <label for="file-{{ $index }}"
-                                                class="file-upload-label d-flex align-items-center gap-3 flex-grow-1 mb-0">
-                                                <div
-                                                    class="file-upload-icon bg-white rounded-2 shadow-sm d-flex align-items-center justify-content-center">
-                                                    <i class="bi bi-arrow-up-circle"></i>
-                                                </div>
-                                                <div class="file-upload-text">
-                                                    <span class="file-name fw-medium">Ganti dengan file baru</span>
-                                                    <small class="text-muted d-block">Pilih file PDF untuk mengganti file
-                                                        yang ada</small>
-                                                </div>
-                                            </label>
-                                        </div>
-                                        <div class="file-requirements mt-2 pt-2 border-top small">
-                                            <small class="text-muted">
-                                                <i class="bi bi-info-circle me-1"></i>
-                                                Hanya file PDF yang diizinkan. Maksimal 10MB per file.
-                                            </small>
                                         </div>
                                     </div>
                                 </div>
                             @empty
-                                <div class="file-item mb-3">
-                                    <div class="file-upload-card border border-2 border-dashed rounded-2 p-3">
-                                        <div class="d-flex align-items-center gap-3">
-                                            <input type="file" name="files[0]" class="form-control file-input d-none"
-                                                accept="application/pdf" required id="file-0">
-                                            <label for="file-0"
-                                                class="file-upload-label d-flex align-items-center gap-3 flex-grow-1 mb-0">
-                                                <div
-                                                    class="file-upload-icon bg-white rounded-2 shadow-sm d-flex align-items-center justify-content-center">
-                                                    <i class="bi bi-cloud-upload"></i>
-                                                </div>
-                                                <div class="file-upload-text">
-                                                    <span class="file-name fw-medium">Pilih file PDF</span>
-                                                    <small class="text-muted d-block">atau seret dan letakkan file di
-                                                        sini</small>
-                                                </div>
-                                            </label>
+                                <!-- Fallback jika tidak ada members -->
+                                <div class="member-item mb-3">
+                                    <div class="member-card border rounded-2 p-3">
+                                        <div class="d-flex align-items-start gap-3">
+                                            <div
+                                                class="member-avatar bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center mt-1">
+                                                <i class="bi bi-person"></i>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <input type="text" name="members[0][name]"
+                                                    class="form-control member-input rounded-2 mb-2"
+                                                    placeholder="Nama lengkap anggota tim" maxlength="100" required>
+                                                <input type="file" name="files[0]" class="form-control file-input"
+                                                    accept="application/pdf" required>
+                                                @error('files.0')
+                                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                @enderror
+                                            </div>
                                             <button type="button"
-                                                class="btn btn-outline-danger btn-sm remove-file rounded-2 d-none">
+                                                class="btn btn-outline-danger btn-sm remove-member rounded-2 d-none"
+                                                style="margin-top: 1rem;">
                                                 <i class="bi bi-trash"></i>
                                             </button>
-                                        </div>
-                                        <div class="file-requirements mt-2 pt-2 border-top small">
-                                            <small class="text-muted">
-                                                <i class="bi bi-info-circle me-1"></i>
-                                                Hanya file PDF yang diizinkan. Maksimal 10MB per file.
-                                            </small>
                                         </div>
                                     </div>
                                 </div>
                             @endforelse
                         </div>
-                        @error('files.*')
-                            <div class="text-danger small mt-2">{{ $message }}</div>
-                        @enderror
+                        <div class="form-text small">
+                            <i class="bi bi-lightbulb me-1"></i>
+                            Setiap anggota wajib punya 1 berkas PDF. File lama bisa diganti atau dibiarkan.
+                        </div>
                     </div>
-
                     <!-- Actions -->
                     <div class="form-actions pt-4 border-top">
                         <div class="d-flex gap-3">
                             <button type="submit" class="btn btn-primary btn-modern rounded-2" id="submitBtn">
                                 <i class="bi bi-check-lg me-2"></i>Perbarui Proyek
                             </button>
-                            <a href="{{ route('admin.dashboard') }}" class="btn btn-outline-secondary rounded-2">
+                            <a href="{{ route('pegawai.dashboard') }}" class="btn btn-outline-secondary rounded-2">
                                 <i class="bi bi-x-lg me-2"></i>Batal
                             </a>
                         </div>
@@ -417,7 +347,6 @@
             </div>
         </div>
     </div>
-
     @push('styles')
         <style>
             :root {
@@ -836,7 +765,6 @@
             }
         </style>
     @endpush
-
     @push('scripts')
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script>
@@ -852,10 +780,6 @@
                         echo 0;
                     }
                 @endphp || 1;
-
-                // Hitung jumlah file awal
-                let fileCount = {{ $nda->files->count() ?: 1 }};
-
                 // Character counter for description
                 const descriptionTextarea = document.getElementById('description');
                 const descriptionCounter = document.getElementById('descriptionCount');
@@ -865,7 +789,6 @@
                     });
                     descriptionCounter.textContent = descriptionTextarea.value.length;
                 }
-
                 // Add Member
                 document.getElementById('add-member').addEventListener('click', function() {
                     const container = document.getElementById('member-container');
@@ -873,17 +796,19 @@
                     newItem.className = 'member-item mb-3';
                     newItem.innerHTML = `
                         <div class="member-card border rounded-2 p-3">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="member-avatar bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center">
+                            <div class="d-flex align-items-start gap-3">
+                                <div class="member-avatar bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center mt-1">
                                     <i class="bi bi-person"></i>
                                 </div>
                                 <div class="flex-grow-1">
                                     <input type="text" name="members[${memberCount}][name]"
-                                        class="form-control member-input rounded-2"
-                                        placeholder="Nama lengkap anggota tim"
-                                        maxlength="100" required>
+                                        class="form-control member-input rounded-2 mb-2"
+                                        placeholder="Nama lengkap anggota tim" maxlength="100" required>
+                                    <input type="file" name="files[${memberCount}]" class="form-control file-input"
+                                        accept="application/pdf" required>
                                 </div>
-                                <button type="button" class="btn btn-outline-danger btn-sm remove-member rounded-2">
+                                <button type="button" class="btn btn-outline-danger btn-sm remove-member rounded-2"
+                                    style="margin-top: 1rem;">
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </div>
@@ -892,52 +817,12 @@
                     container.appendChild(newItem);
                     memberCount++;
                     updateRemoveButtons();
+                    attachFileValidation(newItem.querySelector('.file-input'));
                     newItem.querySelector('.member-input').focus();
                 });
-
-                // Add File
-                document.getElementById('add-file').addEventListener('click', function() {
-                    const container = document.getElementById('file-container');
-                    const newItem = document.createElement('div');
-                    newItem.className = 'file-item mb-3';
-                    newItem.innerHTML = `
-                        <div class="file-upload-card border border-2 border-dashed rounded-2 p-3">
-                            <div class="d-flex align-items-center gap-3">
-                                <input type="file" name="files[${fileCount}]" class="form-control file-input d-none"
-                                    accept="application/pdf" id="file-${fileCount}">
-                                <label for="file-${fileCount}" class="file-upload-label d-flex align-items-center gap-3 flex-grow-1 mb-0">
-                                    <div class="file-upload-icon bg-white rounded-2 shadow-sm d-flex align-items-center justify-content-center">
-                                        <i class="bi bi-cloud-upload"></i>
-                                    </div>
-                                    <div class="file-upload-text">
-                                        <span class="file-name fw-medium">Pilih file PDF</span>
-                                        <small class="text-muted d-block">atau seret dan letakkan file di sini</small>
-                                    </div>
-                                </label>
-                                <button type="button" class="btn btn-outline-danger btn-sm remove-file rounded-2">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </div>
-                            <div class="file-requirements mt-2 pt-2 border-top small">
-                                <small class="text-muted">
-                                    <i class="bi bi-info-circle me-1"></i>
-                                    Hanya file PDF yang diizinkan. Maksimal 10MB per file.
-                                </small>
-                            </div>
-                        </div>
-                    `;
-                    container.appendChild(newItem);
-                    fileCount++;
-                    updateRemoveButtons();
-                    attachFileValidation(newItem.querySelector('.file-input'));
-                });
-
                 // Update Remove Buttons
                 function updateRemoveButtons() {
                     const memberItems = document.querySelectorAll('.member-item');
-                    const fileItems = document.querySelectorAll('.file-item');
-
-                    // Members
                     memberItems.forEach((item, index) => {
                         const removeBtn = item.querySelector('.remove-member');
                         if (removeBtn) {
@@ -946,7 +831,7 @@
                                 removeBtn.onclick = function() {
                                     Swal.fire({
                                         title: 'Hapus Anggota',
-                                        text: 'Apakah Anda yakin ingin menghapus anggota ini?',
+                                        text: 'Apakah Anda yakin ingin menghapus anggota ini dan berkasnya?',
                                         icon: 'question',
                                         showCancelButton: true,
                                         confirmButtonColor: '#ef4444',
@@ -965,56 +850,17 @@
                             }
                         }
                     });
-
-                    // Files (only for new file inputs, not existing files)
-                    document.querySelectorAll(
-                        '.file-item .file-upload-card .input-group, .file-item .file-upload-card .d-flex').forEach((
-                        inputGroup, index) => {
-                        const removeBtn = inputGroup.querySelector('.remove-file');
-                        if (removeBtn) {
-                            const allNewFileInputs = document.querySelectorAll('.file-item .file-upload-card');
-                            const newFileInputsOnly = Array.from(allNewFileInputs).filter(card => !card
-                                .previousElementSibling || !card.previousElementSibling.classList.contains(
-                                    'existing-file-card'));
-
-                            if (newFileInputsOnly.length > 1) {
-                                removeBtn.classList.remove('d-none');
-                                removeBtn.onclick = function() {
-                                    Swal.fire({
-                                        title: 'Hapus File',
-                                        text: 'Apakah Anda yakin ingin menghapus file ini?',
-                                        icon: 'question',
-                                        showCancelButton: true,
-                                        confirmButtonColor: '#ef4444',
-                                        cancelButtonColor: '#6b7280',
-                                        confirmButtonText: 'Hapus',
-                                        cancelButtonText: 'Batal'
-                                    }).then((result) => {
-                                        if (result.isConfirmed) {
-                                            inputGroup.closest('.file-item').remove();
-                                            updateRemoveButtons();
-                                        }
-                                    });
-                                };
-                            } else {
-                                removeBtn.classList.add('d-none');
-                            }
-                        }
-                    });
                 }
-
                 // Duration Calculator
                 function calculateDuration() {
                     const startDate = document.getElementById('start_date').value;
                     const endDate = document.getElementById('end_date').value;
                     const durationDisplay = document.getElementById('duration-display');
-
                     if (startDate && endDate) {
                         const start = new Date(startDate);
                         const end = new Date(endDate);
                         const diffTime = end - start;
                         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
                         if (diffDays <= 0) {
                             Swal.fire({
                                 icon: 'error',
@@ -1032,7 +878,6 @@
                             `;
                             return;
                         }
-
                         const months = Math.floor(diffDays / 30);
                         const weeks = Math.floor((diffDays % 30) / 7);
                         const days = diffDays % 7;
@@ -1040,7 +885,6 @@
                         if (months > 0) durationText += `${months} bulan `;
                         if (weeks > 0) durationText += `${weeks} minggu `;
                         if (days > 0 || durationText === '') durationText += `${days} hari`;
-
                         durationDisplay.innerHTML = `
                             <div class="duration-result d-flex align-items-center">
                                 <i class="bi bi-calendar-check me-2 text-success"></i>
@@ -1056,13 +900,11 @@
                         `;
                     }
                 }
-
                 // NDA Status Update
                 function updateNDAStatus() {
                     const ndaDate = document.getElementById('nda_signature_date').value;
                     const statusElement = document.getElementById('nda-status');
                     const statusAlert = document.querySelector('.nda-status-info .alert');
-
                     if (ndaDate) {
                         statusAlert.className = 'alert alert-success small rounded-2 mb-0 p-3';
                         statusAlert.innerHTML = `
@@ -1083,7 +925,6 @@
                         `;
                     }
                 }
-
                 // Format Date to Indonesian
                 function formatDate(dateString) {
                     const date = new Date(dateString);
@@ -1093,15 +934,11 @@
                     ];
                     return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
                 }
-
                 // File Validation
                 function attachFileValidation(input) {
                     input.addEventListener('change', function() {
                         if (this.files.length > 0) {
                             const file = this.files[0];
-                            const label = this.nextElementSibling;
-                            const fileNameSpan = label.querySelector('.file-name');
-
                             if (file.type !== 'application/pdf') {
                                 Swal.fire({
                                     icon: 'error',
@@ -1111,140 +948,67 @@
                                     confirmButtonColor: '#6366f1'
                                 });
                                 this.value = '';
-                                fileNameSpan.textContent = this.id.includes('file-') ? 'Pilih file PDF' :
-                                    'Ganti dengan file baru';
                                 return;
                             }
-
-                            const maxSize = 10 * 1024 * 1024;
+                            const maxSize = 2 * 1024 * 1024; // Max 2MB per file sesuai validasi controller
                             if (file.size > maxSize) {
                                 Swal.fire({
                                     icon: 'error',
                                     title: 'File Terlalu Besar',
-                                    text: 'Ukuran file maksimal 10MB.',
+                                    text: 'Ukuran file maksimal 2MB.',
                                     confirmButtonText: 'Mengerti',
                                     confirmButtonColor: '#6366f1'
                                 });
                                 this.value = '';
-                                fileNameSpan.textContent = this.id.includes('file-') ? 'Pilih file PDF' :
-                                    'Ganti dengan file baru';
                                 return;
                             }
-
-                            fileNameSpan.textContent = file.name;
-                            const uploadIcon = label.querySelector('.file-upload-icon i');
-                            uploadIcon.className = 'bi bi-check-circle-fill text-success';
                         }
                     });
-
-                    const uploadCard = input.closest('.file-upload-card');
-                    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-                        uploadCard.addEventListener(eventName, preventDefaults, false);
-                    });
-
-                    function preventDefaults(e) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                    }
-
-                    ['dragenter', 'dragover'].forEach(eventName => {
-                        uploadCard.addEventListener(eventName, highlight, false);
-                    });
-
-                    ['dragleave', 'drop'].forEach(eventName => {
-                        uploadCard.addEventListener(eventName, unhighlight, false);
-                    });
-
-                    function highlight() {
-                        uploadCard.style.borderColor = 'var(--primary)';
-                        uploadCard.style.backgroundColor = 'rgba(99, 102, 241, 0.05)';
-                    }
-
-                    function unhighlight() {
-                        uploadCard.style.borderColor = 'var(--gray-300)';
-                        uploadCard.style.backgroundColor = 'var(--gray-50)';
-                    }
-
-                    uploadCard.addEventListener('drop', handleDrop, false);
-
-                    function handleDrop(e) {
-                        const dt = e.dataTransfer;
-                        const files = dt.files;
-                        if (files.length > 0) {
-                            input.files = files;
-                            input.dispatchEvent(new Event('change'));
-                        }
-                    }
                 }
-
                 // Form Validation
                 function validateForm() {
                     const form = document.getElementById('projectForm');
                     const inputs = form.querySelectorAll('input[required], textarea[required]');
                     let isValid = true;
-                    let firstInvalidInput = null;
-
                     inputs.forEach(input => {
                         if (!input.value.trim()) {
                             input.classList.add('is-invalid');
-                            if (!firstInvalidInput) {
-                                firstInvalidInput = input;
-                            }
                             isValid = false;
                         } else {
                             input.classList.remove('is-invalid');
                         }
                     });
-
-                    const startDate = document.getElementById('start_date').value;
-                    const endDate = document.getElementById('end_date').value;
-                    if (startDate && endDate) {
-                        const start = new Date(startDate);
-                        const end = new Date(endDate);
-                        if (end <= start) {
-                            document.getElementById('end_date').classList.add('is-invalid');
-                            if (!firstInvalidInput) {
-                                firstInvalidInput = document.getElementById('end_date');
-                            }
+                    // Validasi setiap row anggota punya nama
+                    const memberRows = document.querySelectorAll('.member-item');
+                    memberRows.forEach(row => {
+                        const nameInput = row.querySelector('input[name*="members"][name*="name"]');
+                        if (!nameInput.value.trim()) {
+                            nameInput.classList.add('is-invalid');
                             isValid = false;
                         }
-                    }
-
-                    if (!isValid && firstInvalidInput) {
-                        firstInvalidInput.focus();
-                        firstInvalidInput.scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'center'
-                        });
-                    }
-
+                    });
                     return isValid;
                 }
-
                 // Event Listeners
                 document.getElementById('start_date').addEventListener('change', calculateDuration);
                 document.getElementById('end_date').addEventListener('change', calculateDuration);
                 document.getElementById('nda_signature_date').addEventListener('change', updateNDAStatus);
-
-                // Form submission
                 document.getElementById('projectForm').addEventListener('submit', function(e) {
                     if (!validateForm()) {
                         e.preventDefault();
                         Swal.fire({
                             icon: 'error',
                             title: 'Form Tidak Lengkap',
-                            text: 'Harap lengkapi semua field yang wajib diisi.',
+                            text: 'Harap isi semua field yang wajib diisi.',
                             confirmButtonText: 'Mengerti',
                             confirmButtonColor: '#6366f1'
                         });
                         return;
                     }
-
                     const submitBtn = document.getElementById('submitBtn');
                     submitBtn.disabled = true;
                     submitBtn.innerHTML =
                     '<i class="bi bi-arrow-clockwise spin me-2"></i>Memperbarui Proyek...';
-
                     Swal.fire({
                         title: 'Memperbarui Proyek',
                         text: 'Mohon tunggu, sedang memproses perubahan...',
@@ -1256,30 +1020,28 @@
                         }
                     });
                 });
-
+                // Realtime validation untuk semua input
+                document.querySelectorAll(
+                    'input[required], textarea[required], input[name^="members["], input[name^="files["]').forEach(
+                    input => {
+                        input.addEventListener('blur', function() {
+                            if (!this.value.trim() && this.required) {
+                                this.classList.add('is-invalid');
+                            } else {
+                                this.classList.remove('is-invalid');
+                            }
+                        });
+                        input.addEventListener('input', function() {
+                            if (this.classList.contains('is-invalid') && this.value.trim()) {
+                                this.classList.remove('is-invalid');
+                            }
+                        });
+                    });
                 // Initial setup
                 updateRemoveButtons();
-                document.querySelectorAll('.file-input').forEach(input => {
-                    attachFileValidation(input);
-                });
-                updateNDAStatus();
+                document.querySelectorAll('.file-input').forEach(input => attachFileValidation(input));
                 calculateDuration();
-
-                // Real-time validation
-                document.querySelectorAll('input[required], textarea[required]').forEach(input => {
-                    input.addEventListener('blur', function() {
-                        if (this.value.trim()) {
-                            this.classList.remove('is-invalid');
-                        } else {
-                            this.classList.add('is-invalid');
-                        }
-                    });
-                    input.addEventListener('input', function() {
-                        if (this.classList.contains('is-invalid') && this.value.trim()) {
-                            this.classList.remove('is-invalid');
-                        }
-                    });
-                });
+                updateNDAStatus();
             });
         </script>
     @endpush

@@ -10,10 +10,10 @@ return new class extends Migration
     {
         Schema::create('ndas', function (Blueprint $table) {
             $table->id();
-            $table->string('title'); // Akan direname menjadi project_name di migration berikutnya
+            $table->string('title');
             $table->text('description')->nullable();
-            $table->string('token')->unique()->nullable(); // Tetap ada di sini
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->string('token')->unique()->nullable();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Gunakan foreignId
             $table->timestamps();
         });
     }

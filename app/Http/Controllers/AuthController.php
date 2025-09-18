@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use App\Models\User;
 
 class AuthController extends Controller
 {
@@ -15,42 +17,36 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $credentials = $request->validate([
-            'email' => 'required|email',
+            'nip' => 'required|digits:8|numeric',
             'password' => 'required',
+        ], [
+            'nip.required' => 'NIP wajib diisi.',
+            'nip.digits' => 'NIP harus 8 digit angka.',
+            'nip.numeric' => 'NIP harus berupa angka.',
+            'password.required' => 'Password wajib diisi.',
         ]);
 
-        if (Auth::attempt($credentials)) {
+        // Cari user berdasarkan NIP
+        $user = User::where('nip', $credentials['nip'])->first();
+
+        // Periksa apakah user ditemukan dan password cocok
+        if ($user && Hash::check($credentials['password'], $user->password)) {
+            Auth::login($user, $request->filled('remember'));
             $request->session()->regenerate();
-            return redirect()->route('admin.dashboard')->with('success', 'Berhasil login! Anda sekarang bisa mengakses dashboard.');
+
+            // Redirect berdasarkan role
+            if ($user->role === 'admin') {
+                return redirect()->route('admin.dashboard')
+                    ->with('success', 'Berhasil login sebagai admin!');
+            }
+
+            return redirect()->route('pegawai.dashboard')
+                ->with('success', 'Berhasil login! Anda sekarang bisa mengakses dashboard.');
         }
 
         return back()->withErrors([
-            'email' => 'Email atau password salah.',
-        ])->onlyInput('email');
-    }
-
-    public function showRegisterForm()
-    {
-        return view('auth.register');
-    }
-
-    public function register(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
-        ]);
-
-        $user = \App\Models\User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => bcrypt($request->password),
-        ]);
-
-        Auth::login($user);
-
-        return redirect()->route('admin.dashboard')->with('success', 'Registrasi berhasil! Anda sekarang bisa mengakses dashboard.');
+            'nip' => 'NIP atau password salah.',
+        ])->onlyInput('nip');
     }
 
     public function logout(Request $request)
@@ -61,4 +57,3 @@ class AuthController extends Controller
         return redirect()->route('login');
     }
 }
-

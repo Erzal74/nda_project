@@ -12,6 +12,7 @@ class NdaFile extends Model
     protected $fillable = [
         'nda_id',
         'file_path',
+        'member_index',
     ];
 
     public function nda()
