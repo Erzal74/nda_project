@@ -10,22 +10,7 @@
                 <h1 class="h2 fw-bold text-gray-900 mb-2">Detail Proyek NDA</h1>
                 <p class="text-muted mb-0">Informasi lengkap dan terperinci tentang proyek</p>
             </div>
-            <div class="d-flex gap-2">
-                <a href="{{ route('pegawai.nda.edit', $nda) }}" class="btn btn-warning btn-modern rounded-2">
-                    <i class="bi bi-pencil-square me-2"></i>Edit Proyek
-                </a>
-                <form action="{{ route('pegawai.nda.delete', $nda) }}" method="POST" class="d-inline delete-form">
-                    @csrf
-                    @method('DELETE')
-                    <button type="button" class="btn btn-danger btn-modern rounded-2 delete-single-btn"
-                        data-project-name="{{ $nda->project_name }}">
-                        <i class="bi bi-trash me-2"></i>Hapus Proyek
-                    </button>
-                </form>
-                <a href="{{ route('pegawai.dashboard') }}" class="btn btn-outline-secondary btn-modern rounded-2">
-                    <i class="bi bi-arrow-left me-2"></i>Kembali ke Dashboard
-                </a>
-            </div>
+            
         </div>
 
         <!-- Project Overview Card -->
@@ -166,7 +151,7 @@
                     </div>
                 </div>
 
-                <!-- Team Members -->
+                <!-- Team Members with Individual Documents -->
                 <div class="card border-0 shadow-sm rounded-3 mb-4">
                     <div class="card-header bg-white p-4 border-bottom">
                         <div class="d-flex align-items-center gap-3">
@@ -174,7 +159,7 @@
                                 <i class="bi bi-people text-purple fs-5"></i>
                             </div>
                             <div>
-                                <h5 class="fw-semibold mb-1">Anggota Tim</h5>
+                                <h5 class="fw-semibold mb-1">Anggota Tim & Dokumen NDA</h5>
                                 <p class="text-muted small mb-0">
                                     @php
                                         $memberCount = 0;
@@ -204,25 +189,87 @@
                         @endphp
 
                         @if (!empty($members))
-                            <div class="row g-3">
+                            <div class="members-list">
                                 @foreach ($members as $index => $member)
-                                    <div class="col-md-6">
-                                        <div class="member-card d-flex align-items-center gap-3 p-3 border rounded-2">
-                                            <div
-                                                class="member-avatar bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center">
-                                                <i class="bi bi-person text-primary"></i>
+                                    <div class="member-section mb-4">
+                                        <!-- Member Info -->
+                                        <div class="member-header d-flex align-items-center gap-3 p-4 bg-light rounded-3 mb-3">
+                                            <div class="member-avatar bg-primary bg-opacity-20 rounded-circle d-flex align-items-center justify-content-center">
+                                                <i class="bi bi-person text-primary fs-4"></i>
                                             </div>
-                                            <div>
-                                                <div class="member-name fw-medium">{{ $member }}</div>
-                                                <div class="member-role text-muted small">Anggota Tim {{ $index + 1 }}
+                                            <div class="flex-grow-1">
+                                                <div class="member-name fw-bold fs-5 text-gray-900">{{ $member }}</div>
+                                                <div class="member-role text-muted">Anggota Tim {{ $index + 1 }}</div>
+                                            </div>
+                                            <div class="member-status">
+                                                @php
+                                                    // Get documents for this member
+                                                    $memberFiles = $nda->files->filter(function($file) use ($member, $index) {
+                                                        // Assuming there's a member_name or member_index field in files
+                                                        // You might need to adjust this based on your actual database structure
+                                                        return isset($file->member_name) && $file->member_name === $member ||
+                                                               isset($file->member_index) && $file->member_index === $index ||
+                                                               str_contains(strtolower($file->file_path), strtolower(str_replace(' ', '_', $member)));
+                                                    });
+                                                @endphp
+                                                
+                                                @if ($memberFiles->count() > 0)
+                                                    <span class="badge bg-success bg-opacity-10 text-success px-3 py-2">
+                                                        <i class="bi bi-check-circle-fill me-1"></i>
+                                                        {{ $memberFiles->count() }} Dokumen
+                                                    </span>
+                                                @else
+                                                    
+                                                @endif
+                                            </div>
+                                        </div>
+
+                                        <!-- Member Documents -->
+                                        <div class="member-documents">
+                                            @if ($memberFiles->count() > 0)
+                                                <div class="documents-grid">
+                                                    @foreach ($memberFiles as $file)
+                                                        <div class="document-card border rounded-3 p-3 mb-3">
+                                                            <div class="d-flex align-items-center gap-3">
+                                                                <div class="document-icon bg-danger bg-opacity-10 rounded-2 p-2">
+                                                                    <i class="bi bi-file-earmark-pdf text-danger fs-4"></i>
+                                                                </div>
+                                                                <div class="flex-grow-1">
+                                                                    <div class="document-name fw-semibold text-gray-800 mb-1">
+                                                                        {{ basename($file->file_path) }}
+                                                                    </div>
+                                                                    <div class="document-meta text-muted small">
+                                                                        <i class="bi bi-calendar3 me-1"></i>
+                                                                        Upload: {{ $file->created_at ? $file->created_at->translatedFormat('d M Y') : 'Tidak diketahui' }}
+                                                                    </div>
+                                                                </div>
+                                                                <div class="document-actions">
+                                                                    <a href="{{ Storage::url($file->file_path) }}" target="_blank"
+                                                                        class="btn btn-sm btn-outline-primary rounded-2">
+                                                                        <i class="bi bi-eye me-1"></i>Lihat
+                                                                    </a>
+                                                                    <a href="{{ Storage::url($file->file_path) }}" download
+                                                                        class="btn btn-sm btn-outline-secondary rounded-2 ms-1">
+                                                                        <i class="bi bi-download me-1"></i>Download
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    @endforeach
                                                 </div>
-                                            </div>
+                                            @else
+                                                <div class="empty-documents text-center py-4 border rounded-3 bg-light bg-opacity-50">
+                                                    <i class="bi bi-file-earmark-x text-muted fs-2 mb-2"></i>
+                                                    <p class="text-muted mb-1">Belum ada dokumen NDA</p>
+                                                    <small class="text-muted">{{ $member }} belum mengupload dokumen</small>
+                                                </div>
+                                            @endif
                                         </div>
                                     </div>
                                 @endforeach
                             </div>
                         @else
-                            <div class="empty-state text-center py-4">
+                            <div class="empty-state text-center py-5">
                                 <i class="bi bi-people text-muted fs-1"></i>
                                 <p class="text-muted mt-2 mb-0">Belum ada anggota tim yang ditambahkan</p>
                             </div>
@@ -268,50 +315,59 @@
                     </div>
                 </div>
 
-                <!-- Documents Card -->
+                <!-- Statistics Card -->
                 <div class="card border-0 shadow-sm rounded-3 mb-4">
                     <div class="card-header bg-white p-4 border-bottom">
                         <div class="d-flex align-items-center gap-3">
-                            <div class="section-icon bg-danger bg-opacity-10 rounded-2">
-                                <i class="bi bi-file-earmark-pdf text-danger fs-5"></i>
+                            <div class="section-icon bg-info bg-opacity-10 rounded-2">
+                                <i class="bi bi-graph-up text-info fs-5"></i>
                             </div>
                             <div>
-                                <h5 class="fw-semibold mb-1">Dokumen NDA</h5>
-                                <p class="text-muted small mb-0">{{ $nda->files->count() }} file tersedia</p>
+                                <h5 class="fw-semibold mb-1">Statistik Dokumen</h5>
+                                <p class="text-muted small mb-0">Ringkasan status dokumen</p>
                             </div>
                         </div>
                     </div>
                     <div class="card-body p-4">
-                        @if ($nda->files->isNotEmpty())
-                            <div class="documents-list">
-                                @foreach ($nda->files as $index => $file)
-                                    <div class="document-item d-flex align-items-center gap-3 p-3 border rounded-2 mb-3">
-                                        <div class="document-icon bg-danger bg-opacity-10 rounded-2 p-2">
-                                            <i class="bi bi-file-earmark-pdf text-danger fs-5"></i>
-                                        </div>
-                                        <div class="flex-grow-1">
-                                            <div class="document-name fw-medium small">{{ basename($file->file_path) }}
-                                            </div>
-                                            <div class="document-actions mt-2 d-flex gap-2">
-                                                <a href="{{ Storage::url($file->file_path) }}" target="_blank"
-                                                    class="btn btn-sm btn-outline-primary rounded-2">
-                                                    <i class="bi bi-eye me-1"></i>Lihat
-                                                </a>
-                                                <a href="{{ route('pegawai.nda.download-file', ['nda' => $nda, 'file' => $file]) }}"
-                                                    class="btn btn-sm btn-primary rounded-2">
-                                                    <i class="bi bi-download me-1"></i>Unduh
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                @endforeach
+                        @php
+                            $totalMembers = count($members);
+                            $membersWithDocs = 0;
+                            $totalDocs = $nda->files->count();
+                            
+                            foreach ($members as $index => $member) {
+                                $memberFiles = $nda->files->filter(function($file) use ($member, $index) {
+                                    return isset($file->member_name) && $file->member_name === $member ||
+                                           isset($file->member_index) && $file->member_index === $index ||
+                                           str_contains(strtolower($file->file_path), strtolower(str_replace(' ', '_', $member)));
+                                });
+                                if ($memberFiles->count() > 0) {
+                                    $membersWithDocs++;
+                                }
+                            }
+                            
+                            $completionPercentage = $totalMembers > 0 ? ($membersWithDocs / $totalMembers) * 100 : 0;
+                        @endphp
+                        
+                        <div class="stats-grid">
+                            <div class="stat-item text-center mb-3">
+                                <div class="stat-number h3 fw-bold text-primary mb-1">{{ $totalDocs }}</div>
+                                <div class="stat-label small text-muted">Total Dokumen</div>
                             </div>
-                        @else
-                            <div class="empty-state text-center py-4">
-                                <i class="bi bi-file-earmark-x text-muted fs-1"></i>
-                                <p class="text-muted mt-2 mb-0">Belum ada dokumen yang diunggah</p>
+                            
+                            <div class="stat-item text-center mb-3">
+                                <div class="stat-number h3 fw-bold text-success mb-1">{{ $membersWithDocs }}</div>
+                                <div class="stat-label small text-muted">Sudah Upload</div>
                             </div>
-                        @endif
+                            
+                           
+                            
+                            <div class="progress mb-2" style="height: 8px;">
+                                <div class="progress-bar bg-gradient" style="width: {{ $completionPercentage }}%"></div>
+                            </div>
+                            <div class="text-center small text-muted">
+                                {{ round($completionPercentage) }}% Kelengkapan Dokumen
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -337,7 +393,7 @@
                                 class="d-inline delete-form">
                                 @csrf
                                 @method('DELETE')
-                                <button type="button" class="btn btn-danger btn-modern rounded-2 delete-single-btn"
+                                <button type="button" class="btn btn-danger btn-modern rounded-2 delete-single-btn w-100"
                                     data-project-name="{{ $nda->project_name }}">
                                     <i class="bi bi-trash me-2"></i>Hapus Proyek
                                 </button>
@@ -463,57 +519,55 @@
                 font-weight: 500;
             }
 
-            /* Member Cards */
-            .member-card {
+            /* Member Section Styling */
+            .member-section {
+                border-bottom: 1px solid var(--gray-200);
+                padding-bottom: 1.5rem;
+            }
+
+            .member-section:last-child {
+                border-bottom: none;
+                padding-bottom: 0;
+            }
+
+            .member-header {
+                background: linear-gradient(135deg, var(--gray-50), #ffffff);
                 border: 1px solid var(--gray-200);
-                background: white;
-                transition: all 0.2s ease;
-            }
-
-            .member-card:hover {
-                border-color: var(--primary);
-                box-shadow: var(--shadow-sm);
-            }
-
-            .member-avatar {
-                width: 2.5rem;
-                height: 2.5rem;
-                border-radius: 50%;
-                font-size: 1.125rem;
-            }
-
-            .member-name {
-                font-size: 0.875rem;
-                color: var(--gray-800);
-            }
-
-            .member-role {
-                font-size: 0.75rem;
-            }
-
-            /* Status Indicators */
-            .status-indicator {
                 transition: all 0.3s ease;
             }
 
-            .status-indicator:hover {
-                transform: translateY(-2px);
+            .member-header:hover {
+                box-shadow: var(--shadow-sm);
+                transform: translateY(-1px);
             }
 
-            /* Document Items */
-            .document-item {
+            .member-avatar {
+                width: 3rem;
+                height: 3rem;
+                border-radius: 50%;
+                font-size: 1.25rem;
+            }
+
+            .member-name {
+                font-size: 1.125rem;
+                color: var(--gray-900);
+            }
+
+            .member-role {
+                font-size: 0.875rem;
+            }
+
+            /* Document Card Styling */
+            .document-card {
                 border: 1px solid var(--gray-200);
                 background: white;
                 transition: all 0.2s ease;
             }
 
-            .document-item:hover {
-                border-color: var(--danger);
+            .document-card:hover {
+                border-color: var(--primary);
                 box-shadow: var(--shadow-sm);
-            }
-
-            .document-item:last-child {
-                margin-bottom: 0;
+                transform: translateY(-1px);
             }
 
             .document-icon {
@@ -526,11 +580,58 @@
 
             .document-name {
                 color: var(--gray-800);
-                font-weight: 500;
-                max-width: 200px;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                white-space: nowrap;
+                font-weight: 600;
+            }
+
+            .document-meta {
+                color: var(--gray-500);
+            }
+
+            /* Empty Documents */
+            .empty-documents {
+                border: 2px dashed var(--gray-300);
+                transition: all 0.3s ease;
+            }
+
+            .empty-documents:hover {
+                border-color: var(--gray-400);
+                background-color: var(--gray-100);
+            }
+
+            /* Status Indicators */
+            .status-indicator {
+                transition: all 0.3s ease;
+            }
+
+            .status-indicator:hover {
+                transform: translateY(-2px);
+            }
+
+            /* Statistics */
+            .stats-grid {
+                text-align: center;
+            }
+
+            .stat-item {
+                padding: 1rem;
+                border-radius: var(--radius);
+                background: var(--gray-50);
+                margin-bottom: 1rem;
+            }
+
+            .stat-number {
+                font-size: 1.875rem;
+                line-height: 1;
+            }
+
+            .progress {
+                border-radius: 1rem;
+                background-color: var(--gray-200);
+            }
+
+            .progress-bar {
+                border-radius: 1rem;
+                background: linear-gradient(135deg, var(--success), #0d9488);
             }
 
             /* Empty States */
@@ -601,6 +702,7 @@
                 background-color: var(--primary);
                 border-color: var(--primary);
                 color: white;
+                transform: translateY(-1px);
             }
 
             .btn-outline-secondary {
@@ -644,24 +746,15 @@
                     height: 2.5rem;
                 }
 
-                .member-card {
-                    margin-bottom: 0.5rem;
-                }
-
-                .document-item {
+                .member-header {
                     flex-direction: column;
                     text-align: center;
-                    gap: 0.75rem;
+                    gap: 1rem;
                 }
 
                 .document-actions {
-                    width: 100%;
                     flex-direction: column;
                     gap: 0.5rem;
-                }
-
-                .document-name {
-                    max-width: 100%;
                 }
 
                 .d-grid.gap-2>* {
@@ -674,6 +767,11 @@
                     flex-direction: column;
                     align-items: flex-start;
                     text-align: left;
+                }
+
+                .document-card {
+                    flex-direction: column;
+                    text-align: center;
                 }
             }
         </style>
