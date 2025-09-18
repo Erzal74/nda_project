@@ -11,23 +11,28 @@
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --primary-color: #4f46e5;
-            --primary-dark: #3730a3;
-            --secondary-color: #6b7280;
-            --success-color: #10b981;
-            --warning-color: #f59e0b;
-            --danger-color: #ef4444;
-            --dark-color: #1f2937;
-            --light-bg: #f9fafb;
-            --border-color: #e5e7eb;
-            --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.05);
+            --primary-color: #0f172a;
+            --primary-light: #1e293b;
+            --secondary-color: #64748b;
+            --accent-color: #2563eb;
+            --success-color: #059669;
+            --warning-color: #d97706;
+            --danger-color: #dc2626;
+            --light-bg: #ffffff;
+            --gray-50: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e1;
+            --gray-600: #475569;
+            --gray-900: #0f172a;
+            --border-color: #e2e8f0;
+            --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
             --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
         }
 
         * {
@@ -37,259 +42,266 @@
         }
 
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--light-bg);
-            color: var(--dark-color);
-            line-height: 1.6;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-
-        .page-content {
-            flex: 1 0 auto;
-            padding: 1.5rem 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--gray-50);
+            color: var(--gray-900);
+            line-height: 1.5;
+            font-weight: 400;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
         /* Custom scrollbar */
         ::-webkit-scrollbar {
-            width: 8px;
+            width: 6px;
         }
 
         ::-webkit-scrollbar-track {
-            background: #f1f5f9;
+            background: var(--gray-100);
         }
 
         ::-webkit-scrollbar-thumb {
-            background: #d1d5db;
-            border-radius: 4px;
+            background: var(--gray-300);
+            border-radius: 3px;
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background: #9ca3af;
+            background: var(--secondary-color);
         }
 
         /* Header */
         .admin-header {
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-            padding: 1rem 0;
-            box-shadow: var(--shadow-md);
+            background-color: var(--light-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0;
             position: sticky;
             top: 0;
             z-index: 1000;
+            backdrop-filter: blur(8px);
+            background-color: rgba(255, 255, 255, 0.95);
         }
 
-        .admin-header .container {
+        .admin-header .navbar {
+            padding: 1rem 0;
+            min-height: 70px;
+        }
+
+        .admin-header .navbar-brand {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-        }
-
-        .admin-header .logo {
-            display: flex;
-            align-items: center;
-        }
-
-        .admin-header .logo i {
-            font-size: 1.5rem;
-            color: white;
-            margin-right: 0.5rem;
-        }
-
-        .admin-header .logo h1 {
-            color: white;
-            font-weight: 700;
-            font-size: 1.75rem;
-            margin: 0;
-            letter-spacing: -0.5px;
-        }
-
-        .admin-header .nav-links {
-            display: flex;
-            gap: 1.5rem;
-            align-items: center;
-        }
-
-        .admin-header .nav-links a {
-            color: rgba(255, 255, 255, 0.9);
+            font-weight: 600;
+            font-size: 1.25rem;
+            color: var(--gray-900);
             text-decoration: none;
-            font-weight: 500;
-            font-size: 0.95rem;
-            transition: color 0.2s ease;
         }
 
-        .admin-header .nav-links a:hover {
-            color: white;
+        .admin-header .navbar-brand:hover {
+            color: var(--gray-900);
         }
 
-        .admin-header .user-section {
+        .admin-header .navbar-brand i {
+            font-size: 1.5rem;
+            color: var(--accent-color);
+            margin-right: 0.75rem;
+        }
+
+        .user-section {
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 1.5rem;
         }
 
-        .admin-header .user-section span {
-            color: rgba(255, 255, 255, 0.75);
-            font-size: 0.9rem;
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--gray-600);
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .user-info i {
+            color: var(--secondary-color);
+        }
+
+        /* Main Content */
+        .main-content {
+            min-height: calc(100vh - 140px);
+            padding: 2rem 0;
         }
 
         /* Cards */
-        .modern-card {
-            background: white;
-            border-radius: 12px;
-            box-shadow: var(--shadow-sm);
+        .card-modern {
+            background: var(--light-bg);
+            border-radius: 8px;
             border: 1px solid var(--border-color);
-            transition: all 0.3s ease;
-            overflow: hidden;
+            box-shadow: var(--shadow-xs);
+            transition: all 0.2s ease;
         }
 
-        .modern-card:hover {
-            transform: translateY(-3px);
-            box-shadow: var(--shadow-lg);
+        .card-modern:hover {
+            box-shadow: var(--shadow-sm);
         }
 
-        .modern-card .card-header {
-            background: white;
+        .card-modern .card-header {
+            background: transparent;
             border-bottom: 1px solid var(--border-color);
-            padding: 1.25rem 1.5rem;
+            padding: 1.5rem;
             font-weight: 600;
             font-size: 1.125rem;
-            color: var(--dark-color);
+            color: var(--gray-900);
         }
 
-        .modern-card .card-body {
+        .card-modern .card-body {
             padding: 1.5rem;
         }
 
         /* Buttons */
         .btn-modern {
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
+            padding: 0.625rem 1.25rem;
+            border-radius: 6px;
             font-weight: 500;
             font-size: 0.875rem;
-            transition: all 0.2s ease;
-            border: none;
+            border: 1px solid transparent;
+            transition: all 0.15s ease;
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
             text-decoration: none;
+            line-height: 1.25;
         }
 
-        .btn-modern:hover {
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-md);
+        .btn-modern:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
 
         .btn-primary-modern {
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            background-color: var(--accent-color);
             color: white;
+            border-color: var(--accent-color);
         }
 
         .btn-primary-modern:hover {
-            background: linear-gradient(135deg, #4338ca, #2f2a7d);
+            background-color: #1d4ed8;
+            border-color: #1d4ed8;
+            color: white;
         }
 
         .btn-success-modern {
-            background: linear-gradient(135deg, var(--success-color), #059669);
+            background-color: var(--success-color);
             color: white;
+            border-color: var(--success-color);
         }
 
         .btn-success-modern:hover {
-            background: linear-gradient(135deg, #0d9a74, #047857);
+            background-color: #047857;
+            border-color: #047857;
+            color: white;
         }
 
         .btn-warning-modern {
-            background: linear-gradient(135deg, var(--warning-color), #d97706);
+            background-color: var(--warning-color);
             color: white;
+            border-color: var(--warning-color);
         }
 
         .btn-warning-modern:hover {
-            background: linear-gradient(135deg, #e08a0c, #c25b05);
+            background-color: #b45309;
+            border-color: #b45309;
+            color: white;
         }
 
         .btn-danger-modern {
-            background: linear-gradient(135deg, var(--danger-color), #dc2626);
+            background-color: var(--danger-color);
             color: white;
+            border-color: var(--danger-color);
         }
 
         .btn-danger-modern:hover {
-            background: linear-gradient(135deg, #e53e3e, #b91c1c);
-        }
-
-        .btn-secondary-modern {
-            background: linear-gradient(135deg, var(--secondary-color), #4b5563);
+            background-color: #b91c1c;
+            border-color: #b91c1c;
             color: white;
         }
 
+        .btn-secondary-modern {
+            background-color: white;
+            color: var(--gray-600);
+            border-color: var(--border-color);
+        }
+
         .btn-secondary-modern:hover {
-            background: linear-gradient(135deg, #4b5563, #374151);
+            background-color: var(--gray-50);
+            color: var(--gray-900);
+            border-color: var(--gray-300);
         }
 
         .btn-outline-modern {
-            background: white;
-            border: 2px solid var(--border-color);
-            color: var(--secondary-color);
+            background-color: transparent;
+            color: var(--accent-color);
+            border-color: var(--accent-color);
         }
 
         .btn-outline-modern:hover {
-            border-color: var(--primary-color);
-            color: var(--primary-color);
-            background: #f3f4f6;
+            background-color: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
         }
 
         /* Tables */
-        .modern-table {
-            background: white;
-            border-radius: 12px;
+        .table-modern {
+            background: var(--light-bg);
+            border-radius: 8px;
             overflow: hidden;
-            box-shadow: var(--shadow-sm);
             border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-xs);
         }
 
-        .modern-table table {
+        .table-modern table {
             margin: 0;
         }
 
-        .modern-table .table thead th {
-            background: linear-gradient(135deg, #f9fafb, #f3f4f6);
+        .table-modern .table thead th {
+            background-color: var(--gray-50);
             border: none;
+            border-bottom: 1px solid var(--border-color);
             padding: 1rem 1.5rem;
             font-weight: 600;
-            color: var(--dark-color);
+            color: var(--gray-900);
             font-size: 0.875rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
+            white-space: nowrap;
         }
 
-        .modern-table .table tbody td {
+        .table-modern .table tbody td {
             padding: 1rem 1.5rem;
             border-top: 1px solid var(--border-color);
             vertical-align: middle;
+            font-size: 0.875rem;
         }
 
-        .modern-table .table tbody tr:hover {
-            background-color: rgba(79, 70, 229, 0.04);
+        .table-modern .table tbody tr:hover {
+            background-color: var(--gray-50);
         }
 
         /* Form Controls */
         .form-control-modern {
-            border: 2px solid var(--border-color);
-            border-radius: 8px;
-            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 0.625rem 0.875rem;
             font-size: 0.875rem;
-            transition: all 0.2s ease;
-            background: white;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+            background-color: var(--light-bg);
         }
 
         .form-control-modern:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
             outline: none;
         }
 
         .form-label-modern {
             font-weight: 500;
-            color: var(--dark-color);
+            color: var(--gray-900);
             margin-bottom: 0.5rem;
             font-size: 0.875rem;
         }
@@ -297,253 +309,229 @@
         /* Alerts */
         .alert-modern {
             border: none;
-            border-radius: 8px;
-            padding: 1rem 1.5rem;
+            border-radius: 6px;
+            padding: 1rem;
             margin-bottom: 1.5rem;
             font-weight: 500;
+            font-size: 0.875rem;
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             gap: 0.75rem;
-            animation: fadeIn 0.3s ease-in;
         }
 
         .alert-success-modern {
-            background: linear-gradient(135deg, #ecfdf5, #d1fae5);
-            color: #065f46;
-            border-left: 4px solid var(--success-color);
+            background-color: #f0fdf4;
+            color: #166534;
+            border: 1px solid #bbf7d0;
         }
 
         .alert-danger-modern {
-            background: linear-gradient(135deg, #fef2f2, #fecaca);
+            background-color: #fef2f2;
             color: #991b1b;
-            border-left: 4px solid var(--danger-color);
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
+            border: 1px solid #fecaca;
         }
 
         /* Status badges */
         .status-badge {
-            padding: 0.375rem 0.75rem;
-            border-radius: 20px;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
             font-size: 0.75rem;
-            font-weight: 600;
+            font-weight: 500;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.025em;
             display: inline-flex;
             align-items: center;
             gap: 0.25rem;
         }
 
         .status-pending {
-            background: #fef3c7;
+            background-color: #fef3c7;
             color: #92400e;
         }
 
         .status-approved {
-            background: #d1fae5;
+            background-color: #d1fae5;
             color: #065f46;
         }
 
         .status-rejected {
-            background: #fecaca;
+            background-color: #fee2e2;
             color: #991b1b;
         }
 
         .status-disabled {
-            background: #f3f4f6;
-            color: #374151;
+            background-color: var(--gray-100);
+            color: var(--gray-600);
         }
 
         /* Footer */
         .admin-footer {
-            background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
-            color: white;
-            padding: 2rem 0;
-            margin-top: 2rem;
-            box-shadow: var(--shadow-md);
-            flex-shrink: 0;
+            background-color: var(--light-bg);
+            border-top: 1px solid var(--border-color);
+            padding: 1.5rem 0;
+            margin-top: auto;
+            color: var(--gray-600);
         }
 
-        .admin-footer .container {
-            text-align: center;
-        }
-
-        .admin-footer .footer-logo {
-            font-size: 1.25rem;
-            margin-bottom: 0.5rem;
+        .admin-footer .footer-content {
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.875rem;
+        }
+
+        .admin-footer .footer-brand {
+            display: flex;
             align-items: center;
             gap: 0.5rem;
+            font-weight: 500;
+            color: var(--gray-900);
         }
 
-        .admin-footer .footer-logo i {
-            color: var(--success-color);
-        }
-
-        .admin-footer .footer-text {
-            font-size: 0.875rem;
-            color: rgba(255, 255, 255, 0.75);
-            margin-bottom: 0.75rem;
-        }
-
-        .admin-footer .footer-links a {
-            color: rgba(255, 255, 255, 0.8);
-            text-decoration: none;
-            font-size: 0.875rem;
-            margin: 0 0.75rem;
-            transition: color 0.2s ease;
-        }
-
-        .admin-footer .footer-links a:hover {
-            color: white;
-            text-decoration: underline;
+        .admin-footer .footer-brand i {
+            color: var(--accent-color);
         }
 
         /* Responsive */
         @media (max-width: 768px) {
-            .admin-header .logo h1 {
-                font-size: 1.5rem;
+            .admin-header .navbar-brand {
+                font-size: 1.125rem;
             }
 
-            .admin-header .nav-links {
+            .user-section {
+                gap: 1rem;
+            }
+
+            .user-info span {
                 display: none;
             }
 
-            .admin-header .user-section {
-                gap: 0.75rem;
+            .main-content {
+                padding: 1.5rem 0;
             }
 
-            .modern-card {
-                margin-bottom: 1rem;
+            .card-modern .card-header,
+            .card-modern .card-body {
+                padding: 1.25rem;
             }
 
-            .btn-modern {
-                padding: 0.625rem 1.25rem;
-                font-size: 0.8125rem;
-            }
-
-            .modern-table .table thead th,
-            .modern-table .table tbody td {
+            .table-modern .table thead th,
+            .table-modern .table tbody td {
                 padding: 0.75rem 1rem;
                 font-size: 0.8125rem;
             }
 
-            .admin-footer .footer-links {
+            .admin-footer .footer-content {
                 flex-direction: column;
-                gap: 0.5rem;
+                gap: 0.75rem;
+                text-align: center;
             }
         }
 
         /* Loading animation */
         .loading-spinner {
-            width: 20px;
-            height: 20px;
-            border: 2px solid #f3f4f6;
-            border-top: 2px solid var(--primary-color);
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--gray-200);
+            border-top: 2px solid var(--accent-color);
             border-radius: 50%;
             animation: spin 1s linear infinite;
             display: inline-block;
         }
 
         @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
-        /* Page transitions */
-        .page-content {
-            animation: fadeInUp 0.5s ease-out;
+        /* Utility classes */
+        .text-muted {
+            color: var(--gray-600) !important;
         }
 
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
+        .border-modern {
+            border: 1px solid var(--border-color) !important;
+        }
 
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .bg-light-modern {
+            background-color: var(--gray-50) !important;
+        }
+
+        .rounded-modern {
+            border-radius: 6px !important;
         }
     </style>
 </head>
 
-<body>
+<body class="d-flex flex-column min-vh-100">
     <!-- Header -->
     <header class="admin-header">
         <div class="container">
-            <div class="d-flex justify-content-between align-items-center w-100">
-                <div class="logo">
+            <nav class="navbar navbar-expand-lg p-0">
+                <a class="navbar-brand" href="#">
                     <i class="bi bi-shield-lock"></i>
-                    <h1>NDA Management System</h1>
-                </div>
+                    NDA Management System
+                </a>
+                
                 <div class="user-section">
-                    <span>
-                        <i class="bi bi-person-circle me-1"></i>
-                        {{ Auth::user()->name ?? 'Admin' }}
-                    </span>
+                    <div class="user-info">
+                        <i class="bi bi-person-circle"></i>
+                        <span>{{ Auth::user()->name ?? 'Admin' }}</span>
+                    </div>
                     <form action="{{ route('logout') }}" method="POST" class="d-inline" id="logout-form">
                         @csrf
-                        <button type="submit" class="btn btn-modern btn-danger-modern no-loading logout-btn">
-                            <i class="bi bi-box-arrow-right me-1"></i> Logout
+                        <button type="submit" class="btn btn-modern btn-secondary-modern no-loading logout-btn">
+                            <i class="bi bi-box-arrow-right"></i>
+                            <span class="d-none d-sm-inline">Logout</span>
                         </button>
                     </form>
                 </div>
-            </div>
+            </nav>
         </div>
     </header>
 
     <!-- Main Content -->
-    <div class="container page-content">
-        <!-- Flash Messages -->
-        @if (session('success'))
-            <div class="alert-modern alert-success-modern">
-                <i class="bi bi-check-circle-fill"></i>
-                {{ session('success') }}
-            </div>
-        @endif
+    <main class="main-content flex-grow-1">
+        <div class="container">
+            <!-- Flash Messages -->
+            @if (session('success'))
+                <div class="alert-modern alert-success-modern">
+                    <i class="bi bi-check-circle-fill"></i>
+                    <div>{{ session('success') }}</div>
+                </div>
+            @endif
 
-        @if (session('error'))
-            <div class="alert-modern alert-danger-modern">
-                <i class="bi bi-exclamation-triangle-fill"></i>
-                {{ session('error') }}
-                @if ($errors->any())
-                    <ul class="mb-0">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                @endif
-            </div>
-        @endif
+            @if (session('error'))
+                <div class="alert-modern alert-danger-modern">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    <div>
+                        {{ session('error') }}
+                        @if ($errors->any())
+                            <ul class="mb-0 mt-2">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        @endif
+                    </div>
+                </div>
+            @endif
 
-        @yield('content')
-    </div>
+            @yield('content')
+        </div>
+    </main>
 
     <!-- Footer -->
     <footer class="admin-footer">
         <div class="container">
-            <div class="footer-logo">
-                <i class="bi bi-shield-lock"></i>
-                <span>NDA Management</span>
-            </div>
-            <div class="footer-text">
-                &copy; {{ date('Y') }} NDA Management System. All rights reserved.
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <i class="bi bi-shield-lock"></i>
+                    <span>NDA Management</span>
+                </div>
+                <div>
+                    &copy; {{ date('Y') }} NDA Management System. All rights reserved.
+                </div>
             </div>
         </div>
     </footer>
@@ -556,26 +544,21 @@
         const Swal2 = Swal.mixin({
             customClass: {
                 confirmButton: 'btn btn-modern btn-primary-modern me-2',
-                cancelButton: 'btn btn-modern btn-outline-modern'
+                cancelButton: 'btn btn-modern btn-secondary-modern'
             },
-            buttonsStyling: false,
-            showClass: {
-                popup: 'animate__animated animate__fadeInDown animate__faster'
-            },
-            hideClass: {
-                popup: 'animate__animated animate__fadeOutUp animate__faster'
-            }
+            buttonsStyling: false
         });
 
         window.Swal2 = Swal2;
 
         document.addEventListener('DOMContentLoaded', function() {
+            // Button loading states
             const buttons = document.querySelectorAll('.btn-modern:not(.no-loading)');
             buttons.forEach(button => {
                 button.addEventListener('click', function(e) {
                     if (this.type === 'submit') {
                         e.preventDefault();
-                        const originalText = this.innerHTML;
+                        const originalContent = this.innerHTML;
                         this.innerHTML = '<div class="loading-spinner me-2"></div>Loading...';
                         this.disabled = true;
 
@@ -583,30 +566,30 @@
                         if (form) {
                             setTimeout(() => {
                                 form.submit();
-                            }, 500);
+                            }, 300);
                         }
 
                         setTimeout(() => {
-                            this.innerHTML = originalText;
+                            this.innerHTML = originalContent;
                             this.disabled = false;
-                        }, 5000);
+                        }, 3000);
                     }
                 });
             });
 
+            // Logout confirmation
             const logoutButton = document.querySelector('.logout-btn');
             const logoutForm = document.getElementById('logout-form');
             if (logoutButton && logoutForm) {
                 logoutButton.addEventListener('click', function(e) {
                     e.preventDefault();
                     Swal2.fire({
-                        title: 'Keluar dari Sistem?',
-                        text: 'Anda akan diarahkan ke halaman login.',
+                        title: 'Sign Out',
+                        text: 'Are you sure you want to logout?',
                         icon: 'question',
                         showCancelButton: true,
-                        confirmButtonText: '<i class="bi bi-box-arrow-right me-1"></i>Keluar',
-                        cancelButtonText: '<i class="bi bi-x me-1"></i>Batal',
-                        confirmButtonColor: '#ef4444'
+                        confirmButtonText: 'Sign Out',
+                        cancelButtonText: 'Cancel'
                     }).then((result) => {
                         if (result.isConfirmed) {
                             logoutForm.submit();
@@ -615,14 +598,15 @@
                 });
             }
 
+            // Auto-dismiss alerts
             setTimeout(() => {
                 const alerts = document.querySelectorAll('.alert-modern');
                 alerts.forEach(alert => {
-                    alert.style.transition = 'opacity 0.5s ease';
+                    alert.style.transition = 'opacity 0.3s ease';
                     alert.style.opacity = '0';
                     setTimeout(() => {
                         alert.remove();
-                    }, 500);
+                    }, 300);
                 });
             }, 5000);
         });

@@ -11,7 +11,7 @@
                 <p class="text-muted mb-0">Kelola dokumen Non-Disclosure Agreement dan detail proyek Anda.</p>
             </div>
             <a href="{{ route('pegawai.nda.create') }}" class="btn btn-primary btn-modern rounded-2">
-                <i class="bi bi-plus-lg me-2"></i>Proyek Baru
+                <i class="bi bi-plus-lg me-2"></i><span class="d-none d-sm-inline">Proyek Baru</span><span class="d-sm-none">Baru</span>
             </a>
         </div>
 
@@ -89,56 +89,56 @@
             </div>
         </div>
 
-        <!-- Project Table -->
-        <div class="card border-0 shadow-sm rounded-3">
-            <div class="card-header bg-white p-4 border-bottom">
-                <div class="row align-items-center">
-                    <div class="col">
-                        <h5 class="fw-semibold mb-0">Daftar Proyek</h5>
-                    </div>
-                    <div class="col-auto">
-                        <div class="d-flex gap-2 flex-wrap">
-                            <!-- Search Bar -->
-                            <div class="position-relative">
-                                <input type="search" class="form-control form-control-sm ps-4 rounded-2"
-                                    placeholder="Cari proyek..." id="projectSearch" style="width: 200px;"
-                                    value="{{ request('search') }}">
-                                <i
-                                    class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-2 text-muted"></i>
+            <!-- Project List Container -->
+            <div class="card border-0 shadow-sm rounded-3">
+                <div class="card-header bg-white p-4 border-bottom">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h5 class="fw-semibold mb-0">Daftar Proyek</h5>
+                        </div>
+                        <div class="col-auto">
+                            <div class="d-flex gap-2 flex-wrap">
+                                <!-- Search Bar -->
+                                <div class="position-relative">
+                                    <input type="search" class="form-control form-control-sm ps-4 rounded-2"
+                                        placeholder="Cari proyek..." id="projectSearch" style="min-width: 150px;"
+                                        value="{{ request('search') }}">
+                                    <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-2 text-muted"></i>
+                                </div>
+
+                                <!-- Month Filter -->
+                                <select class="form-select form-select-sm rounded-2" id="monthFilter" style="min-width: 120px;">
+                                    <option value="">Semua Bulan</option>
+                                    <option value="01" {{ request('month') == '01' ? 'selected' : '' }}>Januari</option>
+                                    <option value="02" {{ request('month') == '02' ? 'selected' : '' }}>Februari</option>
+                                    <option value="03" {{ request('month') == '03' ? 'selected' : '' }}>Maret</option>
+                                    <option value="04" {{ request('month') == '04' ? 'selected' : '' }}>April</option>
+                                    <option value="05" {{ request('month') == '05' ? 'selected' : '' }}>Mei</option>
+                                    <option value="06" {{ request('month') == '06' ? 'selected' : '' }}>Juni</option>
+                                    <option value="07" {{ request('month') == '07' ? 'selected' : '' }}>Juli</option>
+                                    <option value="08" {{ request('month') == '08' ? 'selected' : '' }}>Agustus</option>
+                                    <option value="09" {{ request('month') == '09' ? 'selected' : '' }}>September</option>
+                                    <option value="10" {{ request('month') == '10' ? 'selected' : '' }}>Oktober</option>
+                                    <option value="11" {{ request('month') == '11' ? 'selected' : '' }}>November</option>
+                                    <option value="12" {{ request('month') == '12' ? 'selected' : '' }}>Desember</option>
+                                </select>
+
+                                <!-- Clear Filters -->
+                                <button type="button" class="btn btn-outline-secondary btn-sm rounded-2" id="clearFilters">
+                                    <i class="bi bi-x-lg"></i><span class="d-none d-md-inline ms-1">Reset</span>
+                                </button>
+
+                                <!-- Bulk Delete Button -->
+                                <button type="button" class="btn btn-outline-danger btn-sm rounded-2" id="bulkDeleteNdasBtn" disabled>
+                                    <i class="bi bi-trash"></i><span class="d-none d-lg-inline ms-1">Hapus Terpilih</span>
+                                </button>
                             </div>
-
-                            <!-- Month Filter -->
-                            <select class="form-select form-select-sm rounded-2" id="monthFilter" style="width: 150px;">
-                                <option value="">Semua Bulan</option>
-                                <option value="01" {{ request('month') == '01' ? 'selected' : '' }}>Januari</option>
-                                <option value="02" {{ request('month') == '02' ? 'selected' : '' }}>Februari</option>
-                                <option value="03" {{ request('month') == '03' ? 'selected' : '' }}>Maret</option>
-                                <option value="04" {{ request('month') == '04' ? 'selected' : '' }}>April</option>
-                                <option value="05" {{ request('month') == '05' ? 'selected' : '' }}>Mei</option>
-                                <option value="06" {{ request('month') == '06' ? 'selected' : '' }}>Juni</option>
-                                <option value="07" {{ request('month') == '07' ? 'selected' : '' }}>Juli</option>
-                                <option value="08" {{ request('month') == '08' ? 'selected' : '' }}>Agustus</option>
-                                <option value="09" {{ request('month') == '09' ? 'selected' : '' }}>September</option>
-                                <option value="10" {{ request('month') == '10' ? 'selected' : '' }}>Oktober</option>
-                                <option value="11" {{ request('month') == '11' ? 'selected' : '' }}>November</option>
-                                <option value="12" {{ request('month') == '12' ? 'selected' : '' }}>Desember</option>
-                            </select>
-
-                            <!-- Clear Filters -->
-                            <button type="button" class="btn btn-outline-secondary btn-sm rounded-2" id="clearFilters">
-                                <i class="bi bi-x-lg"></i> Reset
-                            </button>
-
-                            <!-- Bulk Delete Button -->
-                            <button type="button" class="btn btn-outline-danger btn-sm rounded-2" id="bulkDeleteNdasBtn"
-                                disabled>
-                                <i class="bi bi-trash me-1"></i>Hapus Terpilih
-                            </button>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="card-body p-0">
+
+            <!-- Desktop Table View -->
+            <div class="card-body p-0 d-none d-lg-block">
                 <div class="table-responsive">
                     <table class="table table-hover mb-0" id="ndaTable">
                         <thead class="table-light">
@@ -159,12 +159,11 @@
                         </thead>
                         <tbody>
                             @forelse ($ndas as $key => $nda)
-                                <tr class="project-row">
+                                <tr class="project-row desktop-row" data-project-id="{{ $nda->id }}" data-nda-month="{{ $nda->nda_signature_date ? $nda->nda_signature_date->format('m') : '' }}">
                                     <td>{{ $ndas->firstItem() + $key }}</td>
                                     <td>
                                         <div class="form-check">
-                                            <input type="checkbox" class="form-check-input nda-checkbox"
-                                                value="{{ $nda->id }}">
+                                            <input type="checkbox" class="form-check-input nda-checkbox" value="{{ $nda->id }}">
                                         </div>
                                     </td>
                                     <td>
@@ -173,10 +172,8 @@
                                                 <i class="bi bi-folder-fill text-primary"></i>
                                             </div>
                                             <div class="ms-3">
-                                                <div class="fw-semibold text-gray-900 project-name">
-                                                    {{ $nda->project_name }}</div>
-                                                <div class="small text-muted project-description">
-                                                    {{ Str::limit($nda->description, 40) }}</div>
+                                                <div class="fw-semibold text-gray-900 project-name">{{ $nda->project_name }}</div>
+                                                <div class="small text-muted project-description">{{ Str::limit($nda->description, 40) }}</div>
                                             </div>
                                         </div>
                                     </td>
@@ -190,8 +187,7 @@
                                             <span class="text-muted">-</span>
                                         @endif
                                     </td>
-                                    <td class="project-nda-date"
-                                        data-month="{{ $nda->nda_signature_date ? $nda->nda_signature_date->format('m') : '' }}">
+                                    <td class="project-nda-date">
                                         @if ($nda->nda_signature_date)
                                             <div class="badge bg-success bg-opacity-10 text-success">
                                                 {{ $nda->nda_signature_date->translatedFormat('d M Y') }}</div>
@@ -229,8 +225,7 @@
                                                     <li>
                                                         <a href="{{ Storage::url($file->file_path) }}" target="_blank"
                                                             class="small text-primary text-truncate d-block">
-                                                            <i
-                                                                class="bi bi-file-earmark-pdf me-1"></i>{{ basename($file->file_path) }}
+                                                            <i class="bi bi-file-earmark-pdf me-1"></i>{{ basename($file->file_path) }}
                                                         </a>
                                                     </li>
                                                 @endforeach
@@ -263,14 +258,13 @@
                                     </td>
                                 </tr>
                             @empty
-                                <tr id="emptyState">
+                                <tr id="emptyStateDesktop">
                                     <td colspan="8" class="text-center py-5">
                                         <div class="empty-state">
                                             <i class="bi bi-folder-x display-4 text-muted mb-3"></i>
                                             <h5 class="text-muted">Tidak Ada Proyek Ditemukan</h5>
                                             <p class="text-muted mb-3">Mulai dengan membuat proyek NDA pertama Anda.</p>
-                                            <a href="{{ route('pegawai.nda.create') }}"
-                                                class="btn btn-primary btn-modern rounded-2">
+                                            <a href="{{ route('pegawai.nda.create') }}" class="btn btn-primary btn-modern rounded-2">
                                                 <i class="bi bi-plus-lg me-2"></i>Buat Proyek Pertama
                                             </a>
                                         </div>
@@ -282,13 +276,181 @@
                 </div>
             </div>
 
+            <!-- Mobile Card View -->
+            <div class="card-body p-3 d-lg-none" id="mobileProjectList">
+                @forelse ($ndas as $key => $nda)
+                    <div class="project-card mobile-row mb-3" data-project-id="{{ $nda->id }}" data-nda-month="{{ $nda->nda_signature_date ? $nda->nda_signature_date->format('m') : '' }}">
+                        <div class="card border shadow-sm rounded-3">
+                            <div class="card-body p-3">
+                                <!-- Header with checkbox and actions -->
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input nda-checkbox mobile-checkbox" value="{{ $nda->id }}">
+                                        <label class="form-check-label fw-semibold text-gray-900 project-name">
+                                            {{ $nda->project_name }}
+                                        </label>
+                                    </div>
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-secondary rounded-2" type="button" data-bs-toggle="dropdown">
+                                            <i class="bi bi-three-dots-vertical"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            <li>
+                                                <a class="dropdown-item" href="{{ route('pegawai.nda.detail', $nda) }}">
+                                                    <i class="bi bi-eye me-2"></i>Lihat Detail
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="{{ route('pegawai.nda.edit', $nda) }}">
+                                                    <i class="bi bi-pencil me-2"></i>Edit
+                                                </a>
+                                            </li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <form action="{{ route('pegawai.nda.delete', $nda) }}" method="POST" class="d-inline delete-form">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="button" class="dropdown-item text-danger delete-single-btn" data-project-name="{{ $nda->project_name }}">
+                                                        <i class="bi bi-trash me-2"></i>Hapus
+                                                    </button>
+                                                </form>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <!-- Project Description -->
+                                <div class="mb-3">
+                                    <p class="text-muted small mb-0 project-description">{{ $nda->description }}</p>
+                                </div>
+
+                                <!-- Project Info Grid -->
+                                <div class="row g-3">
+                                    <!-- Duration -->
+                                    <div class="col-12">
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-calendar3 text-muted me-2"></i>
+                                            <div class="project-duration">
+                                                @if ($nda->start_date && $nda->end_date)
+                                                    <div class="small text-gray-900">
+                                                        {{ $nda->start_date->translatedFormat('d M') }} - {{ $nda->end_date->translatedFormat('d M Y') }}
+                                                    </div>
+                                                    <div class="small text-muted">{{ $nda->formatted_duration }}</div>
+                                                @else
+                                                    <span class="text-muted small">Durasi belum ditentukan</span>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- NDA Status -->
+                                    <div class="col-12">
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-file-text text-muted me-2"></i>
+                                            <div class="project-nda-date">
+                                                @if ($nda->nda_signature_date)
+                                                    <div class="badge bg-success bg-opacity-10 text-success">
+                                                        <i class="bi bi-check-circle me-1"></i>
+                                                        {{ $nda->nda_signature_date->translatedFormat('d M Y') }}
+                                                    </div>
+                                                @else
+                                                    <div class="badge bg-warning bg-opacity-10 text-warning">
+                                                        <i class="bi bi-clock me-1"></i>
+                                                        Menunggu
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Members -->
+                                    <div class="col-12">
+                                        <div class="d-flex align-items-start">
+                                            <i class="bi bi-people text-muted me-2 mt-1"></i>
+                                            <div>
+                                                @php
+                                                    $members = is_array($nda->members)
+                                                        ? $nda->members
+                                                        : (is_string($nda->members) && json_decode($nda->members) !== null
+                                                            ? json_decode($nda->members, true)
+                                                            : []);
+                                                    $members = array_map(function ($member) {
+                                                        return is_array($member) && isset($member['name'])
+                                                            ? $member['name']
+                                                            : $member;
+                                                    }, $members);
+                                                @endphp
+                                                @if (!empty($members))
+                                                    <div class="small">
+                                                        <span class="fw-medium">Anggota ({{ count($members) }}):</span>
+                                                        <div class="mt-1">
+                                                            @foreach (array_slice($members, 0, 3) as $member)
+                                                                <span class="badge bg-light text-dark me-1 mb-1">{{ $member }}</span>
+                                                            @endforeach
+                                                            @if (count($members) > 3)
+                                                                <span class="small text-muted">+{{ count($members) - 3 }} lainnya</span>
+                                                            @endif
+                                                        </div>
+                                                    </div>
+                                                @else
+                                                    <span class="text-muted small">Tidak ada anggota</span>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Files -->
+                                    <div class="col-12">
+                                        <div class="d-flex align-items-start">
+                                            <i class="bi bi-files text-muted me-2 mt-1"></i>
+                                            <div>
+                                                @if ($nda->files->isNotEmpty())
+                                                    <div class="small">
+                                                        <span class="fw-medium">Berkas ({{ $nda->files->count() }}):</span>
+                                                        <div class="mt-1">
+                                                            @foreach ($nda->files->take(2) as $file)
+                                                                <div class="mb-1">
+                                                                    <a href="{{ Storage::url($file->file_path) }}" target="_blank" class="text-primary text-decoration-none small">
+                                                                        <i class="bi bi-file-earmark-pdf me-1"></i>
+                                                                        {{ Str::limit(basename($file->file_path), 25) }}
+                                                                    </a>
+                                                                </div>
+                                                            @endforeach
+                                                            @if ($nda->files->count() > 2)
+                                                                <span class="small text-muted">+{{ $nda->files->count() - 2 }} berkas lainnya</span>
+                                                            @endif
+                                                        </div>
+                                                    </div>
+                                                @else
+                                                    <span class="text-muted small">Tidak ada berkas</span>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @empty
+                    <div id="emptyStateMobile" class="text-center py-5">
+                        <div class="empty-state">
+                            <i class="bi bi-folder-x display-4 text-muted mb-3"></i>
+                            <h5 class="text-muted">Tidak Ada Proyek Ditemukan</h5>
+                            <p class="text-muted mb-3">Mulai dengan membuat proyek NDA pertama Anda.</p>
+                            <a href="{{ route('pegawai.nda.create') }}" class="btn btn-primary btn-modern rounded-2">
+                                <i class="bi bi-plus-lg me-2"></i>Buat Proyek Pertama
+                            </a>
+                        </div>
+                    </div>
+                @endforelse
+            </div>
+
             <!-- Pagination -->
             @if ($ndas->hasPages())
                 <div class="card-footer bg-white p-4">
                     <div class="d-flex justify-content-between align-items-center">
                         <div class="text-muted small">
-                            Menampilkan {{ $ndas->firstItem() }} sampai {{ $ndas->lastItem() }} dari {{ $ndas->total() }}
-                            hasil
+                            Menampilkan {{ $ndas->firstItem() }} sampai {{ $ndas->lastItem() }} dari {{ $ndas->total() }} hasil
                         </div>
                         <div>
                             {{ $ndas->appends(request()->query())->links('pagination::bootstrap-4') }}
@@ -426,6 +588,35 @@
 
             .project-description {
                 font-size: 0.75rem;
+            }
+
+            /* Mobile Card Styling */
+            .project-card {
+                transition: opacity 0.3s ease;
+            }
+
+            .project-card[style*="none"] {
+                opacity: 0;
+            }
+
+            .project-card .card {
+                transition: all 0.2s ease;
+                border: 1px solid var(--gray-200);
+            }
+
+            .project-card .card:hover {
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                border-color: var(--gray-300);
+            }
+
+            .mobile-checkbox + label {
+                font-size: 0.9rem;
+                cursor: pointer;
+                margin-left: 0.25rem;
+            }
+
+            .mobile-checkbox:checked + label {
+                color: var(--primary);
             }
 
             /* Lists */
@@ -579,21 +770,50 @@
             /* Responsive */
             @media (max-width: 768px) {
                 .container-fluid {
-                    padding-left: 1.5rem;
-                    padding-right: 1.5rem;
+                    padding-left: 0.75rem;
+                    padding-right: 0.75rem;
                 }
 
-                .table-responsive {
-                    overflow-x: auto;
+                .stat-card .card-body {
+                    padding: 1rem;
                 }
 
-                .member-list,
-                .file-list {
-                    max-width: 100px;
+                .stat-number {
+                    font-size: 1.25rem;
                 }
 
-                .file-list a {
-                    max-width: 100px;
+                .stat-icon {
+                    width: 2.5rem;
+                    height: 2.5rem;
+                    font-size: 1rem;
+                }
+
+                .card-header {
+                    padding: 1rem;
+                }
+
+                .card-header .d-flex.gap-2 {
+                    flex-direction: column;
+                    gap: 0.5rem;
+                }
+
+                .card-header .position-relative,
+                .card-header select {
+                    width: 100% !important;
+                    min-width: auto !important;
+                }
+            }
+
+            @media (max-width: 576px) {
+                .d-flex.justify-content-between.align-items-center.mb-5 {
+                    flex-direction: column;
+                    align-items: flex-start;
+                    gap: 1rem;
+                }
+
+                .d-flex.justify-content-between.align-items-center.mb-5 a {
+                    align-self: stretch;
+                    text-align: center;
                 }
             }
         </style>
@@ -610,23 +830,24 @@
                 const projectSearch = document.getElementById('projectSearch');
                 const monthFilter = document.getElementById('monthFilter');
                 const clearFiltersBtn = document.getElementById('clearFilters');
-                const projectRows = document.querySelectorAll('.project-row');
-                const emptyState = document.getElementById('emptyState');
+                const desktopRows = document.querySelectorAll('.desktop-row');
+                const mobileRows = document.querySelectorAll('.mobile-row');
+                const emptyStateDesktop = document.getElementById('emptyStateDesktop');
+                const emptyStateMobile = document.getElementById('emptyStateMobile');
 
                 // Search functionality
                 function performSearch() {
                     const searchTerm = projectSearch.value.toLowerCase().trim();
                     const selectedMonth = monthFilter.value;
-                    let visibleCount = 0;
+                    let visibleDesktopCount = 0;
+                    let visibleMobileCount = 0;
 
-                    projectRows.forEach(row => {
+                    // Filter desktop rows
+                    desktopRows.forEach(row => {
                         const projectName = row.querySelector('.project-name')?.textContent.toLowerCase() || '';
-                        const projectDescription = row.querySelector('.project-description')?.textContent
-                            .toLowerCase() || '';
-                        const projectDuration = row.querySelector('.project-duration')?.textContent
-                            .toLowerCase() || '';
-                        const ndaDateElement = row.querySelector('.project-nda-date');
-                        const ndaMonth = ndaDateElement?.dataset.month || '';
+                        const projectDescription = row.querySelector('.project-description')?.textContent.toLowerCase() || '';
+                        const projectDuration = row.querySelector('.project-duration')?.textContent.toLowerCase() || '';
+                        const ndaMonth = row.dataset.ndaMonth || '';
 
                         const matchesSearch = searchTerm === '' ||
                             projectName.includes(searchTerm) ||
@@ -637,7 +858,7 @@
 
                         if (matchesSearch && matchesMonth) {
                             row.style.display = '';
-                            visibleCount++;
+                            visibleDesktopCount++;
                         } else {
                             row.style.display = 'none';
                             const checkbox = row.querySelector('.nda-checkbox');
@@ -645,9 +866,36 @@
                         }
                     });
 
-                    // Show/hide empty state
-                    if (emptyState) {
-                        emptyState.style.display = visibleCount === 0 ? '' : 'none';
+                    // Filter mobile rows
+                    mobileRows.forEach(row => {
+                        const projectName = row.querySelector('.project-name')?.textContent.toLowerCase() || '';
+                        const projectDescription = row.querySelector('.project-description')?.textContent.toLowerCase() || '';
+                        const projectDuration = row.querySelector('.project-duration')?.textContent.toLowerCase() || '';
+                        const ndaMonth = row.dataset.ndaMonth || '';
+
+                        const matchesSearch = searchTerm === '' ||
+                            projectName.includes(searchTerm) ||
+                            projectDescription.includes(searchTerm) ||
+                            projectDuration.includes(searchTerm);
+
+                        const matchesMonth = selectedMonth === '' || ndaMonth === selectedMonth;
+
+                        if (matchesSearch && matchesMonth) {
+                            row.style.display = '';
+                            visibleMobileCount++;
+                        } else {
+                            row.style.display = 'none';
+                            const checkbox = row.querySelector('.nda-checkbox');
+                            if (checkbox) checkbox.checked = false;
+                        }
+                    });
+
+                    // Show/hide empty states
+                    if (emptyStateDesktop) {
+                        emptyStateDesktop.style.display = visibleDesktopCount === 0 ? '' : 'none';
+                    }
+                    if (emptyStateMobile) {
+                        emptyStateMobile.style.display = visibleMobileCount === 0 ? '' : 'none';
                     }
 
                     // Update bulk delete button state
@@ -698,7 +946,8 @@
                 // Select all functionality
                 selectAllCheckbox.addEventListener('change', function() {
                     const visibleCheckboxes = Array.from(ndaCheckboxes).filter(checkbox => {
-                        return checkbox.closest('.project-row').style.display !== 'none';
+                        const row = checkbox.closest('.desktop-row, .mobile-row');
+                        return row && row.style.display !== 'none';
                     });
 
                     visibleCheckboxes.forEach(checkbox => {
@@ -718,7 +967,8 @@
                 // Update select all checkbox state
                 function updateSelectAllCheckbox() {
                     const visibleCheckboxes = Array.from(ndaCheckboxes).filter(checkbox => {
-                        return checkbox.closest('.project-row').style.display !== 'none';
+                        const row = checkbox.closest('.desktop-row, .mobile-row');
+                        return row && row.style.display !== 'none';
                     });
                     const checkedVisibleCount = visibleCheckboxes.filter(cb => cb.checked).length;
 
@@ -810,6 +1060,7 @@
                     });
                 });
 
+                // Initial search
                 performSearch();
             });
         </script>
