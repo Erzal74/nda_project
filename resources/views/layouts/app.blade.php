@@ -15,24 +15,29 @@
 
     <style>
         :root {
-            --primary-color: #0f172a;
-            --primary-light: #1e293b;
+            --primary-color: #4f46e5;
+            /* Aligned with dashboard */
+            --primary-light: #6366f1;
+            --primary-dark: #4338ca;
             --secondary-color: #64748b;
-            --accent-color: #2563eb;
-            --success-color: #059669;
-            --warning-color: #d97706;
-            --danger-color: #dc2626;
+            --accent-color: var(--primary-color);
+            /* Use primary for consistency */
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
             --light-bg: #ffffff;
-            --gray-50: #f8fafc;
-            --gray-100: #f1f5f9;
-            --gray-200: #e2e8f0;
-            --gray-300: #cbd5e1;
-            --gray-600: #475569;
-            --gray-900: #0f172a;
-            --border-color: #e2e8f0;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-600: #4b5563;
+            --gray-900: #111827;
+            --border-color: var(--gray-200);
             --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
             --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
             --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --radius: 8px;
+            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         * {
@@ -76,7 +81,8 @@
             padding: 0;
             position: sticky;
             top: 0;
-            z-index: 1000;
+            z-index: 1030;
+            /* Higher than dashboard z-index */
             backdrop-filter: blur(8px);
             background-color: rgba(255, 255, 255, 0.95);
         }
@@ -101,7 +107,7 @@
 
         .admin-header .navbar-brand i {
             font-size: 1.5rem;
-            color: var(--accent-color);
+            color: var(--primary-color);
             margin-right: 0.75rem;
         }
 
@@ -126,17 +132,26 @@
 
         /* Main Content */
         .main-content {
-            min-height: calc(100vh - 140px);
-            padding: 2rem 0;
+            flex-grow: 1;
+            padding: 0;
+            /* Removed fixed padding to allow dashboard control */
+        }
+
+        .main-content .container {
+            padding: 0 1rem;
+            /* Minimal padding for responsiveness */
+            max-width: 1400px;
+            /* Match dashboard max-width */
+            margin: 0 auto;
         }
 
         /* Cards */
         .card-modern {
             background: var(--light-bg);
-            border-radius: 8px;
+            border-radius: var(--radius);
             border: 1px solid var(--border-color);
             box-shadow: var(--shadow-xs);
-            transition: all 0.2s ease;
+            transition: var(--transition);
         }
 
         .card-modern:hover {
@@ -159,11 +174,11 @@
         /* Buttons */
         .btn-modern {
             padding: 0.625rem 1.25rem;
-            border-radius: 6px;
+            border-radius: var(--radius);
             font-weight: 500;
             font-size: 0.875rem;
             border: 1px solid transparent;
-            transition: all 0.15s ease;
+            transition: var(--transition);
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
@@ -173,18 +188,18 @@
 
         .btn-modern:focus {
             outline: none;
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            box-shadow: 0 0 0 3px rgba(var(--primary-color), 0.1);
         }
 
         .btn-primary-modern {
-            background-color: var(--accent-color);
+            background-color: var(--primary-color);
             color: white;
-            border-color: var(--accent-color);
+            border-color: var(--primary-color);
         }
 
         .btn-primary-modern:hover {
-            background-color: #1d4ed8;
-            border-color: #1d4ed8;
+            background-color: var(--primary-dark);
+            border-color: var(--primary-dark);
             color: white;
         }
 
@@ -216,16 +231,40 @@
             background-color: var(--danger-color);
             color: white;
             border-color: var(--danger-color);
+            transition: var(--transition);
         }
 
-        .btn-danger-modern:hover {
+        .btn-danger-modern:hover,
+        .btn-danger-modern:focus {
             background-color: #b91c1c;
             border-color: #b91c1c;
             color: white;
+            box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.15);
+        }
+
+        .btn-danger-modern.logout-animating {
+            animation: logoutPulse 0.5s;
+        }
+
+        @keyframes logoutPulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+                transform: scale(1);
+            }
+
+            50% {
+                box-shadow: 0 0 0 8px rgba(239, 68, 68, 0.2);
+                transform: scale(1.05);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.0);
+                transform: scale(1);
+            }
         }
 
         .btn-secondary-modern {
-            background-color: white;
+            background-color: rgb(255, 0, 0);
             color: var(--gray-600);
             border-color: var(--border-color);
         }
@@ -238,20 +277,20 @@
 
         .btn-outline-modern {
             background-color: transparent;
-            color: var(--accent-color);
-            border-color: var(--accent-color);
+            color: var(--primary-color);
+            border-color: var(--primary-color);
         }
 
         .btn-outline-modern:hover {
-            background-color: var(--accent-color);
+            background-color: var(--primary-color);
             color: white;
-            border-color: var(--accent-color);
+            border-color: var(--primary-color);
         }
 
         /* Tables */
         .table-modern {
             background: var(--light-bg);
-            border-radius: 8px;
+            border-radius: var(--radius);
             overflow: hidden;
             border: 1px solid var(--border-color);
             box-shadow: var(--shadow-xs);
@@ -286,7 +325,7 @@
         /* Form Controls */
         .form-control-modern {
             border: 1px solid var(--border-color);
-            border-radius: 6px;
+            border-radius: var(--radius);
             padding: 0.625rem 0.875rem;
             font-size: 0.875rem;
             transition: border-color 0.15s ease, box-shadow 0.15s ease;
@@ -294,8 +333,8 @@
         }
 
         .form-control-modern:focus {
-            border-color: var(--accent-color);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(var(--primary-color), 0.1);
             outline: none;
         }
 
@@ -309,7 +348,7 @@
         /* Alerts */
         .alert-modern {
             border: none;
-            border-radius: 6px;
+            border-radius: var(--radius);
             padding: 1rem;
             margin-bottom: 1.5rem;
             font-weight: 500;
@@ -389,10 +428,16 @@
         }
 
         .admin-footer .footer-brand i {
-            color: var(--accent-color);
+            color: var(--primary-color);
         }
 
         /* Responsive */
+        @media (max-width: 1024px) {
+            .main-content .container {
+                padding: 0 0.75rem;
+            }
+        }
+
         @media (max-width: 768px) {
             .admin-header .navbar-brand {
                 font-size: 1.125rem;
@@ -406,8 +451,8 @@
                 display: none;
             }
 
-            .main-content {
-                padding: 1.5rem 0;
+            .main-content .container {
+                padding: 0 0.5rem;
             }
 
             .card-modern .card-header,
@@ -433,15 +478,20 @@
             width: 16px;
             height: 16px;
             border: 2px solid var(--gray-200);
-            border-top: 2px solid var(--accent-color);
+            border-top: 2px solid var(--primary-color);
             border-radius: 50%;
             animation: spin 1s linear infinite;
             display: inline-block;
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
         /* Utility classes */
@@ -458,7 +508,7 @@
         }
 
         .rounded-modern {
-            border-radius: 6px !important;
+            border-radius: var(--radius) !important;
         }
     </style>
 </head>
@@ -472,7 +522,7 @@
                     <i class="bi bi-shield-lock"></i>
                     NDA Management System
                 </a>
-                
+
                 <div class="user-section">
                     <div class="user-info">
                         <i class="bi bi-person-circle"></i>
@@ -583,16 +633,24 @@
             if (logoutButton && logoutForm) {
                 logoutButton.addEventListener('click', function(e) {
                     e.preventDefault();
+                    // Tambahkan animasi merah pada button
+                    logoutButton.classList.add('btn-danger-modern', 'logout-animating');
+                    setTimeout(() => {
+                        logoutButton.classList.remove('logout-animating');
+                    }, 500);
                     Swal2.fire({
-                        title: 'Sign Out',
-                        text: 'Are you sure you want to logout?',
+                        title: 'Keluar',
+                        text: 'Apakah Anda yakin ingin keluar?',
                         icon: 'question',
                         showCancelButton: true,
-                        confirmButtonText: 'Sign Out',
-                        cancelButtonText: 'Cancel'
+                        confirmButtonText: 'Keluar',
+                        cancelButtonText: 'Batal'
                     }).then((result) => {
                         if (result.isConfirmed) {
                             logoutForm.submit();
+                        } else {
+                            // Kembalikan warna button jika batal
+                            logoutButton.classList.remove('btn-danger-modern');
                         }
                     });
                 });
@@ -613,6 +671,7 @@
     </script>
 
     @stack('scripts')
+    @stack('styles') <!-- Added to allow dashboard styles to be pushed -->
 </body>
 
 </html>

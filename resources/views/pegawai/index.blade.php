@@ -3,199 +3,219 @@
 @section('title', 'Dashboard Pegawai')
 
 @section('content')
-    <div class="container-fluid py-5">
-        <!-- Header -->
-        <div class="d-flex justify-content-between align-items-center mb-5">
-            <div>
-                <h1 class="h2 fw-bold text-gray-900 mb-2">Proyek NDA</h1>
-                <p class="text-muted mb-0">Kelola dokumen Non-Disclosure Agreement dan detail proyek Anda.</p>
-            </div>
-            <a href="{{ route('pegawai.nda.create') }}" class="btn btn-primary btn-modern rounded-2">
-                <i class="bi bi-plus-lg me-2"></i><span class="d-none d-sm-inline">Proyek Baru</span><span class="d-sm-none">Baru</span>
-            </a>
-        </div>
-
-        <!-- Stat Cards -->
-        <div class="row mb-5">
-            <div class="col-lg-3 col-md-6 mb-3">
-                <div class="card stat-card border-0 shadow-sm rounded-3 h-100">
-                    <div class="card-body p-4">
-                        <div class="d-flex align-items-center">
-                            <div class="stat-icon bg-primary bg-opacity-10 rounded-2">
-                                <i class="bi bi-folder-fill text-primary fs-5"></i>
-                            </div>
-                            <div class="ms-3">
-                                <div class="stat-number">{{ $ndas->total() }}</div>
-                                <div class="stat-label">Total Proyek</div>
-                            </div>
-                        </div>
-                    </div>
+    <div class="main-container">
+        <!-- Header Section -->
+        <div class="page-header">
+            <div class="header-content">
+                <div class="header-text">
+                    <h1 class="page-title">Proyek NDA</h1>
+                    <p class="page-subtitle">Kelola dokumen Non-Disclosure Agreement dan detail proyek Anda dengan mudah dan
+                        efisien.</p>
                 </div>
-            </div>
-            <div class="col-lg-3 col-md-6 mb-3">
-                <div class="card stat-card border-0 shadow-sm rounded-3 h-100">
-                    <div class="card-body p-4">
-                        <div class="d-flex align-items-center">
-                            <div class="stat-icon bg-success bg-opacity-10 rounded-2">
-                                <i class="bi bi-check-circle-fill text-success fs-5"></i>
-                            </div>
-                            <div class="ms-3">
-                                <div class="stat-number">{{ $ndas->where('nda_signature_date', '!=', null)->count() }}</div>
-                                <div class="stat-label">NDA Ditandatangani</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-3 col-md-6 mb-3">
-                <div class="card stat-card border-0 shadow-sm rounded-3 h-100">
-                    <div class="card-body p-4">
-                        <div class="d-flex align-items-center">
-                            <div class="stat-icon bg-info bg-opacity-10 rounded-2">
-                                <i class="bi bi-files text-info fs-5"></i>
-                            </div>
-                            <div class="ms-3">
-                                <div class="stat-number">{{ $ndas->sum(function ($nda) {return $nda->files->count();}) }}
-                                </div>
-                                <div class="stat-label">Total Berkas</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-3 col-md-6 mb-3">
-                <div class="card stat-card border-0 shadow-sm rounded-3 h-100">
-                    <div class="card-body p-4">
-                        <div class="d-flex align-items-center">
-                            <div class="stat-icon bg-warning bg-opacity-10 rounded-2">
-                                <i class="bi bi-person-fill text-warning fs-5"></i>
-                            </div>
-                            <div class="ms-3">
-                                <div class="stat-number">
-                                    {{ $ndas->sum(function ($nda) {
-                                        $members = is_array($nda->members)
-                                            ? $nda->members
-                                            : (is_string($nda->members)
-                                                ? json_decode($nda->members, true)
-                                                : []);
-                                        return count($members);
-                                    }) }}
-                                </div>
-                                <div class="stat-label">Total Anggota</div>
-                            </div>
-                        </div>
-                    </div>
+                <div class="header-action">
+                    <a href="{{ route('pegawai.nda.create') }}" class="btn btn-primary btn-create">
+                        <i class="bi bi-plus-circle me-2"></i>
+                        <span>Proyek Baru</span>
+                    </a>
                 </div>
             </div>
         </div>
 
-            <!-- Project List Container -->
-            <div class="card border-0 shadow-sm rounded-3">
-                <div class="card-header bg-white p-4 border-bottom">
-                    <div class="row align-items-center">
-                        <div class="col">
-                            <h5 class="fw-semibold mb-0">Daftar Proyek</h5>
-                        </div>
-                        <div class="col-auto">
-                            <div class="d-flex gap-2 flex-wrap">
-                                <!-- Search Bar -->
-                                <div class="position-relative">
-                                    <input type="search" class="form-control form-control-sm ps-4 rounded-2"
-                                        placeholder="Cari proyek..." id="projectSearch" style="min-width: 150px;"
-                                        value="{{ request('search') }}">
-                                    <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-2 text-muted"></i>
-                                </div>
-
-                                <!-- Month Filter -->
-                                <select class="form-select form-select-sm rounded-2" id="monthFilter" style="min-width: 120px;">
-                                    <option value="">Semua Bulan</option>
-                                    <option value="01" {{ request('month') == '01' ? 'selected' : '' }}>Januari</option>
-                                    <option value="02" {{ request('month') == '02' ? 'selected' : '' }}>Februari</option>
-                                    <option value="03" {{ request('month') == '03' ? 'selected' : '' }}>Maret</option>
-                                    <option value="04" {{ request('month') == '04' ? 'selected' : '' }}>April</option>
-                                    <option value="05" {{ request('month') == '05' ? 'selected' : '' }}>Mei</option>
-                                    <option value="06" {{ request('month') == '06' ? 'selected' : '' }}>Juni</option>
-                                    <option value="07" {{ request('month') == '07' ? 'selected' : '' }}>Juli</option>
-                                    <option value="08" {{ request('month') == '08' ? 'selected' : '' }}>Agustus</option>
-                                    <option value="09" {{ request('month') == '09' ? 'selected' : '' }}>September</option>
-                                    <option value="10" {{ request('month') == '10' ? 'selected' : '' }}>Oktober</option>
-                                    <option value="11" {{ request('month') == '11' ? 'selected' : '' }}>November</option>
-                                    <option value="12" {{ request('month') == '12' ? 'selected' : '' }}>Desember</option>
-                                </select>
-
-                                <!-- Clear Filters -->
-                                <button type="button" class="btn btn-outline-secondary btn-sm rounded-2" id="clearFilters">
-                                    <i class="bi bi-x-lg"></i><span class="d-none d-md-inline ms-1">Reset</span>
-                                </button>
-
-                                <!-- Bulk Delete Button -->
-                                <button type="button" class="btn btn-outline-danger btn-sm rounded-2" id="bulkDeleteNdasBtn" disabled>
-                                    <i class="bi bi-trash"></i><span class="d-none d-lg-inline ms-1">Hapus Terpilih</span>
-                                </button>
-                            </div>
-                        </div>
+        <!-- Statistics Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-content">
+                    <div class="stat-icon stat-icon-primary">
+                        <i class="bi bi-collection-fill"></i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-number">{{ $ndas->total() }}</div>
+                        <div class="stat-label">Total Proyek</div>
                     </div>
                 </div>
+                <div class="stat-progress">
+                    <div class="progress-bar bg-primary" style="width: 100%"></div>
+                </div>
+            </div>
 
-            <!-- Desktop Table View -->
-            <div class="card-body p-0 d-none d-lg-block">
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0" id="ndaTable">
-                        <thead class="table-light">
+            <div class="stat-card">
+                <div class="stat-content">
+                    <div class="stat-icon stat-icon-success">
+                        <i class="bi bi-shield-check-fill"></i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-number">{{ $ndas->where('nda_signature_date', '!=', null)->count() }}</div>
+                        <div class="stat-label">NDA Ditandatangani</div>
+                    </div>
+                </div>
+                <div class="stat-progress">
+                    <div class="progress-bar bg-success"
+                        style="width: {{ $ndas->total() > 0 ? ($ndas->where('nda_signature_date', '!=', null)->count() / $ndas->total()) * 100 : 0 }}%">
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-content">
+                    <div class="stat-icon stat-icon-info">
+                        <i class="bi bi-files-alt"></i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-number">{{ $ndas->sum(function ($nda) {return $nda->files->count();}) }}</div>
+                        <div class="stat-label">Total Berkas</div>
+                    </div>
+                </div>
+                <div class="stat-progress">
+                    <div class="progress-bar bg-info" style="width: 85%"></div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-content">
+                    <div class="stat-icon stat-icon-warning">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-number">
+                            {{ $ndas->sum(function ($nda) {
+                                $members = is_array($nda->members)
+                                    ? $nda->members
+                                    : (is_string($nda->members)
+                                        ? json_decode($nda->members, true)
+                                        : []);
+                                return count($members);
+                            }) }}
+                        </div>
+                        <div class="stat-label">Total Anggota</div>
+                    </div>
+                </div>
+                <div class="stat-progress">
+                    <div class="progress-bar bg-warning" style="width: 70%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Projects Table Section -->
+        <div class="table-section">
+            <div class="table-header">
+                <div class="table-title">
+                    <h2>Daftar Proyek</h2>
+                    <p>Kelola semua proyek NDA Anda dalam satu tempat</p>
+                </div>
+
+                <!-- Filters & Actions -->
+                <div class="table-controls">
+                    <div class="search-controls">
+                        <div class="search-input-wrapper">
+                            <i class="bi bi-search search-icon"></i>
+                            <input type="search" class="search-input" placeholder="Cari proyek..." id="projectSearch"
+                                value="{{ request('search') }}">
+                        </div>
+
+                        <div class="filter-wrapper">
+                            <select class="filter-select" id="monthFilter">
+                                <option value="">Semua Bulan</option>
+                                <option value="01" {{ request('month') == '01' ? 'selected' : '' }}>Januari</option>
+                                <option value="02" {{ request('month') == '02' ? 'selected' : '' }}>Februari</option>
+                                <option value="03" {{ request('month') == '03' ? 'selected' : '' }}>Maret</option>
+                                <option value="04" {{ request('month') == '04' ? 'selected' : '' }}>April</option>
+                                <option value="05" {{ request('month') == '05' ? 'selected' : '' }}>Mei</option>
+                                <option value="06" {{ request('month') == '06' ? 'selected' : '' }}>Juni</option>
+                                <option value="07" {{ request('month') == '07' ? 'selected' : '' }}>Juli</option>
+                                <option value="08" {{ request('month') == '08' ? 'selected' : '' }}>Agustus</option>
+                                <option value="09" {{ request('month') == '09' ? 'selected' : '' }}>September</option>
+                                <option value="10" {{ request('month') == '10' ? 'selected' : '' }}>Oktober</option>
+                                <option value="11" {{ request('month') == '11' ? 'selected' : '' }}>November</option>
+                                <option value="12" {{ request('month') == '12' ? 'selected' : '' }}>Desember</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="action-controls">
+                        <button type="button" class="btn btn-secondary btn-reset" id="clearFilters">
+                            <i class="bi bi-arrow-clockwise me-1"></i>
+                            Reset
+                        </button>
+                        <button type="button" class="btn btn-danger btn-bulk-delete" id="bulkDeleteNdasBtn" disabled>
+                            <i class="bi bi-trash me-1"></i>
+                            Hapus Terpilih
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table Container -->
+            <div class="table-container">
+                <div class="table-wrapper">
+                    <table class="projects-table" id="ndaTable">
+                        <thead>
                             <tr>
-                                <th width="40">No.</th>
-                                <th width="40">
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" id="selectAllNdas">
+                                <th class="th-number">No.</th>
+                                <th class="th-checkbox">
+                                    <div class="checkbox-wrapper">
+                                        <input type="checkbox" class="table-checkbox" id="selectAllNdas">
+                                        <label for="selectAllNdas"></label>
                                     </div>
                                 </th>
-                                <th>Proyek</th>
-                                <th>Durasi</th>
-                                <th>NDA Ditandatangani</th>
-                                <th>Anggota</th>
-                                <th>Berkas</th>
-                                <th width="120" class="text-center">Aksi</th>
+                                <th class="th-project">Proyek</th>
+                                <th class="th-duration">Durasi</th>
+                                <th class="th-status">Status NDA</th>
+                                <th class="th-members">Anggota</th>
+                                <th class="th-files">Berkas</th>
+                                <th class="th-actions">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse ($ndas as $key => $nda)
-                                <tr class="project-row desktop-row" data-project-id="{{ $nda->id }}" data-nda-month="{{ $nda->nda_signature_date ? $nda->nda_signature_date->format('m') : '' }}">
-                                    <td>{{ $ndas->firstItem() + $key }}</td>
-                                    <td>
-                                        <div class="form-check">
-                                            <input type="checkbox" class="form-check-input nda-checkbox" value="{{ $nda->id }}">
+                                <tr class="project-row" data-project-id="{{ $nda->id }}">
+                                    <td class="td-number">{{ $ndas->firstItem() + $key }}</td>
+                                    <td class="td-checkbox">
+                                        <div class="checkbox-wrapper">
+                                            <input type="checkbox" class="table-checkbox nda-checkbox"
+                                                id="nda-{{ $nda->id }}" value="{{ $nda->id }}">
+                                            <label for="nda-{{ $nda->id }}"></label>
                                         </div>
                                     </td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <div class="project-avatar bg-primary bg-opacity-10 rounded-2">
-                                                <i class="bi bi-folder-fill text-primary"></i>
+                                    <td class="td-project">
+                                        <div class="project-info">
+                                            <div class="project-icon">
+                                                <i class="bi bi-folder-fill"></i>
                                             </div>
-                                            <div class="ms-3">
-                                                <div class="fw-semibold text-gray-900 project-name">{{ $nda->project_name }}</div>
-                                                <div class="small text-muted project-description">{{ Str::limit($nda->description, 40) }}</div>
+                                            <div class="project-details">
+                                                <div class="project-name">{{ $nda->project_name }}</div>
+                                                <div class="project-description">{{ Str::limit($nda->description, 50) }}
+                                                </div>
                                             </div>
                                         </div>
                                     </td>
-                                    <td class="project-duration">
+                                    <td class="td-duration project-duration">
                                         @if ($nda->start_date && $nda->end_date)
-                                            <div class="small text-gray-900">
-                                                {{ $nda->start_date->translatedFormat('d M') }} -
-                                                {{ $nda->end_date->translatedFormat('d M Y') }}</div>
-                                            <div class="small text-muted">{{ $nda->formatted_duration }}</div>
+                                            <div class="duration-info">
+                                                <div class="duration-dates">
+                                                    {{ $nda->start_date->translatedFormat('d M') }} -
+                                                    {{ $nda->end_date->translatedFormat('d M Y') }}
+                                                </div>
+                                                <div class="duration-length">{{ $nda->formatted_duration }}</div>
+                                            </div>
                                         @else
-                                            <span class="text-muted">-</span>
+                                            <span class="text-muted">Tidak diatur</span>
                                         @endif
                                     </td>
-                                    <td class="project-nda-date">
+                                    <td class="td-status project-nda-date"
+                                        data-month="{{ $nda->nda_signature_date ? $nda->nda_signature_date->format('m') : '' }}">
                                         @if ($nda->nda_signature_date)
-                                            <div class="badge bg-success bg-opacity-10 text-success">
-                                                {{ $nda->nda_signature_date->translatedFormat('d M Y') }}</div>
+                                            <div class="status-badge status-signed">
+                                                <i class="bi bi-check-circle-fill me-1"></i>
+                                                {{ $nda->nda_signature_date->translatedFormat('d M Y') }}
+                                            </div>
                                         @else
-                                            <div class="badge bg-warning bg-opacity-10 text-warning">Menunggu</div>
+                                            <div class="status-badge status-pending">
+                                                <i class="bi bi-clock-fill me-1"></i>
+                                                Menunggu
+                                            </div>
                                         @endif
                                     </td>
-                                    <td>
+                                    <td class="td-members">
                                         @php
                                             $members = is_array($nda->members)
                                                 ? $nda->members
@@ -207,50 +227,77 @@
                                                     ? $member['name']
                                                     : $member;
                                             }, $members);
+                                            $memberCount = count($members);
+                                            $fileCount = $nda->files->count();
                                         @endphp
                                         @if (!empty($members))
-                                            <ul class="mb-0 small member-list">
-                                                @foreach ($members as $member)
-                                                    <li>{{ $member }}</li>
+                                            <div class="members-list">
+                                                @foreach (array_slice($members, 0, 2) as $member)
+                                                    <div class="member-item">
+                                                        <i class="bi bi-person-circle me-1"></i>
+                                                        {{ $member }}
+                                                    </div>
                                                 @endforeach
-                                            </ul>
+                                                @if ($memberCount > 2)
+                                                    <div class="member-more">
+                                                        +{{ $memberCount - 2 }} lainnya
+                                                    </div>
+                                                @endif
+                                            </div>
+                                            @if ($memberCount !== $fileCount)
+                                                <div class="text-warning small mt-1"
+                                                    title="Data mungkin tidak sinkron, periksa edit form">
+                                                    ⚠️ {{ $memberCount }} anggota, {{ $fileCount }} berkas
+                                                </div>
+                                            @endif
                                         @else
-                                            <span class="text-muted">Tidak ada</span>
+                                            <span class="text-muted">Belum ada anggota</span>
                                         @endif
                                     </td>
-                                    <td>
+                                    <td class="td-files">
                                         @if ($nda->files->isNotEmpty())
-                                            <ul class="list-unstyled mb-0 file-list">
-                                                @foreach ($nda->files as $file)
-                                                    <li>
+                                            <div class="files-list">
+                                                @foreach ($nda->files->take(2) as $file)
+                                                    <div class="file-item">
                                                         <a href="{{ Storage::url($file->file_path) }}" target="_blank"
-                                                            class="small text-primary text-truncate d-block">
-                                                            <i class="bi bi-file-earmark-pdf me-1"></i>{{ basename($file->file_path) }}
+                                                            class="file-link">
+                                                            <i class="bi bi-file-earmark-pdf me-1"></i>
+                                                            {{ Str::limit(basename($file->file_path), 20) }}
                                                         </a>
-                                                    </li>
+                                                    </div>
                                                 @endforeach
-                                            </ul>
+                                                @if ($fileCount > 2)
+                                                    <div class="file-more">
+                                                        +{{ $fileCount - 2 }} file lainnya
+                                                    </div>
+                                                @endif
+                                            </div>
+                                            @if ($memberCount !== $fileCount)
+                                                <div class="text-warning small mt-1"
+                                                    title="Data mungkin tidak sinkron, periksa edit form">
+                                                    ⚠️ Periksa sinkronisasi
+                                                </div>
+                                            @endif
                                         @else
-                                            <span class="text-muted">Tidak ada</span>
+                                            <span class="text-muted">Belum ada berkas</span>
                                         @endif
                                     </td>
-                                    <td>
-                                        <div class="d-flex gap-1 justify-content-center">
-                                            <a href="{{ route('pegawai.nda.detail', $nda) }}"
-                                                class="btn btn-sm btn-outline-primary rounded-2" title="Lihat Detail">
+                                    <td class="td-actions">
+                                        <div class="action-buttons">
+                                            <a href="{{ route('pegawai.nda.detail', $nda) }}" class="btn-action btn-view"
+                                                title="Lihat Detail">
                                                 <i class="bi bi-eye"></i>
                                             </a>
-                                            <a href="{{ route('pegawai.nda.edit', $nda) }}"
-                                                class="btn btn-sm btn-outline-warning rounded-2" title="Edit">
+                                            <a href="{{ route('pegawai.nda.edit', $nda) }}" class="btn-action btn-edit"
+                                                title="Edit Proyek">
                                                 <i class="bi bi-pencil"></i>
                                             </a>
                                             <form action="{{ route('pegawai.nda.delete', $nda) }}" method="POST"
                                                 class="d-inline delete-form">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="button"
-                                                    class="btn btn-sm btn-outline-danger delete-single-btn rounded-2"
-                                                    data-project-name="{{ $nda->project_name }}" title="Hapus">
+                                                <button type="button" class="btn-action btn-delete delete-single-btn"
+                                                    data-project-name="{{ $nda->project_name }}" title="Hapus Proyek">
                                                     <i class="bi bi-trash"></i>
                                                 </button>
                                             </form>
@@ -258,203 +305,169 @@
                                     </td>
                                 </tr>
                             @empty
-                                <tr id="emptyStateDesktop">
-                                    <td colspan="8" class="text-center py-5">
-                                        <div class="empty-state">
-                                            <i class="bi bi-folder-x display-4 text-muted mb-3"></i>
-                                            <h5 class="text-muted">Tidak Ada Proyek Ditemukan</h5>
-                                            <p class="text-muted mb-3">Mulai dengan membuat proyek NDA pertama Anda.</p>
-                                            <a href="{{ route('pegawai.nda.create') }}" class="btn btn-primary btn-modern rounded-2">
-                                                <i class="bi bi-plus-lg me-2"></i>Buat Proyek Pertama
-                                            </a>
-                                        </div>
+                                <tr>
+                                    <td colspan="8" class="text-center text-muted">
+                                        Tidak ada data proyek NDA.
                                     </td>
                                 </tr>
                             @endforelse
                         </tbody>
                     </table>
                 </div>
-            </div>
 
-            <!-- Mobile Card View -->
-            <div class="card-body p-3 d-lg-none" id="mobileProjectList">
-                @forelse ($ndas as $key => $nda)
-                    <div class="project-card mobile-row mb-3" data-project-id="{{ $nda->id }}" data-nda-month="{{ $nda->nda_signature_date ? $nda->nda_signature_date->format('m') : '' }}">
-                        <div class="card border shadow-sm rounded-3">
-                            <div class="card-body p-3">
-                                <!-- Header with checkbox and actions -->
-                                <div class="d-flex justify-content-between align-items-start mb-3">
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input nda-checkbox mobile-checkbox" value="{{ $nda->id }}">
-                                        <label class="form-check-label fw-semibold text-gray-900 project-name">
-                                            {{ $nda->project_name }}
-                                        </label>
+                <!-- Mobile Cards (Hidden on desktop) -->
+                <div class="mobile-cards">
+                    @forelse ($ndas as $key => $nda)
+                        <div class="mobile-card project-row" data-project-id="{{ $nda->id }}">
+                            <div class="mobile-card-header">
+                                <div class="mobile-checkbox">
+                                    <div class="checkbox-wrapper">
+                                        <input type="checkbox" class="table-checkbox nda-checkbox"
+                                            id="mobile-nda-{{ $nda->id }}" value="{{ $nda->id }}">
+                                        <label for="mobile-nda-{{ $nda->id }}"></label>
                                     </div>
+                                </div>
+                                <div class="mobile-project-info">
+                                    <div class="mobile-project-icon">
+                                        <i class="bi bi-folder-fill"></i>
+                                    </div>
+                                    <div class="mobile-project-details">
+                                        <h4 class="mobile-project-name">{{ $nda->project_name }}</h4>
+                                        <p class="mobile-project-description">{{ Str::limit($nda->description, 60) }}</p>
+                                    </div>
+                                </div>
+                                <div class="mobile-actions">
                                     <div class="dropdown">
-                                        <button class="btn btn-sm btn-outline-secondary rounded-2" type="button" data-bs-toggle="dropdown">
+                                        <button class="btn-mobile-menu" type="button" data-bs-toggle="dropdown">
                                             <i class="bi bi-three-dots-vertical"></i>
                                         </button>
                                         <ul class="dropdown-menu dropdown-menu-end">
+                                            <li><a class="dropdown-item" href="{{ route('pegawai.nda.detail', $nda) }}">
+                                                    <i class="bi bi-eye me-2"></i>Lihat Detail</a></li>
+                                            <li><a class="dropdown-item" href="{{ route('pegawai.nda.edit', $nda) }}">
+                                                    <i class="bi bi-pencil me-2"></i>Edit Proyek</a></li>
                                             <li>
-                                                <a class="dropdown-item" href="{{ route('pegawai.nda.detail', $nda) }}">
-                                                    <i class="bi bi-eye me-2"></i>Lihat Detail
-                                                </a>
+                                                <hr class="dropdown-divider">
                                             </li>
                                             <li>
-                                                <a class="dropdown-item" href="{{ route('pegawai.nda.edit', $nda) }}">
-                                                    <i class="bi bi-pencil me-2"></i>Edit
-                                                </a>
-                                            </li>
-                                            <li><hr class="dropdown-divider"></li>
-                                            <li>
-                                                <form action="{{ route('pegawai.nda.delete', $nda) }}" method="POST" class="d-inline delete-form">
+                                                <form action="{{ route('pegawai.nda.delete', $nda) }}" method="POST"
+                                                    class="delete-form">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="button" class="dropdown-item text-danger delete-single-btn" data-project-name="{{ $nda->project_name }}">
-                                                        <i class="bi bi-trash me-2"></i>Hapus
+                                                    <button type="button"
+                                                        class="dropdown-item text-danger delete-single-btn"
+                                                        data-project-name="{{ $nda->project_name }}">
+                                                        <i class="bi bi-trash me-2"></i>Hapus Proyek
                                                     </button>
                                                 </form>
                                             </li>
                                         </ul>
                                     </div>
                                 </div>
+                            </div>
 
-                                <!-- Project Description -->
-                                <div class="mb-3">
-                                    <p class="text-muted small mb-0 project-description">{{ $nda->description }}</p>
-                                </div>
-
-                                <!-- Project Info Grid -->
-                                <div class="row g-3">
-                                    <!-- Duration -->
-                                    <div class="col-12">
-                                        <div class="d-flex align-items-center">
-                                            <i class="bi bi-calendar3 text-muted me-2"></i>
-                                            <div class="project-duration">
-                                                @if ($nda->start_date && $nda->end_date)
-                                                    <div class="small text-gray-900">
-                                                        {{ $nda->start_date->translatedFormat('d M') }} - {{ $nda->end_date->translatedFormat('d M Y') }}
-                                                    </div>
-                                                    <div class="small text-muted">{{ $nda->formatted_duration }}</div>
-                                                @else
-                                                    <span class="text-muted small">Durasi belum ditentukan</span>
-                                                @endif
-                                            </div>
+                            <div class="mobile-card-content">
+                                <div class="mobile-info-grid">
+                                    <div class="mobile-info-item">
+                                        <div class="mobile-info-label">Status NDA</div>
+                                        <div class="mobile-info-value project-nda-date"
+                                            data-month="{{ $nda->nda_signature_date ? $nda->nda_signature_date->format('m') : '' }}">
+                                            @if ($nda->nda_signature_date)
+                                                <div class="status-badge status-signed">
+                                                    <i class="bi bi-check-circle-fill me-1"></i>
+                                                    Ditandatangani
+                                                </div>
+                                            @else
+                                                <div class="status-badge status-pending">
+                                                    <i class="bi bi-clock-fill me-1"></i>
+                                                    Menunggu
+                                                </div>
+                                            @endif
                                         </div>
                                     </div>
 
-                                    <!-- NDA Status -->
-                                    <div class="col-12">
-                                        <div class="d-flex align-items-center">
-                                            <i class="bi bi-file-text text-muted me-2"></i>
-                                            <div class="project-nda-date">
-                                                @if ($nda->nda_signature_date)
-                                                    <div class="badge bg-success bg-opacity-10 text-success">
-                                                        <i class="bi bi-check-circle me-1"></i>
-                                                        {{ $nda->nda_signature_date->translatedFormat('d M Y') }}
+                                    <div class="mobile-info-item">
+                                        <div class="mobile-info-label">Durasi Proyek</div>
+                                        <div class="mobile-info-value project-duration">
+                                            @if ($nda->start_date && $nda->end_date)
+                                                <div class="duration-info">
+                                                    <div class="duration-dates">
+                                                        {{ $nda->start_date->translatedFormat('d M') }} -
+                                                        {{ $nda->end_date->translatedFormat('d M Y') }}
                                                     </div>
-                                                @else
-                                                    <div class="badge bg-warning bg-opacity-10 text-warning">
-                                                        <i class="bi bi-clock me-1"></i>
-                                                        Menunggu
-                                                    </div>
-                                                @endif
-                                            </div>
+                                                    <div class="duration-length">{{ $nda->formatted_duration }}</div>
+                                                </div>
+                                            @else
+                                                <span class="text-muted">Tidak diatur</span>
+                                            @endif
                                         </div>
                                     </div>
 
-                                    <!-- Members -->
-                                    <div class="col-12">
-                                        <div class="d-flex align-items-start">
-                                            <i class="bi bi-people text-muted me-2 mt-1"></i>
-                                            <div>
-                                                @php
-                                                    $members = is_array($nda->members)
-                                                        ? $nda->members
-                                                        : (is_string($nda->members) && json_decode($nda->members) !== null
-                                                            ? json_decode($nda->members, true)
-                                                            : []);
-                                                    $members = array_map(function ($member) {
-                                                        return is_array($member) && isset($member['name'])
-                                                            ? $member['name']
-                                                            : $member;
-                                                    }, $members);
-                                                @endphp
-                                                @if (!empty($members))
-                                                    <div class="small">
-                                                        <span class="fw-medium">Anggota ({{ count($members) }}):</span>
-                                                        <div class="mt-1">
-                                                            @foreach (array_slice($members, 0, 3) as $member)
-                                                                <span class="badge bg-light text-dark me-1 mb-1">{{ $member }}</span>
-                                                            @endforeach
-                                                            @if (count($members) > 3)
-                                                                <span class="small text-muted">+{{ count($members) - 3 }} lainnya</span>
-                                                            @endif
-                                                        </div>
-                                                    </div>
-                                                @else
-                                                    <span class="text-muted small">Tidak ada anggota</span>
-                                                @endif
-                                            </div>
+                                    <div class="mobile-info-item">
+                                        <div class="mobile-info-label">Anggota Tim</div>
+                                        <div class="mobile-info-value">
+                                            @php
+                                                $members = is_array($nda->members)
+                                                    ? $nda->members
+                                                    : (is_string($nda->members) && json_decode($nda->members) !== null
+                                                        ? json_decode($nda->members, true)
+                                                        : []);
+                                                $members = array_map(function ($member) {
+                                                    return is_array($member) && isset($member['name'])
+                                                        ? $member['name']
+                                                        : $member;
+                                                }, $members);
+                                            @endphp
+                                            @if (!empty($members))
+                                                <div class="mobile-members">
+                                                    <span class="member-count">{{ count($members) }} anggota</span>
+                                                </div>
+                                            @else
+                                                <span class="text-muted">Belum ada anggota</span>
+                                            @endif
                                         </div>
                                     </div>
 
-                                    <!-- Files -->
-                                    <div class="col-12">
-                                        <div class="d-flex align-items-start">
-                                            <i class="bi bi-files text-muted me-2 mt-1"></i>
-                                            <div>
-                                                @if ($nda->files->isNotEmpty())
-                                                    <div class="small">
-                                                        <span class="fw-medium">Berkas ({{ $nda->files->count() }}):</span>
-                                                        <div class="mt-1">
-                                                            @foreach ($nda->files->take(2) as $file)
-                                                                <div class="mb-1">
-                                                                    <a href="{{ Storage::url($file->file_path) }}" target="_blank" class="text-primary text-decoration-none small">
-                                                                        <i class="bi bi-file-earmark-pdf me-1"></i>
-                                                                        {{ Str::limit(basename($file->file_path), 25) }}
-                                                                    </a>
-                                                                </div>
-                                                            @endforeach
-                                                            @if ($nda->files->count() > 2)
-                                                                <span class="small text-muted">+{{ $nda->files->count() - 2 }} berkas lainnya</span>
-                                                            @endif
-                                                        </div>
-                                                    </div>
-                                                @else
-                                                    <span class="text-muted small">Tidak ada berkas</span>
-                                                @endif
-                                            </div>
+                                    <div class="mobile-info-item">
+                                        <div class="mobile-info-label">Berkas</div>
+                                        <div class="mobile-info-value">
+                                            @if ($nda->files->isNotEmpty())
+                                                <span class="file-count">{{ $nda->files->count() }} berkas</span>
+                                            @else
+                                                <span class="text-muted">Belum ada berkas</span>
+                                            @endif
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                @empty
-                    <div id="emptyStateMobile" class="text-center py-5">
-                        <div class="empty-state">
-                            <i class="bi bi-folder-x display-4 text-muted mb-3"></i>
-                            <h5 class="text-muted">Tidak Ada Proyek Ditemukan</h5>
-                            <p class="text-muted mb-3">Mulai dengan membuat proyek NDA pertama Anda.</p>
-                            <a href="{{ route('pegawai.nda.create') }}" class="btn btn-primary btn-modern rounded-2">
-                                <i class="bi bi-plus-lg me-2"></i>Buat Proyek Pertama
-                            </a>
+                    @empty
+                        <div class="mobile-empty-state" id="mobileEmptyState">
+                            <div class="empty-state">
+                                <div class="empty-icon">
+                                    <i class="bi bi-folder-x"></i>
+                                </div>
+                                <h3 class="empty-title">Belum Ada Proyek</h3>
+                                <p class="empty-subtitle">Mulai dengan membuat proyek NDA pertama Anda.</p>
+                                <a href="{{ route('pegawai.nda.create') }}" class="btn btn-primary btn-create">
+                                    <i class="bi bi-plus-circle me-2"></i>
+                                    Buat Proyek Pertama
+                                </a>
+                            </div>
                         </div>
-                    </div>
-                @endforelse
+                    @endforelse
+                </div>
             </div>
 
             <!-- Pagination -->
             @if ($ndas->hasPages())
-                <div class="card-footer bg-white p-4">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="text-muted small">
-                            Menampilkan {{ $ndas->firstItem() }} sampai {{ $ndas->lastItem() }} dari {{ $ndas->total() }} hasil
-                        </div>
-                        <div>
-                            {{ $ndas->appends(request()->query())->links('pagination::bootstrap-4') }}
-                        </div>
+                <div class="pagination-wrapper">
+                    <div class="pagination-info">
+                        Menampilkan {{ $ndas->firstItem() }} sampai {{ $ndas->lastItem() }} dari {{ $ndas->total() }}
+                        hasil
+                    </div>
+                    <div class="pagination-links">
+                        {{ $ndas->appends(request()->query())->links('pagination::bootstrap-4') }}
                     </div>
                 </div>
             @endif
@@ -470,19 +483,25 @@
 
     @push('styles')
         <style>
+            /* CSS Variables */
             :root {
-                --primary: #6366f1;
-                --primary-soft: rgba(99, 102, 241, 0.1);
+                --primary: #4f46e5;
+                --primary-light: #6366f1;
+                --primary-dark: #4338ca;
+                --primary-bg: rgba(79, 70, 229, 0.08);
+
                 --success: #10b981;
-                --success-soft: rgba(16, 185, 129, 0.1);
+                --success-bg: rgba(16, 185, 129, 0.08);
+
                 --warning: #f59e0b;
-                --warning-soft: rgba(245, 158, 11, 0.1);
+                --warning-bg: rgba(245, 158, 11, 0.08);
+
                 --danger: #ef4444;
-                --danger-soft: rgba(239, 68, 68, 0.1);
+                --danger-bg: rgba(239, 68, 68, 0.08);
+
                 --info: #0ea5e9;
-                --info-soft: rgba(14, 165, 233, 0.1);
-                --purple: #8b5cf6;
-                --purple-soft: rgba(139, 92, 246, 0.1);
+                --info-bg: rgba(14, 165, 233, 0.08);
+
                 --gray-50: #f9fafb;
                 --gray-100: #f3f4f6;
                 --gray-200: #e5e7eb;
@@ -493,48 +512,225 @@
                 --gray-700: #374151;
                 --gray-800: #1f2937;
                 --gray-900: #111827;
-                --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-                --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-                --radius: 0.5rem;
-                --radius-md: 0.75rem;
-                --radius-lg: 1rem;
+
+                --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+                --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+                --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+                --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+                --radius: 8px;
+                --radius-sm: 6px;
+                --radius-lg: 12px;
+                --radius-xl: 16px;
+
+                --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+                --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
             }
 
-            .container-fluid {
-                max-width: 1280px;
-                padding-left: 1rem;
-                padding-right: 1rem;
+            /* Base Styles */
+            * {
+                box-sizing: border-box;
             }
 
-            .text-gray-900 {
-                color: var(--gray-900) !important;
+            body {
+                font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+                background-color: var(--gray-50);
+                color: var(--gray-900);
+                line-height: 1.6;
             }
 
-            /* Stat Card Styling */
-            .stat-card {
+            /* Main Container */
+            .main-container {
+                max-width: 1400px;
+                margin: 0 auto;
+                padding: 2rem 1rem;
+                min-height: 100vh;
+            }
+
+            /* Page Header */
+            .page-header {
+                margin-bottom: 2rem;
+            }
+
+            .header-content {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                gap: 2rem;
+                background: white;
+                padding: 2rem;
+                border-radius: var(--radius-xl);
+                box-shadow: var(--shadow-sm);
+                border: 1px solid var(--gray-200);
+            }
+
+            .header-text {
+                flex: 1;
+            }
+
+            .page-title {
+                font-size: 2rem;
+                font-weight: 700;
+                color: var(--gray-900);
+                margin: 0 0 0.5rem 0;
+                letter-spacing: -0.025em;
+            }
+
+            .page-subtitle {
+                font-size: 1rem;
+                color: var(--gray-600);
+                margin: 0;
+                line-height: 1.5;
+            }
+
+            .header-action {
+                display: flex;
+                align-items: center;
+            }
+
+            /* Buttons */
+            .btn {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0.75rem 1.5rem;
+                font-size: 0.875rem;
+                font-weight: 600;
+                text-decoration: none;
+                border: none;
+                border-radius: var(--radius);
+                transition: var(--transition);
+                cursor: pointer;
+                white-space: nowrap;
+                position: relative;
+                overflow: hidden;
+            }
+
+            .btn:focus {
+                outline: 2px solid transparent;
+                outline-offset: 2px;
+                box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+            }
+
+            .btn-primary {
+                background: linear-gradient(135deg, var(--primary), var(--primary-light));
+                color: white;
+                box-shadow: var(--shadow-sm);
+            }
+
+            .btn-primary:hover {
+                background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+                transform: translateY(-1px);
+                box-shadow: var(--shadow-md);
+            }
+
+            .btn-secondary {
+                background: white;
+                color: var(--gray-700);
+                border: 1px solid var(--gray-300);
+            }
+
+            .btn-secondary:hover {
+                background: var(--gray-50);
+                border-color: var(--gray-400);
+            }
+
+            .btn-danger {
+                background: var(--danger);
+                color: white;
+            }
+
+            .btn-danger:hover {
+                background: #dc2626;
+                transform: translateY(-1px);
+            }
+
+            .btn-danger:disabled {
+                background: var(--gray-300);
+                color: var(--gray-500);
+                cursor: not-allowed;
+                transform: none;
+            }
+
+            .btn-create {
+                padding: 1rem 2rem;
+                font-size: 1rem;
                 border-radius: var(--radius-lg);
-                transition: transform 0.2s ease, box-shadow 0.2s ease;
+                box-shadow: var(--shadow-md);
+            }
+
+            /* Statistics Grid */
+            .stats-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                gap: 1.5rem;
+                margin-bottom: 2.5rem;
+            }
+
+            .stat-card {
+                background: white;
+                padding: 2rem;
+                border-radius: var(--radius-xl);
+                box-shadow: var(--shadow-sm);
+                border: 1px solid var(--gray-100);
+                transition: var(--transition);
+                position: relative;
+                overflow: hidden;
             }
 
             .stat-card:hover {
                 transform: translateY(-2px);
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                box-shadow: var(--shadow-md);
+            }
+
+            .stat-content {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+                margin-bottom: 1rem;
             }
 
             .stat-icon {
-                width: 3rem;
-                height: 3rem;
-                border-radius: var(--radius);
+                width: 3.5rem;
+                height: 3.5rem;
+                border-radius: var(--radius-lg);
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                font-size: 1.25rem;
+                font-size: 1.5rem;
+                flex-shrink: 0;
+            }
+
+            .stat-icon-primary {
+                background: var(--primary-bg);
+                color: var(--primary);
+            }
+
+            .stat-icon-success {
+                background: var(--success-bg);
+                color: var(--success);
+            }
+
+            .stat-icon-info {
+                background: var(--info-bg);
+                color: var(--info);
+            }
+
+            .stat-icon-warning {
+                background: var(--warning-bg);
+                color: var(--warning);
+            }
+
+            .stat-info {
+                flex: 1;
             }
 
             .stat-number {
-                font-size: 1.5rem;
-                font-weight: 700;
+                font-size: 2rem;
+                font-weight: 800;
                 color: var(--gray-900);
+                line-height: 1;
+                margin-bottom: 0.25rem;
             }
 
             .stat-label {
@@ -543,278 +739,922 @@
                 font-weight: 500;
             }
 
-            /* Table Styling */
-            .table th {
+            .stat-progress {
+                height: 4px;
+                background: var(--gray-100);
+                border-radius: 2px;
+                overflow: hidden;
+            }
+
+            .progress-bar {
+                height: 100%;
+                border-radius: 2px;
+                transition: width 0.6s ease;
+            }
+
+            .bg-primary {
+                background-color: var(--primary) !important;
+            }
+
+            .bg-success {
+                background-color: var(--success) !important;
+            }
+
+            .bg-info {
+                background-color: var(--info) !important;
+            }
+
+            .bg-warning {
+                background-color: var(--warning) !important;
+            }
+
+            /* Table Section */
+            .table-section {
+                background: white;
+                border-radius: var(--radius-xl);
+                box-shadow: var(--shadow-sm);
+                border: 1px solid var(--gray-100);
+                overflow: hidden;
+            }
+
+            .table-header {
+                padding: 2rem;
+                border-bottom: 1px solid var(--gray-100);
+                background: linear-gradient(135deg, var(--gray-50) 0%, white 100%);
+            }
+
+            .table-title h2 {
+                font-size: 1.5rem;
+                font-weight: 700;
+                color: var(--gray-900);
+                margin: 0 0 0.25rem 0;
+            }
+
+            .table-title p {
+                font-size: 0.875rem;
+                color: var(--gray-600);
+                margin: 0 0 1.5rem 0;
+            }
+
+            .table-controls {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 1rem;
+                flex-wrap: wrap;
+            }
+
+            .search-controls {
+                display: flex;
+                gap: 1rem;
+                flex-wrap: wrap;
+            }
+
+            .search-input-wrapper {
+                position: relative;
+            }
+
+            .search-icon {
+                position: absolute;
+                left: 1rem;
+                top: 50%;
+                transform: translateY(-50%);
+                color: var(--gray-400);
+                font-size: 0.875rem;
+            }
+
+            .search-input {
+                padding: 0.75rem 1rem 0.75rem 2.5rem;
+                border: 1px solid var(--gray-300);
+                border-radius: var(--radius);
+                font-size: 0.875rem;
+                width: 280px;
+                transition: var(--transition);
+                background: white;
+            }
+
+            .search-input:focus {
+                outline: none;
+                border-color: var(--primary);
+                box-shadow: 0 0 0 3px var(--primary-bg);
+            }
+
+            .filter-wrapper {
+                position: relative;
+            }
+
+            .filter-select {
+                padding: 0.75rem 1rem;
+                border: 1px solid var(--gray-300);
+                border-radius: var(--radius);
+                font-size: 0.875rem;
+                background: white;
+                cursor: pointer;
+                transition: var(--transition);
+                min-width: 150px;
+            }
+
+            .filter-select:focus {
+                outline: none;
+                border-color: var(--primary);
+                box-shadow: 0 0 0 3px var(--primary-bg);
+            }
+
+            .action-controls {
+                display: flex;
+                gap: 0.75rem;
+            }
+
+            .btn-reset {
+                padding: 0.75rem 1rem;
+                font-size: 0.875rem;
+                background-color: #6c757d;
+                color: #fff;
+                border: 1px solid #6c757d;
+            }
+
+            .btn-reset:hover,
+            .btn-reset:focus,
+            .btn-reset:active,
+            .btn-reset:focus:active {
+                background-color: #6c757d !important;
+                color: #fff !important;
+                opacity: 1 !important;
+                box-shadow: none !important;
+            }
+
+            .btn-bulk-delete {
+                padding: 0.75rem 1rem;
+                font-size: 0.875rem;
+            }
+
+            /* Table Container */
+            .table-container {
+                position: relative;
+            }
+
+            .table-wrapper {
+                overflow-x: auto;
+            }
+
+            /* Desktop Table */
+            .projects-table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 0.875rem;
+            }
+
+            .projects-table th {
+                background: var(--gray-50);
+                padding: 1rem;
+                text-align: left;
                 font-weight: 600;
                 color: var(--gray-700);
                 border-bottom: 1px solid var(--gray-200);
-                padding: 1rem;
-                font-size: 0.875rem;
+                white-space: nowrap;
             }
 
-            .table td {
+            .projects-table td {
+                padding: 1rem;
                 vertical-align: middle;
                 border-bottom: 1px solid var(--gray-100);
-                padding: 1rem;
-                font-size: 0.875rem;
             }
 
-            .table tbody tr:hover {
-                background-color: var(--gray-50);
+            .projects-table tbody tr {
+                transition: var(--transition-fast);
             }
 
-            .project-row {
-                transition: opacity 0.3s ease;
+            .projects-table tbody tr:hover {
+                background: var(--gray-50);
             }
 
-            .project-row[style*="none"] {
+            .th-number,
+            .td-number {
+                width: 60px;
+                text-align: center;
+                font-weight: 600;
+                color: var(--gray-500);
+            }
+
+            .th-checkbox,
+            .td-checkbox {
+                width: 50px;
+                text-align: center;
+            }
+
+            .th-actions,
+            .td-actions {
+                width: 120px;
+                text-align: center;
+            }
+
+            /* Checkbox Styling */
+            .checkbox-wrapper {
+                position: relative;
+                display: inline-block;
+            }
+
+            .table-checkbox {
+                width: 18px;
+                height: 18px;
                 opacity: 0;
+                position: absolute;
+                top: 0;
+                left: 0;
+                margin: 0;
+                cursor: pointer;
             }
 
-            .project-avatar {
+            .table-checkbox+label {
+                position: relative;
+                display: inline-block;
+                width: 18px;
+                height: 18px;
+                border: 2px solid var(--gray-300);
+                border-radius: 4px;
+                background: white;
+                cursor: pointer;
+                transition: var(--transition);
+            }
+
+            .table-checkbox:checked+label {
+                background: var(--primary);
+                border-color: var(--primary);
+            }
+
+            .table-checkbox:checked+label::after {
+                content: '';
+                position: absolute;
+                left: 3px;
+                top: 0px;
+                width: 6px;
+                height: 10px;
+                border: 2px solid white;
+                border-top: 0;
+                border-left: 0;
+                transform: rotate(45deg);
+            }
+
+            .table-checkbox:focus+label {
+                box-shadow: 0 0 0 3px var(--primary-bg);
+            }
+
+            /* Project Info */
+            .project-info {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+            }
+
+            .project-icon {
                 width: 2.5rem;
                 height: 2.5rem;
+                background: var(--primary-bg);
+                color: var(--primary);
                 border-radius: var(--radius);
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 font-size: 1.125rem;
+                flex-shrink: 0;
+            }
+
+            .project-details {
+                flex: 1;
+                min-width: 0;
             }
 
             .project-name {
-                font-size: 0.875rem;
                 font-weight: 600;
+                color: var(--gray-900);
+                margin-bottom: 0.25rem;
+                line-height: 1.4;
             }
 
             .project-description {
+                font-size: 0.8125rem;
+                color: var(--gray-600);
+                line-height: 1.3;
+            }
+
+            /* Duration Info */
+            .duration-info {
+                display: flex;
+                flex-direction: column;
+                gap: 0.25rem;
+            }
+
+            .duration-dates {
+                font-weight: 500;
+                color: var(--gray-900);
+                font-size: 0.8125rem;
+            }
+
+            .duration-length {
                 font-size: 0.75rem;
+                color: var(--gray-500);
             }
 
-            /* Mobile Card Styling */
-            .project-card {
-                transition: opacity 0.3s ease;
-            }
-
-            .project-card[style*="none"] {
-                opacity: 0;
-            }
-
-            .project-card .card {
-                transition: all 0.2s ease;
-                border: 1px solid var(--gray-200);
-            }
-
-            .project-card .card:hover {
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-                border-color: var(--gray-300);
-            }
-
-            .mobile-checkbox + label {
-                font-size: 0.9rem;
-                cursor: pointer;
-                margin-left: 0.25rem;
-            }
-
-            .mobile-checkbox:checked + label {
-                color: var(--primary);
-            }
-
-            /* Lists */
-            .member-list {
-                padding-left: 1.25rem;
-                margin: 0;
-                font-size: 0.75rem;
-                line-height: 1.2;
-                max-height: 100px;
-                overflow-y: auto;
-            }
-
-            .member-list li {
-                margin-bottom: 0.25rem;
-            }
-
-            .file-list {
-                margin: 0;
-                padding: 0;
-                font-size: 0.75rem;
-                line-height: 1.2;
-            }
-
-            .file-list li {
-                margin-bottom: 0.25rem;
-            }
-
-            .file-list a {
-                max-width: 150px;
-                overflow: hidden;
-                text-overflow: ellipsis;
+            /* Status Badges */
+            .status-badge {
+                display: inline-flex;
+                align-items: center;
+                padding: 0.375rem 0.75rem;
+                border-radius: var(--radius-sm);
+                font-size: 0.8125rem;
+                font-weight: 500;
                 white-space: nowrap;
-                transition: color 0.2s ease;
             }
 
-            .file-list a:hover {
-                color: var(--primary);
+            .status-signed {
+                background: var(--success-bg);
+                color: var(--success);
             }
 
-            /* Badges */
-            .badge {
-                font-size: 0.75rem;
-                font-weight: 500;
-                padding: 0.25rem 0.5rem;
-                border-radius: var(--radius);
-            }
-
-            /* Buttons */
-            .btn-modern {
-                border-radius: var(--radius);
-                font-weight: 600;
-                padding: 0.75rem 1.5rem;
-                transition: all 0.2s ease;
-                border: none;
-                font-size: 0.875rem;
-            }
-
-            .btn-primary.btn-modern {
-                background-color: var(--primary);
-                box-shadow: 0 2px 4px 0 rgba(99, 102, 241, 0.1);
-            }
-
-            .btn-primary.btn-modern:hover {
-                background-color: #4f46e5;
-                transform: translateY(-1px);
-                box-shadow: 0 4px 12px 0 rgba(99, 102, 241, 0.2);
-            }
-
-            .btn-outline-primary {
-                border: 1px solid var(--primary);
-                color: var(--primary);
-                background: white;
-                transition: all 0.2s ease;
-                font-weight: 500;
-                font-size: 0.875rem;
-            }
-
-            .btn-outline-primary:hover {
-                background-color: var(--primary);
-                border-color: var(--primary);
-                color: white;
-            }
-
-            .btn-outline-warning {
-                border: 1px solid var(--warning);
+            .status-pending {
+                background: var(--warning-bg);
                 color: var(--warning);
-                background: white;
-                transition: all 0.2s ease;
-                font-weight: 500;
+            }
+
+            /* Members List */
+            .members-list {
+                display: flex;
+                flex-direction: column;
+                gap: 0.25rem;
+            }
+
+            .member-item {
+                font-size: 0.8125rem;
+                color: var(--gray-700);
+                display: flex;
+                align-items: center;
+            }
+
+            .member-more {
+                font-size: 0.75rem;
+                color: var(--gray-500);
+                font-style: italic;
+            }
+
+            /* Files List */
+            .files-list {
+                display: flex;
+                flex-direction: column;
+                gap: 0.25rem;
+            }
+
+            .file-item {
+                font-size: 0.8125rem;
+            }
+
+            .file-link {
+                color: var(--primary);
+                text-decoration: none;
+                display: flex;
+                align-items: center;
+                transition: var(--transition);
+            }
+
+            .file-link:hover {
+                color: var(--primary-dark);
+                text-decoration: underline;
+            }
+
+            .file-more {
+                font-size: 0.75rem;
+                color: var(--gray-500);
+                font-style: italic;
+            }
+
+            /* Action Buttons */
+            .action-buttons {
+                display: flex;
+                justify-content: center;
+                gap: 0.5rem;
+            }
+
+            .btn-action {
+                width: 32px;
+                height: 32px;
+                border: none;
+                border-radius: var(--radius-sm);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: var(--transition);
+                text-decoration: none;
                 font-size: 0.875rem;
             }
 
-            .btn-outline-warning:hover {
-                background-color: var(--warning);
-                border-color: var(--warning);
+            .btn-view {
+                background: var(--primary-bg);
+                color: var(--primary);
+            }
+
+            .btn-view:hover {
+                background: var(--primary);
                 color: white;
             }
 
-            .btn-outline-danger {
-                border: 1px solid var(--danger);
+            .btn-edit {
+                background: var(--warning-bg);
+                color: var(--warning);
+            }
+
+            .btn-edit:hover {
+                background: var(--warning);
+                color: white;
+            }
+
+            .btn-delete {
+                background: var(--danger-bg);
                 color: var(--danger);
-                background: white;
-                transition: all 0.2s ease;
-                font-weight: 500;
-                font-size: 0.875rem;
             }
 
-            .btn-outline-danger:hover {
-                background-color: var(--danger);
-                border-color: var(--danger);
+            .btn-delete:hover {
+                background: var(--danger);
                 color: white;
             }
 
-            .btn-outline-secondary {
+            /* Mobile Cards (Hidden on desktop) */
+            .mobile-cards {
+                display: none;
+            }
+
+            .mobile-card {
+                background: white;
+                border: 1px solid var(--gray-200);
+                border-radius: var(--radius-lg);
+                margin-bottom: 1rem;
+                overflow: hidden;
+                transition: var(--transition);
+            }
+
+            .mobile-card:hover {
+                box-shadow: var(--shadow-md);
+                transform: translateY(-1px);
+            }
+
+            .mobile-card-header {
+                display: flex;
+                align-items: flex-start;
+                gap: 1rem;
+                padding: 1.5rem;
+                border-bottom: 1px solid var(--gray-100);
+            }
+
+            .mobile-checkbox {
+                margin-top: 0.25rem;
+            }
+
+            .mobile-project-info {
+                flex: 1;
+                display: flex;
+                gap: 1rem;
+                min-width: 0;
+            }
+
+            .mobile-project-icon {
+                width: 2.5rem;
+                height: 2.5rem;
+                background: var(--primary-bg);
+                color: var(--primary);
+                border-radius: var(--radius);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.125rem;
+                flex-shrink: 0;
+            }
+
+            .mobile-project-details {
+                flex: 1;
+                min-width: 0;
+            }
+
+            .mobile-project-name {
+                font-size: 1rem;
+                font-weight: 600;
+                color: var(--gray-900);
+                margin: 0 0 0.25rem 0;
+                line-height: 1.4;
+            }
+
+            .mobile-project-description {
+                font-size: 0.875rem;
+                color: var(--gray-600);
+                margin: 0;
+                line-height: 1.4;
+            }
+
+            .mobile-actions {
+                position: relative;
+            }
+
+            .btn-mobile-menu {
+                width: 32px;
+                height: 32px;
+                border: none;
+                background: var(--gray-100);
+                border-radius: var(--radius-sm);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: var(--transition);
+                color: var(--gray-600);
+            }
+
+            .btn-mobile-menu:hover {
+                background: var(--gray-200);
+                color: var(--gray-800);
+            }
+
+            .mobile-card-content {
+                padding: 1.5rem;
+            }
+
+            .mobile-info-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 1rem;
+            }
+
+            .mobile-info-item {
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .mobile-info-label {
+                font-size: 0.75rem;
+                font-weight: 600;
+                color: var(--gray-500);
+                text-transform: uppercase;
+                letter-spacing: 0.025em;
+            }
+
+            .mobile-info-value {
+                font-size: 0.875rem;
+                color: var(--gray-900);
+            }
+
+            .mobile-members,
+            .member-count,
+            .file-count {
+                font-size: 0.875rem;
+                color: var(--gray-700);
+                font-weight: 500;
+            }
+
+            .mobile-empty-state {
+                display: none;
+            }
+
+            /* Empty State */
+            .empty-state {
+                text-align: center;
+                padding: 3rem 2rem;
+            }
+
+            .empty-state-cell {
+                border: none !important;
+            }
+
+            .empty-icon {
+                font-size: 4rem;
+                color: var(--gray-300);
+                margin-bottom: 1rem;
+            }
+
+            .empty-title {
+                font-size: 1.25rem;
+                font-weight: 600;
+                color: var(--gray-700);
+                margin: 0 0 0.5rem 0;
+            }
+
+            .empty-subtitle {
+                font-size: 0.875rem;
+                color: var(--gray-500);
+                margin: 0 0 1.5rem 0;
+                line-height: 1.5;
+            }
+
+            /* Pagination */
+            .pagination-wrapper {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 1.5rem 2rem;
+                border-top: 1px solid var(--gray-200);
+                background: var(--gray-50);
+            }
+
+            .pagination-info {
+                font-size: 0.875rem;
+                color: var(--gray-600);
+            }
+
+            .pagination-links .pagination {
+                margin: 0;
+            }
+
+            .pagination .page-link {
                 border: 1px solid var(--gray-300);
                 color: var(--gray-600);
-                background: white;
-                transition: all 0.2s ease;
-                font-weight: 500;
+                padding: 0.5rem 0.75rem;
                 font-size: 0.875rem;
+                transition: var(--transition);
             }
 
-            .btn-outline-secondary:hover {
-                background-color: var(--gray-50);
+            .pagination .page-link:hover {
+                background: var(--gray-50);
                 border-color: var(--gray-400);
                 color: var(--gray-700);
             }
 
-            /* Form Controls */
-            .form-control,
-            .form-select {
-                border-radius: var(--radius);
-                border: 1px solid var(--gray-300);
-                font-size: 0.875rem;
-                padding: 0.5rem 1rem;
-                transition: all 0.2s ease;
-            }
-
-            .form-control:focus,
-            .form-select:focus {
+            .pagination .page-item.active .page-link {
+                background: var(--primary);
                 border-color: var(--primary);
-                box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-                outline: none;
+                color: white;
             }
 
-            /* Empty State */
-            .empty-state i {
-                opacity: 0.5;
+            /* Utility Classes */
+            .text-muted {
+                color: var(--gray-500) !important;
             }
 
-            /* Responsive */
-            @media (max-width: 768px) {
-                .container-fluid {
-                    padding-left: 0.75rem;
-                    padding-right: 0.75rem;
-                }
-
-                .stat-card .card-body {
-                    padding: 1rem;
-                }
-
-                .stat-number {
-                    font-size: 1.25rem;
-                }
-
-                .stat-icon {
-                    width: 2.5rem;
-                    height: 2.5rem;
-                    font-size: 1rem;
-                }
-
-                .card-header {
-                    padding: 1rem;
-                }
-
-                .card-header .d-flex.gap-2 {
-                    flex-direction: column;
-                    gap: 0.5rem;
-                }
-
-                .card-header .position-relative,
-                .card-header select {
-                    width: 100% !important;
-                    min-width: auto !important;
-                }
+            .d-inline {
+                display: inline !important;
             }
 
-            @media (max-width: 576px) {
-                .d-flex.justify-content-between.align-items-center.mb-5 {
-                    flex-direction: column;
-                    align-items: flex-start;
+            .d-flex {
+                display: flex !important;
+            }
+
+            .me-1 {
+                margin-right: 0.25rem !important;
+            }
+
+            .me-2 {
+                margin-right: 0.5rem !important;
+            }
+
+            .ms-2 {
+                margin-left: 0.5rem !important;
+            }
+
+            /* Responsive Design */
+            @media (max-width: 1024px) {
+                .main-container {
+                    padding: 1.5rem 1rem;
+                }
+
+                .stats-grid {
+                    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
                     gap: 1rem;
                 }
 
-                .d-flex.justify-content-between.align-items-center.mb-5 a {
-                    align-self: stretch;
+                .stat-card {
+                    padding: 1.5rem;
+                }
+
+                .table-header {
+                    padding: 1.5rem;
+                }
+
+                .table-controls {
+                    flex-direction: column;
+                    align-items: stretch;
+                    gap: 1rem;
+                }
+
+                .search-controls {
+                    flex-direction: column;
+                    gap: 1rem;
+                }
+
+                .search-input {
+                    width: 100%;
+                }
+
+                .action-controls {
+                    justify-content: flex-end;
+                }
+            }
+
+            @media (max-width: 768px) {
+                .header-content {
+                    flex-direction: column;
+                    gap: 1.5rem;
+                    padding: 1.5rem;
                     text-align: center;
                 }
+
+                .page-title {
+                    font-size: 1.75rem;
+                }
+
+                .stats-grid {
+                    grid-template-columns: 1fr;
+                    gap: 1rem;
+                }
+
+                .stat-card {
+                    padding: 1.25rem;
+                }
+
+                .stat-content {
+                    gap: 0.75rem;
+                }
+
+                .stat-icon {
+                    width: 3rem;
+                    height: 3rem;
+                    font-size: 1.25rem;
+                }
+
+                .stat-number {
+                    font-size: 1.75rem;
+                }
+
+                /* Hide desktop table, show mobile cards */
+                .table-wrapper {
+                    display: none;
+                }
+
+                .mobile-cards {
+                    display: block;
+                    padding: 1rem;
+                }
+
+                .mobile-empty-state {
+                    display: block;
+                }
+
+                .pagination-wrapper {
+                    flex-direction: column;
+                    gap: 1rem;
+                    text-align: center;
+                    padding: 1rem;
+                }
+
+                .mobile-info-grid {
+                    grid-template-columns: 1fr;
+                    gap: 0.75rem;
+                }
+
+                .search-controls {
+                    width: 100%;
+                }
+
+                .action-controls {
+                    width: 100%;
+                    justify-content: stretch;
+                }
+
+                .action-controls .btn {
+                    flex: 1;
+                }
+            }
+
+            @media (max-width: 480px) {
+                .main-container {
+                    padding: 1rem 0.75rem;
+                }
+
+                .header-content {
+                    padding: 1rem;
+                }
+
+                .page-title {
+                    font-size: 1.5rem;
+                }
+
+                .page-subtitle {
+                    font-size: 0.875rem;
+                }
+
+                .btn-create {
+                    padding: 0.75rem 1.5rem;
+                    font-size: 0.875rem;
+                }
+
+                .mobile-card-header,
+                .mobile-card-content {
+                    padding: 1rem;
+                }
+
+                .mobile-project-info {
+                    gap: 0.75rem;
+                }
+
+                .mobile-project-icon {
+                    width: 2rem;
+                    height: 2rem;
+                    font-size: 1rem;
+                }
+
+                .mobile-project-name {
+                    font-size: 0.925rem;
+                }
+
+                .mobile-project-description {
+                    font-size: 0.8125rem;
+                }
+            }
+
+            /* Animation for filtered rows */
+            .project-row {
+                transition: opacity 0.3s ease, transform 0.3s ease;
+            }
+
+            .project-row[style*="display: none"] {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+
+            /* Loading state */
+            @keyframes pulse {
+
+                0%,
+                100% {
+                    opacity: 1;
+                }
+
+                50% {
+                    opacity: 0.5;
+                }
+            }
+
+            .loading {
+                animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            }
+
+            /* Focus styles for better accessibility */
+            .btn:focus-visible,
+            .search-input:focus-visible,
+            .filter-select:focus-visible {
+                outline: 2px solid var(--primary);
+                outline-offset: 2px;
+            }
+
+            /* Dropdown improvements */
+            .dropdown-menu {
+                border: 1px solid var(--gray-200);
+                border-radius: var(--radius);
+                box-shadow: var(--shadow-lg);
+                padding: 0.5rem 0;
+                margin-top: 0.25rem;
+            }
+
+            .dropdown-item {
+                padding: 0.5rem 1rem;
+                font-size: 0.875rem;
+                color: var(--gray-700);
+                transition: var(--transition-fast);
+                display: flex;
+                align-items: center;
+            }
+
+            .dropdown-item:hover {
+                background: var(--gray-50);
+                color: var(--gray-900);
+            }
+
+            .dropdown-item.text-danger {
+                color: var(--danger);
+            }
+
+            .dropdown-item.text-danger:hover {
+                background: var(--danger-bg);
+                color: var(--danger);
+            }
+
+            .dropdown-divider {
+                margin: 0.25rem 0;
+                border-color: var(--gray-200);
+            }
+
+            /* Custom scrollbar */
+            .table-wrapper::-webkit-scrollbar {
+                height: 6px;
+            }
+
+            .table-wrapper::-webkit-scrollbar-track {
+                background: var(--gray-100);
+                border-radius: 3px;
+            }
+
+            .table-wrapper::-webkit-scrollbar-thumb {
+                background: var(--gray-300);
+                border-radius: 3px;
+            }
+
+            .table-wrapper::-webkit-scrollbar-thumb:hover {
+                background: var(--gray-400);
             }
         </style>
     @endpush
@@ -830,97 +1670,83 @@
                 const projectSearch = document.getElementById('projectSearch');
                 const monthFilter = document.getElementById('monthFilter');
                 const clearFiltersBtn = document.getElementById('clearFilters');
-                const desktopRows = document.querySelectorAll('.desktop-row');
-                const mobileRows = document.querySelectorAll('.mobile-row');
-                const emptyStateDesktop = document.getElementById('emptyStateDesktop');
-                const emptyStateMobile = document.getElementById('emptyStateMobile');
+                const projectRows = document.querySelectorAll('.project-row');
+                const emptyState = document.getElementById('emptyState');
+                const mobileEmptyState = document.getElementById('mobileEmptyState');
 
-                // Search functionality
+                // Search functionality with improved performance
                 function performSearch() {
                     const searchTerm = projectSearch.value.toLowerCase().trim();
                     const selectedMonth = monthFilter.value;
-                    let visibleDesktopCount = 0;
-                    let visibleMobileCount = 0;
+                    let visibleCount = 0;
 
-                    // Filter desktop rows
-                    desktopRows.forEach(row => {
-                        const projectName = row.querySelector('.project-name')?.textContent.toLowerCase() || '';
-                        const projectDescription = row.querySelector('.project-description')?.textContent.toLowerCase() || '';
-                        const projectDuration = row.querySelector('.project-duration')?.textContent.toLowerCase() || '';
-                        const ndaMonth = row.dataset.ndaMonth || '';
+                    // Add loading state
+                    document.body.classList.add('loading');
 
-                        const matchesSearch = searchTerm === '' ||
-                            projectName.includes(searchTerm) ||
-                            projectDescription.includes(searchTerm) ||
-                            projectDuration.includes(searchTerm);
+                    // Use requestAnimationFrame for smooth animations
+                    requestAnimationFrame(() => {
+                        projectRows.forEach(row => {
+                            const projectName = row.querySelector('.project-name, .mobile-project-name')
+                                ?.textContent.toLowerCase() || '';
+                            const projectDescription = row.querySelector(
+                                    '.project-description, .mobile-project-description')?.textContent
+                                .toLowerCase() || '';
+                            const projectDuration = row.querySelector('.project-duration')?.textContent
+                                .toLowerCase() || '';
+                            const ndaDateElement = row.querySelector('.project-nda-date');
+                            const ndaMonth = ndaDateElement?.dataset.month || '';
 
-                        const matchesMonth = selectedMonth === '' || ndaMonth === selectedMonth;
+                            const matchesSearch = searchTerm === '' ||
+                                projectName.includes(searchTerm) ||
+                                projectDescription.includes(searchTerm) ||
+                                projectDuration.includes(searchTerm);
 
-                        if (matchesSearch && matchesMonth) {
-                            row.style.display = '';
-                            visibleDesktopCount++;
-                        } else {
-                            row.style.display = 'none';
-                            const checkbox = row.querySelector('.nda-checkbox');
-                            if (checkbox) checkbox.checked = false;
+                            const matchesMonth = selectedMonth === '' || ndaMonth === selectedMonth;
+
+                            if (matchesSearch && matchesMonth) {
+                                row.style.display = '';
+                                visibleCount++;
+                            } else {
+                                row.style.display = 'none';
+                                const checkbox = row.querySelector('.nda-checkbox');
+                                if (checkbox) checkbox.checked = false;
+                            }
+                        });
+
+                        // Show/hide empty states
+                        if (emptyState) {
+                            emptyState.style.display = visibleCount === 0 ? '' : 'none';
                         }
-                    });
-
-                    // Filter mobile rows
-                    mobileRows.forEach(row => {
-                        const projectName = row.querySelector('.project-name')?.textContent.toLowerCase() || '';
-                        const projectDescription = row.querySelector('.project-description')?.textContent.toLowerCase() || '';
-                        const projectDuration = row.querySelector('.project-duration')?.textContent.toLowerCase() || '';
-                        const ndaMonth = row.dataset.ndaMonth || '';
-
-                        const matchesSearch = searchTerm === '' ||
-                            projectName.includes(searchTerm) ||
-                            projectDescription.includes(searchTerm) ||
-                            projectDuration.includes(searchTerm);
-
-                        const matchesMonth = selectedMonth === '' || ndaMonth === selectedMonth;
-
-                        if (matchesSearch && matchesMonth) {
-                            row.style.display = '';
-                            visibleMobileCount++;
-                        } else {
-                            row.style.display = 'none';
-                            const checkbox = row.querySelector('.nda-checkbox');
-                            if (checkbox) checkbox.checked = false;
+                        if (mobileEmptyState) {
+                            mobileEmptyState.style.display = visibleCount === 0 ? 'block' : 'none';
                         }
+
+                        // Update UI state
+                        updateBulkDeleteButton();
+                        updateSelectAllCheckbox();
+
+                        // Remove loading state
+                        document.body.classList.remove('loading');
                     });
-
-                    // Show/hide empty states
-                    if (emptyStateDesktop) {
-                        emptyStateDesktop.style.display = visibleDesktopCount === 0 ? '' : 'none';
-                    }
-                    if (emptyStateMobile) {
-                        emptyStateMobile.style.display = visibleMobileCount === 0 ? '' : 'none';
-                    }
-
-                    // Update bulk delete button state
-                    updateBulkDeleteButton();
-                    // Update select all checkbox
-                    updateSelectAllCheckbox();
                 }
 
-                // Search input event with debounce
+                // Improved debounced search
                 let searchTimeout;
                 projectSearch.addEventListener('input', function() {
                     clearTimeout(searchTimeout);
                     searchTimeout = setTimeout(() => {
                         const url = new URL(window.location);
-                        if (this.value) {
-                            url.searchParams.set('search', this.value);
+                        if (this.value.trim()) {
+                            url.searchParams.set('search', this.value.trim());
                         } else {
                             url.searchParams.delete('search');
                         }
-                        window.history.pushState({}, '', url);
+                        window.history.replaceState({}, '', url);
                         performSearch();
                     }, 300);
                 });
 
-                // Month filter event
+                // Month filter with immediate response
                 monthFilter.addEventListener('change', function() {
                     const url = new URL(window.location);
                     if (this.value) {
@@ -928,32 +1754,42 @@
                     } else {
                         url.searchParams.delete('month');
                     }
-                    window.history.pushState({}, '', url);
+                    window.history.replaceState({}, '', url);
                     performSearch();
                 });
 
-                // Clear filters
+                // Clear filters with animation
                 clearFiltersBtn.addEventListener('click', function() {
                     projectSearch.value = '';
                     monthFilter.value = '';
+
                     const url = new URL(window.location);
                     url.searchParams.delete('search');
                     url.searchParams.delete('month');
-                    window.history.pushState({}, '', url);
-                    performSearch();
+                    window.history.replaceState({}, '', url);
+
+                    // Add a small delay for better UX
+                    setTimeout(() => {
+                        performSearch();
+                    }, 100);
                 });
 
-                // Select all functionality
+                // Enhanced select all functionality
                 selectAllCheckbox.addEventListener('change', function() {
                     const visibleCheckboxes = Array.from(ndaCheckboxes).filter(checkbox => {
-                        const row = checkbox.closest('.desktop-row, .mobile-row');
+                        const row = checkbox.closest('.project-row');
                         return row && row.style.display !== 'none';
                     });
 
-                    visibleCheckboxes.forEach(checkbox => {
-                        checkbox.checked = this.checked;
+                    visibleCheckboxes.forEach((checkbox, index) => {
+                        setTimeout(() => {
+                            checkbox.checked = this.checked;
+                        }, index * 20); // Staggered animation
                     });
-                    updateBulkDeleteButton();
+
+                    setTimeout(() => {
+                        updateBulkDeleteButton();
+                    }, visibleCheckboxes.length * 20);
                 });
 
                 // Individual checkbox change
@@ -967,7 +1803,7 @@
                 // Update select all checkbox state
                 function updateSelectAllCheckbox() {
                     const visibleCheckboxes = Array.from(ndaCheckboxes).filter(checkbox => {
-                        const row = checkbox.closest('.desktop-row, .mobile-row');
+                        const row = checkbox.closest('.project-row');
                         return row && row.style.display !== 'none';
                     });
                     const checkedVisibleCount = visibleCheckboxes.filter(cb => cb.checked).length;
@@ -987,13 +1823,23 @@
                     }
                 }
 
-                // Update bulk delete button state
+                // Update bulk delete button state with count
                 function updateBulkDeleteButton() {
                     const checkedCount = Array.from(ndaCheckboxes).filter(cb => cb.checked).length;
                     bulkDeleteBtn.disabled = checkedCount === 0;
+
+                    // Update button text with count
+                    const buttonText = bulkDeleteBtn.querySelector('span') || bulkDeleteBtn;
+                    if (checkedCount > 0) {
+                        buttonText.textContent = `Hapus ${checkedCount} Terpilih`;
+                        bulkDeleteBtn.classList.add('btn-danger-active');
+                    } else {
+                        buttonText.textContent = 'Hapus Terpilih';
+                        bulkDeleteBtn.classList.remove('btn-danger-active');
+                    }
                 }
 
-                // Bulk delete functionality
+                // Enhanced bulk delete functionality with better UX
                 bulkDeleteBtn.addEventListener('click', function() {
                     const checkedBoxes = Array.from(ndaCheckboxes).filter(cb => cb.checked);
 
@@ -1003,22 +1849,69 @@
                             title: 'Tidak Ada Pilihan',
                             text: 'Pilih setidaknya satu proyek untuk dihapus.',
                             confirmButtonText: 'Mengerti',
-                            confirmButtonColor: '#6366f1'
+                            confirmButtonColor: '#4f46e5',
+                            customClass: {
+                                popup: 'swal-custom-popup',
+                                title: 'swal-custom-title',
+                                content: 'swal-custom-content'
+                            }
                         });
                         return;
                     }
 
+                    // Get project names for better confirmation message
+                    const projectNames = checkedBoxes.map(cb => {
+                        const row = cb.closest('.project-row');
+                        const nameElement = row.querySelector('.project-name, .mobile-project-name');
+                        return nameElement ? nameElement.textContent.trim() : '';
+                    }).filter(name => name);
+
+                    const projectList = projectNames.length <= 3 ?
+                        projectNames.join(', ') :
+                        `${projectNames.slice(0, 3).join(', ')} dan ${projectNames.length - 3} lainnya`;
+
                     Swal.fire({
-                        title: 'Konfirmasi Hapus',
-                        text: `Apakah Anda yakin ingin menghapus ${checkedBoxes.length} proyek yang dipilih? Tindakan ini tidak dapat dibatalkan.`,
+                        title: 'Konfirmasi Hapus Batch',
+                        html: `
+                            <div style="text-align: left; margin: 1rem 0;">
+                                <p>Anda akan menghapus <strong>${checkedBoxes.length} proyek</strong>:</p>
+                                <p style="color: #6b7280; font-size: 0.9rem; margin-top: 0.5rem;">${projectList}</p>
+                                <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 1rem; margin-top: 1rem;">
+                                    <p style="color: #92400e; font-size: 0.85rem; margin: 0;">
+                                        <i class="bi bi-exclamation-triangle me-2"></i>
+                                        <strong>Peringatan:</strong> Tindakan ini tidak dapat dibatalkan dan akan menghapus semua data terkait proyek.
+                                    </p>
+                                </div>
+                            </div>
+                        `,
                         icon: 'warning',
                         showCancelButton: true,
                         confirmButtonColor: '#ef4444',
                         cancelButtonColor: '#6b7280',
-                        confirmButtonText: 'Hapus',
-                        cancelButtonText: 'Batal'
+                        confirmButtonText: `Ya, Hapus ${checkedBoxes.length} Proyek`,
+                        cancelButtonText: 'Batal',
+                        reverseButtons: true,
+                        customClass: {
+                            popup: 'swal-custom-popup',
+                            title: 'swal-custom-title',
+                            htmlContainer: 'swal-custom-html',
+                            confirmButton: 'swal-custom-confirm',
+                            cancelButton: 'swal-custom-cancel'
+                        }
                     }).then((result) => {
                         if (result.isConfirmed) {
+                            // Show loading state
+                            Swal.fire({
+                                title: 'Menghapus Proyek...',
+                                html: 'Mohon tunggu, sedang memproses penghapusan.',
+                                allowOutsideClick: false,
+                                allowEscapeKey: false,
+                                showConfirmButton: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+
                             const selectedIdsContainer = document.getElementById('selectedIds');
                             selectedIdsContainer.innerHTML = '';
 
@@ -1035,7 +1928,7 @@
                     });
                 });
 
-                // Single delete functionality
+                // Enhanced single delete functionality
                 document.querySelectorAll('.delete-single-btn').forEach(button => {
                     button.addEventListener('click', function(e) {
                         e.preventDefault();
@@ -1044,25 +1937,363 @@
                         const form = this.closest('form');
 
                         Swal.fire({
-                            title: 'Konfirmasi Hapus',
-                            text: `Apakah Anda yakin ingin menghapus proyek "${projectName}"? Tindakan ini tidak dapat dibatalkan.`,
+                            title: 'Konfirmasi Hapus Proyek',
+                            html: `
+                                <div style="text-align: left; margin: 1rem 0;">
+                                    <p>Anda akan menghapus proyek:</p>
+                                    <p style="font-weight: 600; color: #374151; background: #f3f4f6; padding: 0.75rem; border-radius: 6px; margin: 0.5rem 0;">
+                                        "${projectName}"
+                                    </p>
+                                    <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 1rem; margin-top: 1rem;">
+                                        <p style="color: #92400e; font-size: 0.85rem; margin: 0;">
+                                            <i class="bi bi-exclamation-triangle me-2"></i>
+                                            Tindakan ini akan menghapus semua data proyek termasuk NDA, berkas, dan anggota tim.
+                                        </p>
+                                    </div>
+                                </div>
+                            `,
                             icon: 'warning',
                             showCancelButton: true,
                             confirmButtonColor: '#ef4444',
                             cancelButtonColor: '#6b7280',
-                            confirmButtonText: 'Hapus',
-                            cancelButtonText: 'Batal'
+                            confirmButtonText: 'Ya, Hapus Proyek',
+                            cancelButtonText: 'Batal',
+                            reverseButtons: true,
+                            customClass: {
+                                popup: 'swal-custom-popup',
+                                title: 'swal-custom-title',
+                                htmlContainer: 'swal-custom-html',
+                                confirmButton: 'swal-custom-confirm',
+                                cancelButton: 'swal-custom-cancel'
+                            }
                         }).then((result) => {
                             if (result.isConfirmed) {
+                                // Show loading state
+                                Swal.fire({
+                                    title: 'Menghapus Proyek...',
+                                    html: 'Mohon tunggu, sedang memproses penghapusan.',
+                                    allowOutsideClick: false,
+                                    allowEscapeKey: false,
+                                    showConfirmButton: false,
+                                    didOpen: () => {
+                                        Swal.showLoading();
+                                    }
+                                });
                                 form.submit();
                             }
                         });
                     });
                 });
 
-                // Initial search
+                // Keyboard shortcuts
+                document.addEventListener('keydown', function(e) {
+                    // Ctrl/Cmd + K to focus search
+                    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                        e.preventDefault();
+                        projectSearch.focus();
+                        projectSearch.select();
+                    }
+
+                    // Escape to clear search
+                    if (e.key === 'Escape' && document.activeElement === projectSearch) {
+                        projectSearch.value = '';
+                        projectSearch.blur();
+                        performSearch();
+                    }
+                });
+
+                // Smooth scroll to top when filters change
+                function smoothScrollToTop() {
+                    window.scrollTo({
+                        top: 0,
+                        behavior: 'smooth'
+                    });
+                }
+
+                // Enhanced mobile responsiveness
+                function handleResize() {
+                    const isMobile = window.innerWidth <= 768;
+
+                    if (isMobile) {
+                        // Ensure mobile cards are visible
+                        document.querySelector('.mobile-cards').style.display = 'block';
+                        document.querySelector('.table-wrapper').style.display = 'none';
+                    } else {
+                        // Ensure desktop table is visible
+                        document.querySelector('.mobile-cards').style.display = 'none';
+                        document.querySelector('.table-wrapper').style.display = 'block';
+                    }
+                }
+
+                // Handle window resize
+                let resizeTimeout;
+                window.addEventListener('resize', function() {
+                    clearTimeout(resizeTimeout);
+                    resizeTimeout = setTimeout(handleResize, 250);
+                });
+
+                // Intersection Observer for animation on scroll
+                const observerOptions = {
+                    threshold: 0.1,
+                    rootMargin: '0px 0px -50px 0px'
+                };
+
+                const observer = new IntersectionObserver(function(entries) {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('animate-in');
+                        }
+                    });
+                }, observerOptions);
+
+                // Observe stat cards and project rows for animation
+                document.querySelectorAll('.stat-card, .project-row, .mobile-card').forEach(el => {
+                    observer.observe(el);
+                });
+
+                // Touch gestures for mobile
+                let touchStartX = 0;
+                let touchStartY = 0;
+
+                document.addEventListener('touchstart', function(e) {
+                    touchStartX = e.touches[0].clientX;
+                    touchStartY = e.touches[0].clientY;
+                }, {
+                    passive: true
+                });
+
+                document.addEventListener('touchend', function(e) {
+                    if (!touchStartX || !touchStartY) return;
+
+                    const touchEndX = e.changedTouches[0].clientX;
+                    const touchEndY = e.changedTouches[0].clientY;
+
+                    const diffX = touchStartX - touchEndX;
+                    const diffY = touchStartY - touchEndY;
+
+                    // Horizontal swipe on mobile cards for actions
+                    if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+                        const card = e.target.closest('.mobile-card');
+                        if (card && window.innerWidth <= 768) {
+                            if (diffX > 0) {
+                                // Swipe left - show actions
+                                card.classList.add('swiped-left');
+                            } else {
+                                // Swipe right - hide actions
+                                card.classList.remove('swiped-left');
+                            }
+                        }
+                    }
+
+                    touchStartX = 0;
+                    touchStartY = 0;
+                }, {
+                    passive: true
+                });
+
+                // Initialize
                 performSearch();
+                handleResize();
+                updateBulkDeleteButton();
+
+                // Add loading states for better UX
+                function addLoadingState(element, text = 'Loading...') {
+                    element.disabled = true;
+                    element.innerHTML = `
+                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                        ${text}
+                    `;
+                }
+
+                // Success messages with better styling
+                function showSuccessMessage(title, text) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: title,
+                        text: text,
+                        timer: 3000,
+                        timerProgressBar: true,
+                        showConfirmButton: false,
+                        customClass: {
+                            popup: 'swal-custom-popup',
+                            title: 'swal-custom-title',
+                            content: 'swal-custom-content'
+                        }
+                    });
+                }
+
+                // Auto-save search and filter preferences
+                function saveFilterPreferences() {
+                    const preferences = {
+                        search: projectSearch.value,
+                        month: monthFilter.value
+                    };
+                    localStorage.setItem('nda-filter-preferences', JSON.stringify(preferences));
+                }
+
+                function loadFilterPreferences() {
+                    const saved = localStorage.getItem('nda-filter-preferences');
+                    if (saved) {
+                        try {
+                            const preferences = JSON.parse(saved);
+                            if (preferences.search && !projectSearch.value) {
+                                projectSearch.value = preferences.search;
+                            }
+                            if (preferences.month && !monthFilter.value) {
+                                monthFilter.value = preferences.month;
+                            }
+                        } catch (e) {
+                            console.warn('Failed to load filter preferences:', e);
+                        }
+                    }
+                }
+
+                // Load preferences on page load
+                loadFilterPreferences();
+
+                // Save preferences when filters change
+                projectSearch.addEventListener('input', saveFilterPreferences);
+                monthFilter.addEventListener('change', saveFilterPreferences);
             });
+
+            // Custom SweetAlert styles
+            const swalStyles = document.createElement('style');
+            swalStyles.innerHTML = `
+                .swal-custom-popup {
+                    border-radius: 16px !important;
+                    padding: 0 !important;
+                }
+
+                .swal-custom-title {
+                    font-size: 1.25rem !important;
+                    font-weight: 700 !important;
+                    color: #1f2937 !important;
+                    margin-bottom: 0.5rem !important;
+                }
+
+                .swal-custom-content {
+                    font-size: 0.9rem !important;
+                    line-height: 1.5 !important;
+                    color: #4b5563 !important;
+                }
+
+                .swal-custom-html {
+                    margin: 0 !important;
+                    padding: 0 !important;
+                }
+
+                .swal-custom-confirm {
+                    border-radius: 8px !important;
+                    padding: 0.75rem 1.5rem !important;
+                    font-weight: 600 !important;
+                    font-size: 0.875rem !important;
+                }
+
+                .swal-custom-cancel {
+                    border-radius: 8px !important;
+                    padding: 0.75rem 1.5rem !important;
+                    font-weight: 600 !important;
+                    font-size: 0.875rem !important;
+                }
+
+                .swal2-actions {
+                    gap: 0.75rem !important;
+                    margin-top: 1.5rem !important;
+                }
+
+                .swal2-loader {
+                    border-color: #4f46e5 transparent #4f46e5 transparent !important;
+                }
+            `;
+            document.head.appendChild(swalStyles);
+
+            // Add animation styles
+            const animationStyles = document.createElement('style');
+            animationStyles.innerHTML = `
+                /* Animation classes */
+                .animate-in {
+                    animation: slideInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+                }
+
+                @keyframes slideInUp {
+                    from {
+                        opacity: 0;
+                        transform: translateY(20px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
+
+                /* Mobile swipe states */
+                .mobile-card.swiped-left {
+                    transform: translateX(-60px);
+                    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                }
+
+                .mobile-card.swiped-left::after {
+                    content: '';
+                    position: absolute;
+                    right: -60px;
+                    top: 0;
+                    width: 60px;
+                    height: 100%;
+                    background: linear-gradient(90deg, #ef4444, #dc2626);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: white;
+                    font-family: 'bootstrap-icons';
+                    font-size: 1.25rem;
+                }
+
+                /* Button active states */
+                .btn-danger-active {
+                    background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+                    color: white !important;
+                    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3) !important;
+                    transform: translateY(-1px);
+                }
+
+                /* Loading spinner */
+                .spinner-border-sm {
+                    width: 1rem;
+                    height: 1rem;
+                    border-width: 0.15em;
+                }
+
+                /* Enhanced focus states */
+                .btn:focus-visible,
+                .search-input:focus-visible,
+                .filter-select:focus-visible,
+                .table-checkbox:focus-visible + label {
+                    outline: 2px solid #4f46e5 !important;
+                    outline-offset: 2px !important;
+                    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12) !important;
+                }
+
+                /* Improved table hover states */
+                .projects-table tbody tr:hover .btn-action {
+                    transform: scale(1.1);
+                }
+
+                /* Better mobile card interactions */
+                .mobile-card:active {
+                    transform: scale(0.98);
+                }
+
+                /* Status badge animations */
+                .status-badge {
+                    animation: fadeIn 0.3s ease-in-out;
+                }
+
+                @keyframes fadeIn {
+                    from { opacity: 0; transform: scale(0.9); }
+                    to { opacity: 1; transform: scale(1); }
+                }
+            `;
+            document.head.appendChild(animationStyles);
         </script>
     @endpush
 @endsection

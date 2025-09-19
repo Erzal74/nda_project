@@ -174,8 +174,8 @@ class PegawaiController extends Controller
             'description' => 'nullable|string',
             'members' => 'required|array|min:1',
             'members.*.name' => 'required|string|max:255',
-            'files.*' => 'nullable|mimes:pdf|max:2048',
-            'delete_files.*' => 'boolean',
+            'files.*' => 'nullable|file|mimes:pdf|max:2048',
+            'delete_files.*' => 'boolean', // Opsional, jika ada checkbox delete (tapi kita handle via index sekarang)
         ], [
             'project_name.required' => 'Nama proyek wajib diisi.',
             'start_date.required' => 'Tanggal mulai proyek wajib diisi.',
@@ -189,19 +189,8 @@ class PegawaiController extends Controller
             'files.*.max' => 'Ukuran berkas maksimum adalah 2MB.',
         ]);
 
-        $currentMembers = count($request->members);
-        $newFilesCount = $request->hasFile('files') ? count($request->file('files')) : 0;
-        if ($newFilesCount > 0 && $newFilesCount !== $currentMembers) {
-            if ($request->expectsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'errors' => ['files' => 'Jumlah berkas baru harus sama dengan jumlah anggota.']
-                ], 422);
-            }
-            return back()->withErrors(['files' => 'Jumlah berkas baru harus sama dengan jumlah anggota.']);
-        }
-
         try {
+            // Update data dasar proyek
             $data = [
                 'project_name' => $request->project_name,
                 'start_date' => $request->start_date,
@@ -209,45 +198,58 @@ class PegawaiController extends Controller
                 'nda_signature_date' => $request->nda_signature_date,
                 'description' => $request->description,
             ];
-
             $nda->update($data);
 
-            if ($request->has('delete_files')) {
-                foreach ($request->delete_files as $index => $shouldDelete) {
-                    if ($shouldDelete) {
-                        $file = $nda->files->where('member_index', $index)->first();
-                        if ($file) {
-                            Storage::disk('public')->delete($file->file_path);
-                            $file->delete();
-                        }
-                    }
-                }
-            }
+            // Decode old members untuk hitung old count
+            $oldMembers = is_string($nda->members) ? json_decode($nda->members, true) ?? [] : ($nda->members ?? []);
+            $oldMemberCount = count($oldMembers);
 
+            // Proses members dan files baru
             $membersWithFiles = [];
-            foreach ($request->members as $index => $member) {
+            $membersWithoutFile = []; // Track member tanpa file untuk error
+            $newMemberCount = count($request->members);
+
+            foreach ($request->members as $newIndex => $member) {
                 $fileId = null;
-                if ($request->hasFile('files') && !empty($request->file('files')[$index])) {
-                    $file = $request->file('files')[$index];
-                    $fileName = time() . '_' . Str::random(10) . '_' . $index . '.pdf';
+
+                // Cek apakah ada file baru untuk index ini
+                if ($request->hasFile("files.{$newIndex}")) {
+                    $file = $request->file("files.{$newIndex}");
+                    // Validasi file (sudah di validate, tapi tambah ukuran/type jika perlu)
+                    if ($file->getSize() > 2048 * 1024 || $file->getMimeType() !== 'application/pdf') {
+                        throw new \Exception('File tidak valid.');
+                    }
+
+                    $fileName = time() . '_' . Str::random(10) . '_' . $newIndex . '.pdf';
                     $filePath = $file->storeAs('ndas', $fileName, 'public');
 
-                    $oldFile = $nda->files->where('member_index', $index)->first();
+                    // Hapus file lama untuk index ini (jika ada)
+                    $oldFile = NdaFile::where('nda_id', $nda->id)
+                                    ->where('member_index', $newIndex)
+                                    ->first();
                     if ($oldFile) {
                         Storage::disk('public')->delete($oldFile->file_path);
                         $oldFile->delete();
                     }
 
+                    // Buat file baru
                     $newFile = NdaFile::create([
                         'nda_id' => $nda->id,
                         'file_path' => $filePath,
-                        'member_index' => $index,
+                        'member_index' => $newIndex,
                     ]);
-
                     $fileId = $newFile->id;
                 } else {
-                    $existingFile = $nda->files->where('member_index', $index)->first();
-                    $fileId = $existingFile ? $existingFile->id : null;
+                    // Gunakan file existing untuk index ini
+                    $existingFile = NdaFile::where('nda_id', $nda->id)
+                                        ->where('member_index', $newIndex)
+                                        ->first();
+                    if ($existingFile) {
+                        $fileId = $existingFile->id;
+                    } else {
+                        // Tidak ada file: Error jika anggota ini baru (index >= old count) atau data corrupt
+                        $membersWithoutFile[] = $member['name'];
+                    }
                 }
 
                 $membersWithFiles[] = [
@@ -256,7 +258,35 @@ class PegawaiController extends Controller
                 ];
             }
 
+            // **FIX UTAMA: Hapus files untuk anggota yang dihapus (index >= new count)**
+            if ($newMemberCount < $oldMemberCount) {
+                $filesToDelete = NdaFile::where('nda_id', $nda->id)
+                                        ->where('member_index', '>=', $newMemberCount)
+                                        ->get();
+                foreach ($filesToDelete as $file) {
+                    Storage::disk('public')->delete($file->file_path);
+                    $file->delete();
+                }
+                Log::info("Deleted " . $filesToDelete->count() . " orphaned files for NDA {$nda->id}");
+            }
+
+            // Validasi: Pastikan setiap member punya file (sinkron)
+            if (!empty($membersWithoutFile)) {
+                $errorMsg = 'Member berikut belum punya berkas NDA: ' . implode(', ', $membersWithoutFile) . '. Silakan upload berkas PDF.';
+                if ($request->expectsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'errors' => ['files' => $errorMsg]
+                    ], 422);
+                }
+                return back()->withErrors(['files' => $errorMsg]);
+            }
+
+            // Update JSON members (dengan file_id terbaru)
             $nda->update(['members' => json_encode($membersWithFiles)]);
+
+            // Refresh relation untuk consistency (opsional, untuk response)
+            $nda->load('files');
 
             if ($request->expectsJson()) {
                 return response()->json([
@@ -265,17 +295,16 @@ class PegawaiController extends Controller
                     'redirect' => route('pegawai.dashboard')
                 ], 200);
             }
-
             return redirect()->route('pegawai.dashboard')->with('success', 'Proyek NDA berhasil diperbarui.');
         } catch (\Exception $e) {
             Log::error('Error updating NDA: ' . $e->getMessage());
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Terjadi kesalahan saat memperbarui proyek NDA.'
+                    'message' => 'Terjadi kesalahan saat memperbarui proyek NDA: ' . $e->getMessage()
                 ], 500);
             }
-            return back()->with('error', 'Terjadi kesalahan saat memperbarui proyek NDA.');
+            return back()->with('error', 'Terjadi kesalahan saat memperbarui proyek NDA: ' . $e->getMessage());
         }
     }
 
