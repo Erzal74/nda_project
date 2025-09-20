@@ -277,7 +277,7 @@
                                                         </div>
                                                         <div class="file-upload-text">
                                                             <div class="file-upload-title">Pilih atau Seret File PDF</div>
-                                                            <div class="file-upload-subtitle">Maksimal 2MB</div>
+                                                            <div class="file-upload-subtitle">Maksimal 10MB</div>
                                                         </div>
                                                     </label>
                                                     <div class="file-upload-info" style="display: none;">
@@ -1804,7 +1804,7 @@
                                             </div>
                                             <div class="file-upload-text">
                                                 <div class="file-upload-title">Pilih atau Seret File PDF</div>
-                                                <div class="file-upload-subtitle">Maksimal 2MB</div>
+                                                <div class="file-upload-subtitle">Maksimal 10MB</div>
                                             </div>
                                         </label>
                                         <div class="file-upload-info" style="display: none;">
@@ -1941,13 +1941,12 @@
                         return;
                     }
 
-                    // Validate file size (2MB max)
-                    const maxSize = 2 * 1024 * 1024; // 2MB
+                    const maxSize = 10 * 1024 * 1024; // 10MB
                     if (file.size > maxSize) {
                         Swal.fire({
                             icon: 'error',
                             title: 'File Terlalu Besar',
-                            text: 'Ukuran file maksimal 2MB.',
+                            text: 'Ukuran file maksimal 10MB.',
                             confirmButtonText: 'Mengerti',
                             confirmButtonColor: '#4f46e5'
                         });
@@ -2201,7 +2200,8 @@
                     // Add tooltips to step icons in progress indicator
                     document.querySelectorAll('.progress-step').forEach((step, index) => {
                         const stepNames = ['Informasi Dasar', 'Timeline Proyek', 'Informasi NDA',
-                            'Tim & Berkas'];
+                            'Tim & Berkas'
+                        ];
                         step.title = stepNames[index];
                     });
 

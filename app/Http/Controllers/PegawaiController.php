@@ -55,7 +55,7 @@ class PegawaiController extends Controller
             'members' => 'required|array|min:1',
             'members.*.name' => 'required|string|max:255',
             'files' => 'required|array|min:1',
-            'files.*' => 'required|file|mimetypes:application/pdf|max:2048',
+            'files.*' => 'required|file|mimetypes:application/pdf|max:10240', // Ubah dari max:2048 ke max:10240
         ], [
             'project_name.required' => 'Nama proyek wajib diisi.',
             'start_date.required' => 'Tanggal mulai proyek wajib diisi.',
@@ -69,7 +69,7 @@ class PegawaiController extends Controller
             'files.min' => 'Minimal 1 berkas PDF wajib diunggah.',
             'files.*.required' => 'Setiap anggota wajib punya 1 berkas PDF.',
             'files.*.mimetypes' => 'Berkas harus berformat PDF yang valid.',
-            'files.*.max' => 'Ukuran berkas maksimum adalah 2MB.',
+            'files.*.max' => 'Ukuran berkas maksimum adalah 10MB.', // Perbarui pesan error
         ]);
 
         // Validasi jumlah members = jumlah files
@@ -174,8 +174,8 @@ class PegawaiController extends Controller
             'description' => 'nullable|string',
             'members' => 'required|array|min:1',
             'members.*.name' => 'required|string|max:255',
-            'files.*' => 'nullable|file|mimes:pdf|max:2048',
-            'delete_files.*' => 'boolean', // Opsional, jika ada checkbox delete (tapi kita handle via index sekarang)
+            'files.*' => 'nullable|file|mimes:pdf|max:10240',
+            'delete_files.*' => 'boolean',
         ], [
             'project_name.required' => 'Nama proyek wajib diisi.',
             'start_date.required' => 'Tanggal mulai proyek wajib diisi.',
@@ -186,7 +186,7 @@ class PegawaiController extends Controller
             'members.min' => 'Minimal 1 anggota wajib diisi.',
             'members.*.name.required' => 'Nama anggota wajib diisi.',
             'files.*.mimes' => 'Berkas harus berformat PDF yang valid.',
-            'files.*.max' => 'Ukuran berkas maksimum adalah 2MB.',
+            'files.*.max' => 'Ukuran berkas maksimum adalah 10MB.',
         ]);
 
         try {
@@ -212,11 +212,10 @@ class PegawaiController extends Controller
             foreach ($request->members as $newIndex => $member) {
                 $fileId = null;
 
-                // Cek apakah ada file baru untuk index ini
                 if ($request->hasFile("files.{$newIndex}")) {
                     $file = $request->file("files.{$newIndex}");
                     // Validasi file (sudah di validate, tapi tambah ukuran/type jika perlu)
-                    if ($file->getSize() > 2048 * 1024 || $file->getMimeType() !== 'application/pdf') {
+                    if ($file->getSize() > 10240 * 1024 || $file->getMimeType() !== 'application/pdf') {
                         throw new \Exception('File tidak valid.');
                     }
 

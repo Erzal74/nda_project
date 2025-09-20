@@ -370,7 +370,7 @@
                                                                 <div class="file-upload-title">
                                                                     {{ isset($member['file']) && $member['file'] ? 'Pilih File Pengganti' : 'Pilih atau Seret File PDF' }}
                                                                 </div>
-                                                                <div class="file-upload-subtitle">Maksimal 2MB</div>
+                                                                <div class="file-upload-subtitle">Maksimal 10MB</div>
                                                             </div>
                                                         </label>
                                                         <div class="file-upload-info" style="display: none;">
@@ -1815,7 +1815,7 @@
                             <i class="bi bi-person"></i>
                         </div>
                         <div class="member-info">
-                            <div class="member-label">Anggota${index + 1}</div>
+                            <div class="member-label">Anggota ${index + 1}</div>
                         </div>
                         <button type="button" class="btn-remove-member">
                             <i class="bi bi-x"></i>
@@ -1841,7 +1841,7 @@
                                         </div>
                                         <div class="file-upload-text">
                                             <div class="file-upload-title">Pilih atau Seret File PDF</div>
-                                            <div class="file-upload-subtitle">Maksimal 2MB</div>
+                                            <div class="file-upload-subtitle">Maksimal 10MB</div> <!-- Ubah di sini -->
                                         </div>
                                     </label>
                                     <div class="file-upload-info" style="display: none;">
@@ -1934,7 +1934,7 @@
                     const memberCards = document.querySelectorAll('.member-card');
                     memberCards.forEach((card, index) => {
                         card.setAttribute('data-member', index);
-                        card.querySelector('.member-label').textContent = `Anggota${index + 1}`;
+                        card.querySelector('.member-label').textContent = `Anggota ${index + 1}`;
                         const nameInput = card.querySelector('.member-name');
                         const fileInput = card.querySelector('.file-input');
                         const fileLabel = card.querySelector('.file-upload-label');
@@ -2068,12 +2068,12 @@
                         fileInput.value = '';
                         return;
                     }
-                    const maxSize = 2 * 1024 * 1024;
+                    const maxSize = 10 * 1024 * 1024; // Ubah dari 2MB ke 10MB
                     if (file.size > maxSize) {
                         Swal.fire({
                             icon: 'error',
                             title: 'File Terlalu Besar',
-                            text: 'Ukuran file maksimal 2MB.',
+                            text: 'Ukuran file maksimal 10MB.', // Perbarui pesan error
                             confirmButtonText: 'Mengerti',
                             confirmButtonColor: '#4f46e5'
                         });
@@ -2186,14 +2186,14 @@
                     Swal.fire({
                         title: 'Konfirmasi Perubahan',
                         html: `
-                        <div style="text-align: left; margin: 1rem 0;">
-                            <p><strong>Proyek:</strong> ${projectName}</p>
-                            <p><strong>Jumlah Anggota :</strong> ${memberCards.length} orang</p>
-                            <p style="margin-top: 1rem; color: #6b7280; font-size: 0.9rem;">
-                                Pastikan semua perubahan sudah benar sebelum menyimpan.
-                            </p>
-                        </div>
-                    `,
+                    <div style="text-align: left; margin: 1rem 0;">
+                        <p><strong>Proyek:</strong> ${projectName}</p>
+                        <p><strong>Jumlah Anggota :</strong> ${memberCards.length} orang</p>
+                        <p style="margin-top: 1rem; color: #6b7280; font-size: 0.9rem;">
+                            Pastikan semua perubahan sudah benar sebelum menyimpan.
+                        </p>
+                    </div>
+                `,
                         icon: 'question',
                         showCancelButton: true,
                         confirmButtonColor: '#10b981',
@@ -2221,15 +2221,15 @@
                     Swal.fire({
                         title: 'Memperbarui Proyek',
                         html: `
-                        <div style="padding: 2rem 0;">
-                            <div class="d-flex justify-content-center mb-3">
-                                <div class="spinner-border text-success" role="status">
-                                    <span class="sr-only">Loading...</span>
-                                </div>
+                    <div style="padding: 2rem 0;">
+                        <div class="d-flex justify-content-center mb-3">
+                            <div class="spinner-border text-success" role="status">
+                                <span class="sr-only">Loading...</span>
                             </div>
-                            <p>Mohon tunggu, sedang memproses perubahan proyek dan berkas...</p>
                         </div>
-                    `,
+                        <p>Mohon tunggu, sedang memproses perubahan proyek dan berkas...</p>
+                    </div>
+                `,
                         allowOutsideClick: false,
                         allowEscapeKey: false,
                         showConfirmButton: false,
@@ -2252,67 +2252,67 @@
 
             const swalStyles = document.createElement('style');
             swalStyles.innerHTML = `
-            .swal-modern-popup {
-                border-radius: 16px !important;
-                padding: 0 !important;
-                font-family: 'Inter', sans-serif !important;
-            }
-            .swal-modern-title {
-                font-size: 1.25rem !important;
-                font-weight: 700 !important;
-                color: #1f2937 !important;
-                margin-bottom: 0.5rem !important;
-            }
-            .swal-modern-content {
-                font-size: 0.9rem !important;
-                line-height: 1.5 !important;
-                color: #4b5563 !important;
-            }
-            .swal-modern-html {
-                margin: 0 !important;
-                padding: 0 !important;
-            }
-            .swal2-confirm {
-                border-radius: 8px !important;
-                padding: 0.75rem 1.5rem !important;
-                font-weight: 600 !important;
-                font-size: 0.875rem !important;
-            }
-            .swal2-cancel {
-                border-radius: 8px !important;
-                padding: 0.75rem 1.5rem !important;
-                font-weight: 600 !important;
-                font-size: 0.875rem !important;
-            }
-            .swal2-actions {
-                gap: 0.75rem !important;
-                margin-top: 1.5rem !important;
-            }
-            .spinner-border {
-                width: 2rem;
-                height: 2rem;
-                border: 0.25em solid currentColor;
-                border-right-color: transparent;
-                border-radius: 50%;
-                animation: spinner-border-spin 0.75s linear infinite;
-            }
-            @keyframes spinner-border-spin {
-                to { transform: rotate(360deg); }
-            }
-            .text-success {
-                color: #10b981 !important;
-            }
-            .sr-only {
-                position: absolute !important;
-                width: 1px !important;
-                height: 1px !important;
-                padding: 0 !important;
-                margin: -1px !important;
-                overflow: hidden !important;
-                clip: rect(0, 0, 0, 0) !important;
-                border: 0 !important;
-            }
-        `;
+        .swal-modern-popup {
+            border-radius: 16px !important;
+            padding: 0 !important;
+            font-family: 'Inter', sans-serif !important;
+        }
+        .swal-modern-title {
+            font-size: 1.25rem !important;
+            font-weight: 700 !important;
+            color: #1f2937 !important;
+            margin-bottom: 0.5rem !important;
+        }
+        .swal-modern-content {
+            font-size: 0.9rem !important;
+            line-height: 1.5 !important;
+            color: #4b5563 !important;
+        }
+        .swal-modern-html {
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        .swal2-confirm {
+            border-radius: 8px !important;
+            padding: 0.75rem 1.5rem !important;
+            font-weight: 600 !important;
+            font-size: 0.875rem !important;
+        }
+        .swal2-cancel {
+            border-radius: 8px !important;
+            padding: 0.75rem 1.5rem !important;
+            font-weight: 600 !important;
+            font-size: 0.875rem !important;
+        }
+        .swal2-actions {
+            gap: 0.75rem !important;
+            margin-top: 1.5rem !important;
+        }
+        .spinner-border {
+            width: 2rem;
+            height: 2rem;
+            border: 0.25em solid currentColor;
+            border-right-color: transparent;
+            border-radius: 50%;
+            animation: spinner-border-spin 0.75s linear infinite;
+        }
+        @keyframes spinner-border-spin {
+            to { transform: rotate(360deg); }
+        }
+        .text-success {
+            color: #10b981 !important;
+        }
+        .sr-only {
+            position: absolute !important;
+            width: 1px !important;
+            height: 1px !important;
+            padding: 0 !important;
+            margin: -1px !important;
+            overflow: hidden !important;
+            clip: rect(0, 0, 0, 0) !important;
+            border: 0 !important;
+        }
+    `;
             document.head.appendChild(swalStyles);
         </script>
     @endpush
