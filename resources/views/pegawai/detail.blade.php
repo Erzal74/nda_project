@@ -190,13 +190,6 @@
             font-weight: 500;
         }
 
-        .nda-status-badge {
-            padding: 0.5rem 1rem;
-            background: white;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow-xs);
-        }
-
         .hero-actions {
             display: flex;
             align-items: flex-start;
@@ -208,7 +201,6 @@
         .quick-stats-grid {
             display: flex;
             align-items: stretch;
-            /* Ensure all items stretch to the same height */
             gap: 1.5rem;
         }
 
@@ -225,7 +217,6 @@
             flex-direction: column;
             justify-content: center;
             height: 120px;
-            /* Increased height for better content fit */
         }
 
         .quick-stat:hover {
@@ -235,7 +226,6 @@
 
         .quick-stat .stat-number {
             font-size: 1.5rem;
-            /* Adjusted for mobile readability */
             font-weight: 800;
             color: var(--primary);
             line-height: 1;
@@ -244,11 +234,9 @@
 
         .quick-stat .stat-label {
             font-size: 0.75rem;
-            /* Adjusted for mobile */
             color: var(--gray-600);
             font-weight: 500;
             white-space: nowrap;
-            /* Prevent text wrapping */
         }
 
         /* Content Grid */
@@ -381,20 +369,6 @@
         .text-muted {
             color: var(--gray-500) !important;
             font-style: italic;
-        }
-
-        .status-signed {
-            color: var(--success-dark);
-            display: flex;
-            align-items: center;
-            font-weight: 600;
-        }
-
-        .status-pending {
-            color: var(--warning-dark);
-            display: flex;
-            align-items: center;
-            font-weight: 600;
         }
 
         /* Members Grid */
@@ -785,27 +759,6 @@
             color: var(--gray-600);
         }
 
-        /* Statistics Overview */
-        .stats-overview {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .stat-item {
-            text-align: center;
-            padding: 1rem;
-            background: var(--gray-50);
-            border-radius: var(--radius);
-            transition: var(--transition);
-        }
-
-        .stat-item:hover {
-            background: white;
-            box-shadow: var(--shadow-xs);
-        }
-
         /* Completion Progress */
         .completion-progress {
             margin-top: 1rem;
@@ -954,10 +907,6 @@
 
             .quick-stat:last-child {
                 margin-bottom: 0;
-            }
-
-            .stats-overview {
-                grid-template-columns: 1fr;
             }
         }
 
@@ -1110,7 +1059,6 @@
             .quick-stats-grid {
                 flex-direction: column;
                 align-items: stretch;
-                /* Ensure vertical alignment */
                 gap: 1rem;
             }
 
@@ -1119,14 +1067,12 @@
                 max-width: 200px;
                 padding: 1rem;
                 height: 120px;
-                /* Fixed height */
                 box-sizing: border-box;
                 margin: 0;
                 display: flex;
                 flex-direction: column;
                 justify-content: center;
                 align-items: center;
-                /* Center content horizontally */
             }
 
             .quick-stat .stat-number {
@@ -1265,7 +1211,7 @@
             </div>
         </div>
 
-        <!-- Project Hero Banner -->
+        <!-- Project Hero Banner (diperbaiki: hapus status NDA level proyek, fokus pada kesatuan per anggota) -->
         <div class="project-hero">
             <div class="hero-content">
                 <div class="project-status-icon">
@@ -1295,15 +1241,6 @@
                             @endphp
                             {{ $memberCount }} Anggota Tim
                         </div>
-                        <div class="meta-item nda-status-badge">
-                            @if ($nda->nda_signature_date)
-                                <i class="bi bi-shield-check me-2"></i>
-                                <span>NDA Ditandatangani</span>
-                            @else
-                                <i class="bi bi-shield-exclamation me-2"></i>
-                                <span>NDA Belum Ditandatangani</span>
-                            @endif
-                        </div>
                     </div>
                 </div>
                 <div class="hero-actions">
@@ -1320,7 +1257,7 @@
                                     0
                                 @endif
                             </div>
-                            <Fdiv class="stat-label">
+                            <div class="stat-label">
                                 @if ($nda->formatted_duration && str_contains($nda->formatted_duration, 'hari'))
                                     Hari
                                 @elseif ($nda->formatted_duration && str_contains($nda->formatted_duration, 'bulan'))
@@ -1328,7 +1265,7 @@
                                 @else
                                     Hari
                                 @endif
-                            </Fdiv>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1338,7 +1275,7 @@
         <div class="content-grid">
             <!-- Main Content -->
             <div class="main-content">
-                <!-- Project Information Section -->
+                <!-- Project Information Section (diperbaiki: hapus card Penandatanganan NDA level proyek) -->
                 <div class="detail-section">
                     <div class="section-header">
                         <div class="section-icon section-icon-info">
@@ -1410,30 +1347,11 @@
                                     @endif
                                 </div>
                             </div>
-                            <div class="info-card">
-                                <div class="info-header">
-                                    <i class="bi bi-pen info-icon"></i>
-                                    <span class="info-label">Penandatanganan NDA</span>
-                                </div>
-                                <div class="info-value">
-                                    @if ($nda->nda_signature_date)
-                                        <div class="status-signed">
-                                            <i class="bi bi-check-circle-fill me-2"></i>
-                                            {{ $nda->nda_signature_date->translatedFormat('d F Y') }}
-                                        </div>
-                                    @else
-                                        <div class="status-pending">
-                                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                                            Belum ditandatangani
-                                        </div>
-                                    @endif
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Team Members Section -->
+                <!-- Team Members Section (diperbaiki: status NDA berdasarkan signature_date per anggota) -->
                 <div class="detail-section">
                     <div class="section-header">
                         <div class="section-icon section-icon-primary">
@@ -1460,6 +1378,19 @@
                         @if (!empty($members))
                             <div class="members-grid">
                                 @foreach ($members as $index => $member)
+                                    @php
+                                        $memberFiles = $nda->files->filter(function ($file) use ($member, $index) {
+                                            return (isset($file->member_name) && $file->member_name === $member) ||
+                                                (isset($file->member_index) && $file->member_index === $index) ||
+                                                str_contains(
+                                                    strtolower($file->file_path),
+                                                    strtolower(str_replace(' ', '_', $member)),
+                                                );
+                                        });
+                                        $isSigned = $memberFiles->every(fn($file) => $file->signature_date !== null);
+                                        $firstSignatureDate = $memberFiles->whereNotNull('signature_date')->first()
+                                            ?->signature_date;
+                                    @endphp
                                     <div class="member-card">
                                         <div class="member-header">
                                             <div class="member-avatar">
@@ -1470,31 +1401,16 @@
                                                 <p class="member-role">Anggota Tim {{ $index + 1 }}</p>
                                             </div>
                                             <div class="member-status">
-                                                @php
-                                                    $memberFiles = $nda->files->filter(function ($file) use (
-                                                        $member,
-                                                        $index,
-                                                    ) {
-                                                        return (isset($file->member_name) &&
-                                                            $file->member_name === $member) ||
-                                                            (isset($file->member_index) &&
-                                                                $file->member_index === $index) ||
-                                                            str_contains(
-                                                                strtolower($file->file_path),
-                                                                strtolower(str_replace(' ', '_', $member)),
-                                                            );
-                                                    });
-                                                @endphp
-
-                                                @if ($memberFiles->count() > 0)
+                                                @if ($isSigned && $memberFiles->count() > 0)
                                                     <div class="status-badge status-success">
                                                         <i class="bi bi-check-circle me-1"></i>
-                                                        {{ $memberFiles->count() }} Berkas
+                                                        Ditandatangani
+                                                        ({{ $firstSignatureDate?->translatedFormat('d F Y') ?? 'Tidak diketahui' }})
                                                     </div>
                                                 @else
                                                     <div class="status-badge status-warning">
                                                         <i class="bi bi-exclamation-triangle me-1"></i>
-                                                        Belum Upload
+                                                        Belum Ditandatangani
                                                     </div>
                                                 @endif
                                             </div>
@@ -1516,6 +1432,13 @@
                                                                             <i class="bi bi-calendar3 me-1"></i>
                                                                             {{ $file->created_at ? $file->created_at->translatedFormat('d M Y') : 'Tidak diketahui' }}
                                                                         </span>
+                                                                        @if ($file->signature_date)
+                                                                            <span class="upload-date">
+                                                                                <i class="bi bi-check-circle me-1"></i>
+                                                                                Ditandatangani:
+                                                                                {{ $file->signature_date->translatedFormat('d M Y') }}
+                                                                            </span>
+                                                                        @endif
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -1560,7 +1483,7 @@
                 </div>
             </div>
 
-            <!-- Sidebar -->
+            <!-- Sidebar (diperbaiki: status NDA berdasarkan semua anggota) -->
             <div class="sidebar-content">
                 <!-- NDA Status Card -->
                 <div class="sidebar-card">
@@ -1574,15 +1497,27 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        @if ($nda->nda_signature_date)
+                        @php
+                            $totalMembers = count($members);
+                            $signedMembers = $nda->files
+                                ->filter(fn($file) => $file->signature_date !== null)
+                                ->unique('member_index') // Perbaikan: ganti dari 'member_name' ke 'member_index'
+                                ->count();
+                            $allSigned = $totalMembers > 0 && $signedMembers === $totalMembers;
+                            $firstSignatureDate = $nda->files
+                                ->whereNotNull('signature_date')
+                                ->sortBy('signature_date')
+                                ->first()?->signature_date;
+                        @endphp
+                        @if ($allSigned && $totalMembers > 0)
                             <div class="status-display status-success">
                                 <div class="status-icon">
                                     <i class="bi bi-check-circle-fill"></i>
                                 </div>
                                 <div class="status-content">
-                                    <div class="status-title">Sudah Ditandatangani</div>
-                                    <div class="status-date">{{ $nda->nda_signature_date->translatedFormat('d F Y') }}
-                                    </div>
+                                    <div class="status-title">Semua Ditandatangani</div>
+                                    <div class="status-date">
+                                        {{ $firstSignatureDate?->translatedFormat('d F Y') ?? 'Tidak diketahui' }}</div>
                                 </div>
                             </div>
                         @else
@@ -1591,15 +1526,15 @@
                                     <i class="bi bi-exclamation-triangle-fill"></i>
                                 </div>
                                 <div class="status-content">
-                                    <div class="status-title">Belum Ditandatangani</div>
-                                    <div class="status-date">Menunggu penandatanganan</div>
+                                    <div class="status-title">Menunggu ({{ $signedMembers }}/{{ $totalMembers }})</div>
+                                    <div class="status-date">Penandatanganan belum lengkap</div>
                                 </div>
                             </div>
                         @endif
                     </div>
                 </div>
 
-                <!-- Statistics Card -->
+                <!-- Statistics Card (diperbaiki: persentase berdasarkan anggota yang ditandatangani) -->
                 <div class="sidebar-card">
                     <div class="card-header">
                         <div class="card-icon card-icon-info">
@@ -1613,23 +1548,7 @@
                     <div class="card-body">
                         @php
                             $totalMembers = count($members);
-                            $membersWithDocs = 0;
-                            $totalDocs = $nda->files->count();
-
-                            foreach ($members as $index => $member) {
-                                $memberFiles = $nda->files->filter(function ($file) use ($member, $index) {
-                                    return (isset($file->member_name) && $file->member_name === $member) ||
-                                        (isset($file->member_index) && $file->member_index === $index) ||
-                                        str_contains(
-                                            strtolower($file->file_path),
-                                            strtolower(str_replace(' ', '_', $member)),
-                                        );
-                                });
-                                if ($memberFiles->count() > 0) {
-                                    $membersWithDocs++;
-                                }
-                            }
-
+                            $membersWithDocs = $nda->files->groupBy('member_index')->count(); // Perbaikan: ganti dari 'member_name' ke 'member_index'
                             $completionPercentage = $totalMembers > 0 ? ($membersWithDocs / $totalMembers) * 100 : 0;
                         @endphp
                         <div class="completion-progress">
@@ -1690,7 +1609,6 @@
             setupInteractions();
 
             function initializeAnimations() {
-                // Animate elements on page load
                 const animateElements = document.querySelectorAll('.member-card, .info-card, .sidebar-card');
 
                 const observer = new IntersectionObserver(function(entries) {
@@ -1709,7 +1627,6 @@
                     observer.observe(el);
                 });
 
-                // Animate progress bar
                 const progressFill = document.querySelector('.progress-fill');
                 if (progressFill) {
                     setTimeout(() => {
@@ -1728,19 +1645,19 @@
                         Swal.fire({
                             title: 'Konfirmasi Hapus Proyek',
                             html: `
-                            <div style="text-align: left; margin: 1rem 0;">
-                                <p>Anda akan menghapus proyek:</p>
-                                <p style="font-weight: 600; color: #374151; background: #f3f4f6; padding: 0.75rem; border-radius: 6px; margin: 0.5rem 0;">
-                                    "${projectName}"
-                                </p>
-                                <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 1rem; margin-top: 1rem;">
-                                    <p style="color: #92400e; font-size: 0.85rem; margin: 0;">
-                                        <i class="bi bi-exclamation-triangle me-2"></i>
-                                        <strong>Peringatan:</strong> Tindakan ini akan menghapus semua data proyek termasuk NDA, berkas, dan anggota tim secara permanen.
+                                <div style="text-align: left; margin: 1rem 0;">
+                                    <p>Anda akan menghapus proyek:</p>
+                                    <p style="font-weight: 600; color: #374151; background: #f3f4f6; padding: 0.75rem; border-radius: 6px; margin: 0.5rem 0;">
+                                        "${projectName}"
                                     </p>
+                                    <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 1rem; margin-top: 1rem;">
+                                        <p style="color: #92400e; font-size: 0.85rem; margin: 0;">
+                                            <i class="bi bi-exclamation-triangle me-2"></i>
+                                            <strong>Peringatan:</strong> Tindakan ini akan menghapus semua data proyek termasuk NDA, berkas, dan anggota tim secara permanen.
+                                        </p>
+                                    </div>
                                 </div>
-                            </div>
-                        `,
+                            `,
                             icon: 'warning',
                             showCancelButton: true,
                             confirmButtonColor: '#ef4444',
@@ -1757,7 +1674,6 @@
                             }
                         }).then((result) => {
                             if (result.isConfirmed) {
-                                // Show loading state
                                 Swal.fire({
                                     title: 'Menghapus Proyek...',
                                     html: 'Mohon tunggu, sedang memproses penghapusan.',
@@ -1776,18 +1692,15 @@
             }
 
             function setupInteractions() {
-                // Add hover effects to document items
                 document.querySelectorAll('.document-item').forEach(item => {
                     item.addEventListener('mouseenter', function() {
                         this.style.transform = 'translateX(4px)';
                     });
-
                     item.addEventListener('mouseleave', function() {
                         this.style.transform = 'translateX(0)';
                     });
                 });
 
-                // Add click effects to action buttons
                 document.querySelectorAll('.btn-action').forEach(btn => {
                     btn.addEventListener('click', function() {
                         this.style.transform = 'scale(0.95)';
@@ -1797,7 +1710,6 @@
                     });
                 });
 
-                // Add tooltips to action buttons (if Bootstrap tooltips are available)
                 if (typeof bootstrap !== 'undefined' && bootstrap.Tooltip) {
                     document.querySelectorAll('[title]').forEach(element => {
                         new bootstrap.Tooltip(element);
@@ -1805,7 +1717,6 @@
                 }
             }
 
-            // Add smooth scroll to sections when clicking on links
             document.querySelectorAll('a[href^="#"]').forEach(link => {
                 link.addEventListener('click', function(e) {
                     e.preventDefault();
@@ -1821,9 +1732,7 @@
                 });
             });
 
-            // Add keyboard navigation
             document.addEventListener('keydown', function(e) {
-                // Escape key to go back
                 if (e.key === 'Escape') {
                     const backButton = document.querySelector('.btn-back');
                     if (backButton && document.activeElement.tagName !== 'INPUT' && document.activeElement
@@ -1833,7 +1742,6 @@
                 }
             });
 
-            // Add loading state for external links
             document.querySelectorAll('a[target="_blank"]').forEach(link => {
                 link.addEventListener('click', function() {
                     const icon = this.querySelector('i');
@@ -1841,7 +1749,6 @@
                         icon.classList.remove('bi-eye');
                         icon.classList.add('bi-arrow-clockwise');
                         icon.style.animation = 'spin 1s linear infinite';
-
                         setTimeout(() => {
                             icon.classList.remove('bi-arrow-clockwise');
                             icon.classList.add('bi-eye');
@@ -1852,54 +1759,46 @@
             });
         });
 
-        // Custom SweetAlert2 styles
         const swalStyles = document.createElement('style');
         swalStyles.innerHTML = `
-        .swal-modern-popup {
-            border-radius: 16px !important;
-            padding: 0 !important;
-            font-family: 'Inter', sans-serif !important;
-        }
-
-        .swal-modern-title {
-            font-size: 1.25rem !important;
-            font-weight: 700 !important;
-            color: #1f2937 !important;
-            margin-bottom: 0.5rem !important;
-        }
-
-        .swal-modern-html {
-            margin: 0 !important;
-            padding: 0 !important;
-        }
-
-        .swal-modern-confirm {
-            border-radius: 8px !important;
-            padding: 0.75rem 1.5rem !important;
-            font-weight: 600 !important;
-            font-size: 0.875rem !important;
-        }
-
-        .swal-modern-cancel {
-            border-radius: 8px !important;
-            padding: 0.75rem 1.5rem !important;
-            font-weight: 600 !important;
-            font-size: 0.875rem !important;
-        }
-
-        .swal2-actions {
-            gap: 0.75rem !important;
-            margin-top: 1.5rem !important;
-        }
-
-        .swal2-loader {
-            border-color: #4f46e5 transparent #4f46e5 transparent !important;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-    `;
+            .swal-modern-popup {
+                border-radius: 16px !important;
+                padding: 0 !important;
+                font-family: 'Inter', sans-serif !important;
+            }
+            .swal-modern-title {
+                font-size: 1.25rem !important;
+                font-weight: 700 !important;
+                color: #1f2937 !important;
+                margin-bottom: 0.5rem !important;
+            }
+            .swal-modern-html {
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            .swal-modern-confirm {
+                border-radius: 8px !important;
+                padding: 0.75rem 1.5rem !important;
+                font-weight: 600 !important;
+                font-size: 0.875rem !important;
+            }
+            .swal-modern-cancel {
+                border-radius: 8px !important;
+                padding: 0.75rem 1.5rem !important;
+                font-weight: 600 !important;
+                font-size: 0.875rem !important;
+            }
+            .swal2-actions {
+                gap: 0.75rem !important;
+                margin-top: 1.5rem !important;
+            }
+            .swal2-loader {
+                border-color: #4f46e5 transparent #4f46e5 transparent !important;
+            }
+            @keyframes spin {
+                to { transform: rotate(360deg); }
+            }
+        `;
         document.head.appendChild(swalStyles);
     </script>
 @endpush

@@ -31,7 +31,7 @@ class PegawaiController extends Controller
 
         if ($request->has('month') && !empty($request->month)) {
             $month = $request->month;
-            $query->whereMonth('nda_signature_date', $month);
+            $query->whereMonth('created_at', $month); // Ubah ke created_at jika nda_signature_date dihapus
         }
 
         $ndas = $query->orderBy('created_at', 'desc')->paginate(20);
@@ -50,47 +50,34 @@ class PegawaiController extends Controller
             'project_name' => 'required|string|max:255',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after:start_date',
-            'nda_signature_date' => 'required|date',
             'description' => 'nullable|string',
             'members' => 'required|array|min:1',
             'members.*.name' => 'required|string|max:255',
+            'members.*.signature_date' => 'required|date', // Tambah validasi tanggal per member
             'files' => 'required|array|min:1',
-            'files.*' => 'required|file|mimetypes:application/pdf|max:10240', // Ubah dari max:2048 ke max:10240
+            'files.*' => 'required|file|mimetypes:application/pdf|max:10240',
         ], [
             'project_name.required' => 'Nama proyek wajib diisi.',
             'start_date.required' => 'Tanggal mulai proyek wajib diisi.',
             'end_date.required' => 'Tanggal selesai proyek wajib diisi.',
             'end_date.after' => 'Tanggal selesai proyek harus setelah tanggal mulai.',
-            'nda_signature_date.required' => 'Tanggal tanda tangan NDA wajib diisi.',
             'members.required' => 'Minimal 1 anggota wajib diisi.',
             'members.min' => 'Minimal 1 anggota wajib diisi.',
             'members.*.name.required' => 'Nama anggota wajib diisi.',
+            'members.*.signature_date.required' => 'Tanggal tanda tangan NDA per anggota wajib diisi.',
             'files.required' => 'Setiap anggota wajib punya 1 berkas PDF.',
             'files.min' => 'Minimal 1 berkas PDF wajib diunggah.',
             'files.*.required' => 'Setiap anggota wajib punya 1 berkas PDF.',
             'files.*.mimetypes' => 'Berkas harus berformat PDF yang valid.',
-            'files.*.max' => 'Ukuran berkas maksimum adalah 10MB.', // Perbarui pesan error
+            'files.*.max' => 'Ukuran berkas maksimum adalah 10MB.',
         ]);
 
-        // Validasi jumlah members = jumlah files
         if (count($request->members) !== count($request->file('files'))) {
-            if ($request->expectsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'errors' => ['files' => 'Jumlah berkas harus sama dengan jumlah anggota.']
-                ], 422);
-            }
-            return back()->withErrors(['files' => 'Jumlah berkas harus sama dengan jumlah anggota.']);
+            return $request->expectsJson() ? response()->json(['success' => false, 'errors' => ['files' => 'Jumlah berkas harus sama dengan jumlah anggota.']], 422) : back()->withErrors(['files' => 'Jumlah berkas harus sama dengan jumlah anggota.']);
         }
 
         if (!Auth::check()) {
-            if ($request->expectsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Anda harus login terlebih dahulu.'
-                ], 401);
-            }
-            return redirect()->route('login')->with('error', 'Anda harus login terlebih dahulu.');
+            return $request->expectsJson() ? response()->json(['success' => false, 'message' => 'Anda harus login terlebih dahulu.'], 401) : redirect()->route('login')->with('error', 'Anda harus login terlebih dahulu.');
         }
 
         try {
@@ -98,7 +85,6 @@ class PegawaiController extends Controller
                 'project_name' => $request->project_name,
                 'start_date' => $request->start_date,
                 'end_date' => $request->end_date,
-                'nda_signature_date' => $request->nda_signature_date,
                 'description' => $request->description,
                 'token' => Str::uuid(),
                 'user_id' => Auth::user()->no,
@@ -114,6 +100,7 @@ class PegawaiController extends Controller
                     'nda_id' => $nda->id,
                     'file_path' => $filePath,
                     'member_index' => $index,
+                    'signature_date' => $member['signature_date'], // Simpan tanggal per anggota
                 ]);
 
                 $membersWithFiles[] = [
@@ -124,24 +111,10 @@ class PegawaiController extends Controller
 
             $nda->update(['members' => json_encode($membersWithFiles)]);
 
-            if ($request->expectsJson()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Proyek NDA berhasil ditambahkan.',
-                    'redirect' => route('pegawai.dashboard')
-                ], 200);
-            }
-
-            return redirect()->route('pegawai.dashboard')->with('success', 'Proyek NDA berhasil ditambahkan.');
+            return $request->expectsJson() ? response()->json(['success' => true, 'message' => 'Proyek NDA berhasil ditambahkan.', 'redirect' => route('pegawai.dashboard')], 200) : redirect()->route('pegawai.dashboard')->with('success', 'Proyek NDA berhasil ditambahkan.');
         } catch (\Exception $e) {
             Log::error('Error creating NDA: ' . $e->getMessage());
-            if ($request->expectsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Terjadi kesalahan saat membuat proyek NDA.'
-                ], 500);
-            }
-            return back()->with('error', 'Terjadi kesalahan saat membuat proyek NDA.');
+            return $request->expectsJson() ? response()->json(['success' => false, 'message' => 'Terjadi kesalahan saat membuat proyek NDA.'], 500) : back()->with('error', 'Terjadi kesalahan saat membuat proyek NDA.');
         }
     }
 
@@ -170,10 +143,10 @@ class PegawaiController extends Controller
             'project_name' => 'required|string|max:255',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after:start_date',
-            'nda_signature_date' => 'required|date',
             'description' => 'nullable|string',
             'members' => 'required|array|min:1',
             'members.*.name' => 'required|string|max:255',
+            'members.*.signature_date' => 'required|date', // Tambah validasi tanggal per member
             'files.*' => 'nullable|file|mimes:pdf|max:10240',
             'delete_files.*' => 'boolean',
         ], [
@@ -181,72 +154,63 @@ class PegawaiController extends Controller
             'start_date.required' => 'Tanggal mulai proyek wajib diisi.',
             'end_date.required' => 'Tanggal selesai proyek wajib diisi.',
             'end_date.after' => 'Tanggal selesai proyek harus setelah tanggal mulai.',
-            'nda_signature_date.required' => 'Tanggal tanda tangan NDA wajib diisi.',
             'members.required' => 'Minimal 1 anggota wajib diisi.',
             'members.min' => 'Minimal 1 anggota wajib diisi.',
             'members.*.name.required' => 'Nama anggota wajib diisi.',
+            'members.*.signature_date.required' => 'Tanggal tanda tangan NDA per anggota wajib diisi.',
             'files.*.mimes' => 'Berkas harus berformat PDF yang valid.',
             'files.*.max' => 'Ukuran berkas maksimum adalah 10MB.',
         ]);
 
         try {
-            // Update data dasar proyek
-            $data = [
+            $nda->update([
                 'project_name' => $request->project_name,
                 'start_date' => $request->start_date,
                 'end_date' => $request->end_date,
-                'nda_signature_date' => $request->nda_signature_date,
                 'description' => $request->description,
-            ];
-            $nda->update($data);
+            ]);
 
-            // Decode old members untuk hitung old count
             $oldMembers = is_string($nda->members) ? json_decode($nda->members, true) ?? [] : ($nda->members ?? []);
             $oldMemberCount = count($oldMembers);
 
-            // Proses members dan files baru
             $membersWithFiles = [];
-            $membersWithoutFile = []; // Track member tanpa file untuk error
+            $membersWithoutFile = [];
             $newMemberCount = count($request->members);
 
             foreach ($request->members as $newIndex => $member) {
                 $fileId = null;
+                $signatureDate = $member['signature_date']; // Ambil tanggal per member
 
                 if ($request->hasFile("files.{$newIndex}")) {
                     $file = $request->file("files.{$newIndex}");
-                    // Validasi file (sudah di validate, tapi tambah ukuran/type jika perlu)
                     if ($file->getSize() > 10240 * 1024 || $file->getMimeType() !== 'application/pdf') {
                         throw new \Exception('File tidak valid.');
                     }
-
                     $fileName = time() . '_' . Str::random(10) . '_' . $newIndex . '.pdf';
                     $filePath = $file->storeAs('ndas', $fileName, 'public');
 
-                    // Hapus file lama untuk index ini (jika ada)
-                    $oldFile = NdaFile::where('nda_id', $nda->id)
-                                    ->where('member_index', $newIndex)
-                                    ->first();
+                    $oldFile = NdaFile::where('nda_id', $nda->id)->where('member_index', $newIndex)->first();
                     if ($oldFile) {
                         Storage::disk('public')->delete($oldFile->file_path);
-                        $oldFile->delete();
+                        $oldFile->update(['signature_date' => $signatureDate]); // Update tanggal
+                        $oldFile->file_path = $filePath;
+                        $oldFile->save();
+                        $fileId = $oldFile->id;
+                    } else {
+                        $newFile = NdaFile::create([
+                            'nda_id' => $nda->id,
+                            'file_path' => $filePath,
+                            'member_index' => $newIndex,
+                            'signature_date' => $signatureDate, // Simpan tanggal baru
+                        ]);
+                        $fileId = $newFile->id;
                     }
-
-                    // Buat file baru
-                    $newFile = NdaFile::create([
-                        'nda_id' => $nda->id,
-                        'file_path' => $filePath,
-                        'member_index' => $newIndex,
-                    ]);
-                    $fileId = $newFile->id;
                 } else {
-                    // Gunakan file existing untuk index ini
-                    $existingFile = NdaFile::where('nda_id', $nda->id)
-                                        ->where('member_index', $newIndex)
-                                        ->first();
+                    $existingFile = NdaFile::where('nda_id', $nda->id)->where('member_index', $newIndex)->first();
                     if ($existingFile) {
+                        $existingFile->update(['signature_date' => $signatureDate]); // Update tanggal jika tidak ganti file
                         $fileId = $existingFile->id;
                     } else {
-                        // Tidak ada file: Error jika anggota ini baru (index >= old count) atau data corrupt
                         $membersWithoutFile[] = $member['name'];
                     }
                 }
@@ -257,11 +221,8 @@ class PegawaiController extends Controller
                 ];
             }
 
-            // **FIX UTAMA: Hapus files untuk anggota yang dihapus (index >= new count)**
             if ($newMemberCount < $oldMemberCount) {
-                $filesToDelete = NdaFile::where('nda_id', $nda->id)
-                                        ->where('member_index', '>=', $newMemberCount)
-                                        ->get();
+                $filesToDelete = NdaFile::where('nda_id', $nda->id)->where('member_index', '>=', $newMemberCount)->get();
                 foreach ($filesToDelete as $file) {
                     Storage::disk('public')->delete($file->file_path);
                     $file->delete();
@@ -269,41 +230,19 @@ class PegawaiController extends Controller
                 Log::info("Deleted " . $filesToDelete->count() . " orphaned files for NDA {$nda->id}");
             }
 
-            // Validasi: Pastikan setiap member punya file (sinkron)
             if (!empty($membersWithoutFile)) {
                 $errorMsg = 'Member berikut belum punya berkas NDA: ' . implode(', ', $membersWithoutFile) . '. Silakan upload berkas PDF.';
-                if ($request->expectsJson()) {
-                    return response()->json([
-                        'success' => false,
-                        'errors' => ['files' => $errorMsg]
-                    ], 422);
-                }
-                return back()->withErrors(['files' => $errorMsg]);
+                return $request->expectsJson() ? response()->json(['success' => false, 'errors' => ['files' => $errorMsg]], 422) : back()->withErrors(['files' => $errorMsg]);
             }
 
-            // Update JSON members (dengan file_id terbaru)
             $nda->update(['members' => json_encode($membersWithFiles)]);
 
-            // Refresh relation untuk consistency (opsional, untuk response)
             $nda->load('files');
 
-            if ($request->expectsJson()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Proyek NDA berhasil diperbarui.',
-                    'redirect' => route('pegawai.dashboard')
-                ], 200);
-            }
-            return redirect()->route('pegawai.dashboard')->with('success', 'Proyek NDA berhasil diperbarui.');
+            return $request->expectsJson() ? response()->json(['success' => true, 'message' => 'Proyek NDA berhasil diperbarui.', 'redirect' => route('pegawai.dashboard')], 200) : redirect()->route('pegawai.dashboard')->with('success', 'Proyek NDA berhasil diperbarui.');
         } catch (\Exception $e) {
             Log::error('Error updating NDA: ' . $e->getMessage());
-            if ($request->expectsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Terjadi kesalahan saat memperbarui proyek NDA: ' . $e->getMessage()
-                ], 500);
-            }
-            return back()->with('error', 'Terjadi kesalahan saat memperbarui proyek NDA: ' . $e->getMessage());
+            return $request->expectsJson() ? response()->json(['success' => false, 'message' => 'Terjadi kesalahan saat memperbarui proyek NDA: ' . $e->getMessage()], 500) : back()->with('error', 'Terjadi kesalahan saat memperbarui proyek NDA: ' . $e->getMessage());
         }
     }
 

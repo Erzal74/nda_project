@@ -40,13 +40,6 @@
                 <div class="progress-line"></div>
                 <div class="progress-step" data-step="3">
                     <div class="progress-step-circle">
-                        <i class="bi bi-shield-check"></i>
-                    </div>
-                    <div class="progress-step-label">Informasi NDA</div>
-                </div>
-                <div class="progress-line"></div>
-                <div class="progress-step" data-step="4">
-                    <div class="progress-step-circle">
                         <i class="bi bi-people"></i>
                     </div>
                     <div class="progress-step-label">Tim & Berkas</div>
@@ -172,57 +165,8 @@
                     </div>
                 </div>
 
-                <!-- Step 3: NDA Information -->
+                <!-- Step 3: Team & Files -->
                 <div class="form-step" data-step="3">
-                    <div class="step-card">
-                        <div class="step-header">
-                            <div class="step-icon step-icon-success">
-                                <i class="bi bi-shield-check"></i>
-                            </div>
-                            <div class="step-content">
-                                <h3 class="step-title">Informasi NDA</h3>
-                                <p class="step-description">Detail terkait Non-Disclosure Agreement untuk proyek ini</p>
-                            </div>
-                        </div>
-
-                        <div class="step-body">
-                            <div class="form-grid">
-                                <div class="form-field">
-                                    <label for="nda_signature_date" class="field-label required">Tanggal Penandatanganan
-                                        NDA</label>
-                                    <div class="field-wrapper">
-                                        <div class="field-icon">
-                                            <i class="bi bi-pen"></i>
-                                        </div>
-                                        <input type="date" name="nda_signature_date" id="nda_signature_date"
-                                            class="field-input @error('nda_signature_date') field-error @enderror"
-                                            value="{{ old('nda_signature_date') }}" required>
-                                    </div>
-                                    @error('nda_signature_date')
-                                        <div class="field-feedback field-feedback-error">{{ $message }}</div>
-                                    @else
-                                        <div class="field-hint">Tanggal ketika NDA resmi ditandatangani</div>
-                                    @enderror
-                                </div>
-
-                                <div class="form-field">
-                                    <div class="nda-status-card" id="nda-status-card">
-                                        <div class="status-icon status-icon-warning">
-                                            <i class="bi bi-exclamation-triangle"></i>
-                                        </div>
-                                        <div class="status-content">
-                                            <div class="status-label">Status NDA</div>
-                                            <div class="status-value" id="nda-status-text">Belum ditentukan</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Step 4: Team & Files -->
-                <div class="form-step" data-step="4">
                     <div class="step-card">
                         <div class="step-header">
                             <div class="step-icon step-icon-primary">
@@ -249,7 +193,7 @@
                                             <i class="bi bi-person"></i>
                                         </div>
                                         <div class="member-info">
-                                            <div class="member-label">Anggota #1</div>
+                                            <div class="member-label">Anggota ke-1</div>
                                         </div>
                                         <button type="button" class="btn-remove-member" style="display: none;">
                                             <i class="bi bi-x"></i>
@@ -265,6 +209,17 @@
                                                         placeholder="Masukkan nama lengkap anggota tim" maxlength="100"
                                                         required>
                                                 </div>
+                                            </div>
+                                            <div class="member-field">
+                                                <label class="field-label required">Tanggal Tanda Tangan NDA</label>
+                                                <div class="field-wrapper">
+                                                    <div class="field-icon">
+                                                        <i class="bi bi-pen"></i>
+                                                    </div>
+                                                    <input type="date" name="members[0][signature_date]"
+                                                        class="field-input" required>
+                                                </div>
+                                                <div class="field-hint">Tanggal ketika anggota ini menandatangani NDA</div>
                                             </div>
                                             <div class="member-field">
                                                 <label class="field-label required">Berkas NDA (PDF)</label>
@@ -284,6 +239,8 @@
                                                         <div class="file-info">
                                                             <i class="bi bi-file-earmark-pdf"></i>
                                                             <span class="file-name"></span>
+                                                            <i class="bi bi-check-circle success-icon"
+                                                                title="Berkas berhasil dimasukkan"></i>
                                                         </div>
                                                         <button type="button" class="btn-remove-file">
                                                             <i class="bi bi-x"></i>
@@ -304,7 +261,7 @@
                                     <i class="bi bi-info-circle"></i>
                                 </div>
                                 <div class="hint-text">
-                                    Setiap anggota tim harus memiliki berkas NDA dalam format PDF.
+                                    Setiap anggota tim harus memiliki berkas NDA dalam format PDF dan tanggal tanda tangan.
                                     Minimal 1 anggota diperlukan untuk membuat proyek.
                                 </div>
                             </div>
@@ -1465,6 +1422,16 @@
             .form-container::-webkit-scrollbar-thumb:hover {
                 background: var(--gray-400);
             }
+
+            .file-upload-info.file-success {
+                border: 1px solid var(--success) !important;
+                background: var(--success-bg) !important;
+            }
+
+            .file-info .success-icon {
+                color: var(--success);
+                margin-left: 0.5rem;
+            }
         </style>
     @endpush
 
@@ -1474,8 +1441,7 @@
             document.addEventListener('DOMContentLoaded', function() {
                 let currentStep = 1;
                 let memberCount = 1;
-                const totalSteps = 4;
-
+                const totalSteps = 3;
                 // Elements
                 const form = document.getElementById('projectForm');
                 const prevBtn = document.getElementById('prevBtn');
@@ -1483,19 +1449,16 @@
                 const submitBtn = document.getElementById('submitBtn');
                 const descriptionTextarea = document.getElementById('description');
                 const descriptionCounter = document.getElementById('descriptionCount');
-
                 // Initialize
                 updateStepDisplay();
                 initializeCharacterCounter();
                 attachEventListeners();
-
                 // Character counter for description
                 function initializeCharacterCounter() {
                     if (descriptionTextarea && descriptionCounter) {
                         const updateCount = () => {
                             const count = descriptionTextarea.value.length;
                             descriptionCounter.textContent = count;
-
                             // Color coding for character count
                             if (count > 900) {
                                 descriptionCounter.style.color = 'var(--danger)';
@@ -1505,137 +1468,107 @@
                                 descriptionCounter.style.color = 'var(--gray-500)';
                             }
                         };
-
                         descriptionTextarea.addEventListener('input', updateCount);
                         updateCount(); // Initial count
                     }
                 }
-
                 // Attach all event listeners
                 function attachEventListeners() {
                     // Navigation buttons
                     prevBtn.addEventListener('click', () => changeStep(-1));
                     nextBtn.addEventListener('click', () => changeStep(1));
-
                     // Form fields
                     document.getElementById('start_date').addEventListener('change', calculateDuration);
                     document.getElementById('end_date').addEventListener('change', calculateDuration);
-                    document.getElementById('nda_signature_date').addEventListener('change', updateNDAStatus);
-
                     // Add member button
                     document.getElementById('add-member').addEventListener('click', addMember);
-
                     // Form submission
                     form.addEventListener('submit', handleFormSubmit);
-
                     // Real-time validation
                     attachFieldValidation();
                 }
-
                 // Step navigation
                 function changeStep(direction) {
                     const newStep = currentStep + direction;
-
                     if (newStep < 1 || newStep > totalSteps) return;
-
                     if (direction === 1 && !validateCurrentStep()) {
                         showValidationError();
                         return;
                     }
-
                     currentStep = newStep;
                     updateStepDisplay();
-
                     // Smooth scroll to top
                     document.querySelector('.form-container').scrollTo({
                         top: 0,
                         behavior: 'smooth'
                     });
                 }
-
                 // Update step display
                 function updateStepDisplay() {
                     // Update progress indicator
                     document.querySelectorAll('.progress-step').forEach((step, index) => {
                         const stepNum = index + 1;
                         step.classList.remove('active', 'completed');
-
                         if (stepNum < currentStep) {
                             step.classList.add('completed');
                         } else if (stepNum === currentStep) {
                             step.classList.add('active');
                         }
                     });
-
                     // Update progress lines
                     document.querySelectorAll('.progress-line').forEach((line, index) => {
                         line.classList.toggle('completed', index < currentStep - 1);
                     });
-
                     // Update form steps
                     document.querySelectorAll('.form-step').forEach((step, index) => {
                         step.classList.toggle('active', index + 1 === currentStep);
                     });
-
                     // Update navigation buttons
                     prevBtn.style.display = currentStep === 1 ? 'none' : 'inline-flex';
                     nextBtn.style.display = currentStep === totalSteps ? 'none' : 'inline-flex';
                     submitBtn.style.display = currentStep === totalSteps ? 'inline-flex' : 'none';
-
                     // Update progress step icons for completed steps
                     document.querySelectorAll('.progress-step.completed .progress-step-circle i').forEach(icon => {
                         icon.className = 'bi bi-check';
                     });
                 }
-
                 // Validate current step
                 function validateCurrentStep() {
                     const currentStepEl = document.querySelector(`.form-step[data-step="${currentStep}"]`);
                     const requiredFields = currentStepEl.querySelectorAll('[required]');
                     let isValid = true;
-
                     requiredFields.forEach(field => {
                         if (!validateField(field)) {
                             isValid = false;
                         }
                     });
-
-                    // Special validation for step 4 (members)
-                    if (currentStep === 4) {
+                    // Special validation for step 3 (members)
+                    if (currentStep === 3) {
                         isValid = validateMembersStep() && isValid;
                     }
-
                     return isValid;
                 }
-
                 // Validate individual field
                 function validateField(field) {
                     const value = field.type === 'file' ? field.files.length > 0 : field.value.trim();
                     const isValid = !!value;
-
                     field.classList.toggle('field-error', !isValid);
                     field.classList.toggle('field-success', isValid && field.value.trim());
-
                     return isValid;
                 }
-
                 // Validate members step
                 function validateMembersStep() {
                     const memberCards = document.querySelectorAll('.member-card');
                     let isValid = true;
-
                     memberCards.forEach(card => {
                         const nameInput = card.querySelector('.member-name');
                         const fileInput = card.querySelector('.file-input');
-
                         if (!validateField(nameInput) || !validateField(fileInput)) {
                             isValid = false;
                         }
                     });
-
                     return isValid && memberCards.length > 0;
                 }
-
                 // Show validation error
                 function showValidationError() {
                     Swal.fire({
@@ -1651,20 +1584,17 @@
                         }
                     });
                 }
-
                 // Duration calculation
                 function calculateDuration() {
                     const startDate = document.getElementById('start_date').value;
                     const endDate = document.getElementById('end_date').value;
                     const durationText = document.getElementById('duration-text');
                     const durationIcon = document.querySelector('.duration-icon i');
-
                     if (startDate && endDate) {
                         const start = new Date(startDate);
                         const end = new Date(endDate);
                         const diffTime = end - start;
                         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
                         if (diffDays <= 0) {
                             Swal.fire({
                                 icon: 'error',
@@ -1678,21 +1608,17 @@
                             durationIcon.className = 'bi bi-clock';
                             return;
                         }
-
                         // Calculate duration breakdown
                         const months = Math.floor(diffDays / 30);
                         const weeks = Math.floor((diffDays % 30) / 7);
                         const days = diffDays % 7;
-
                         let durationParts = [];
                         if (months > 0) durationParts.push(`${months} bulan`);
                         if (weeks > 0) durationParts.push(`${weeks} minggu`);
                         if (days > 0 || durationParts.length === 0) durationParts.push(`${days} hari`);
-
                         const durationString = durationParts.join(', ');
                         durationText.textContent = `${durationString} (${diffDays} hari total)`;
                         durationIcon.className = 'bi bi-calendar-check';
-
                         // Add animation
                         durationText.classList.add('slide-in');
                         setTimeout(() => durationText.classList.remove('slide-in'), 300);
@@ -1701,146 +1627,112 @@
                         durationIcon.className = 'bi bi-clock';
                     }
                 }
-
-                // Update NDA status
-                function updateNDAStatus() {
-                    const ndaDate = document.getElementById('nda_signature_date').value;
-                    const statusCard = document.getElementById('nda-status-card');
-                    const statusIcon = statusCard.querySelector('.status-icon i');
-                    const statusText = document.getElementById('nda-status-text');
-
-                    if (ndaDate) {
-                        statusCard.className = 'nda-status-card status-success';
-                        statusCard.querySelector('.status-icon').className = 'status-icon status-icon-success';
-                        statusIcon.className = 'bi bi-check-circle';
-                        statusText.textContent = `Ditandatangani pada ${formatDate(ndaDate)}`;
-
-                        // Add success animation
-                        statusCard.classList.add('slide-in');
-                        setTimeout(() => statusCard.classList.remove('slide-in'), 300);
-                    } else {
-                        statusCard.className = 'nda-status-card';
-                        statusCard.querySelector('.status-icon').className = 'status-icon status-icon-warning';
-                        statusIcon.className = 'bi bi-exclamation-triangle';
-                        statusText.textContent = 'Wajib diisi sebelum membuat proyek';
-                    }
-                }
-
-                // Format date to Indonesian
-                function formatDate(dateString) {
-                    const date = new Date(dateString);
-                    const months = [
-                        'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-                        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
-                    ];
-                    return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
-                }
-
                 // Add member functionality
                 function addMember() {
                     const container = document.getElementById('member-container');
                     const memberCard = createMemberCard(memberCount);
-
                     container.appendChild(memberCard);
                     memberCount++;
-
                     updateRemoveButtons();
                     attachMemberEventListeners(memberCard);
-
                     // Animate new member card
                     memberCard.classList.add('slide-in');
                     setTimeout(() => memberCard.classList.remove('slide-in'), 300);
-
                     // Scroll to new member
                     memberCard.scrollIntoView({
                         behavior: 'smooth',
                         block: 'center'
                     });
                 }
-
                 // Create member card HTML
                 function createMemberCard(index) {
                     const div = document.createElement('div');
                     div.className = 'member-card';
                     div.setAttribute('data-member', index);
-
                     div.innerHTML = `
-                        <div class="member-header">
-                            <div class="member-avatar">
-                                <i class="bi bi-person"></i>
-                            </div>
-                            <div class="member-info">
-                                <div class="member-label">Anggota #${index + 1}</div>
-                            </div>
-                            <button type="button" class="btn-remove-member">
-                                <i class="bi bi-x"></i>
-                            </button>
-                        </div>
-                        <div class="member-body">
-                            <div class="member-fields">
-                                <div class="member-field">
-                                    <label class="field-label required">Nama Lengkap</label>
-                                    <div class="field-wrapper">
-                                        <input type="text"
-                                               name="members[${index}][name]"
-                                               class="field-input member-name"
-                                               placeholder="Masukkan nama lengkap anggota tim"
-                                               maxlength="100"
-                                               required>
-                                    </div>
-                                </div>
-                                <div class="member-field">
-                                    <label class="field-label required">Berkas NDA (PDF)</label>
-                                    <div class="file-upload-area">
-                                        <input type="file"
-                                               name="files[${index}]"
-                                               class="file-input"
-                                               id="file-${index}"
-                                               accept="application/pdf"
-                                               required>
-                                        <label for="file-${index}" class="file-upload-label">
-                                            <div class="file-upload-icon">
-                                                <i class="bi bi-cloud-upload"></i>
-                                            </div>
-                                            <div class="file-upload-text">
-                                                <div class="file-upload-title">Pilih atau Seret File PDF</div>
-                                                <div class="file-upload-subtitle">Maksimal 10MB</div>
-                                            </div>
-                                        </label>
-                                        <div class="file-upload-info" style="display: none;">
-                                            <div class="file-info">
-                                                <i class="bi bi-file-earmark-pdf"></i>
-                                                <span class="file-name"></span>
-                                            </div>
-                                            <button type="button" class="btn-remove-file">
-                                                <i class="bi bi-x"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
+                <div class="member-header">
+                    <div class="member-avatar">
+                        <i class="bi bi-person"></i>
+                    </div>
+                    <div class="member-info">
+                        <div class="member-label">Anggota ke-${index + 1}</div>
+                    </div>
+                    <button type="button" class="btn-remove-member">
+                        <i class="bi bi-x"></i>
+                    </button>
+                </div>
+                <div class="member-body">
+                    <div class="member-fields">
+                        <div class="member-field">
+                            <label class="field-label required">Nama Lengkap</label>
+                            <div class="field-wrapper">
+                                <input type="text"
+                                    name="members[${index}][name]"
+                                    class="field-input member-name"
+                                    placeholder="Masukkan nama lengkap anggota tim"
+                                    maxlength="100"
+                                    required>
                             </div>
                         </div>
-                    `;
-
+                        <div class="member-field">
+                            <label class="field-label required">Tanggal Tanda Tangan NDA</label>
+                            <div class="field-wrapper">
+                                <div class="field-icon">
+                                    <i class="bi bi-pen"></i>
+                                </div>
+                                <input type="date"
+                                    name="members[${index}][signature_date]"
+                                    class="field-input"
+                                    required>
+                            </div>
+                        </div>
+                        <div class="member-field">
+                            <label class="field-label required">Berkas NDA (PDF)</label>
+                            <div class="file-upload-area">
+                                <input type="file"
+                                    name="files[${index}]"
+                                    class="file-input"
+                                    id="file-${index}"
+                                    accept="application/pdf"
+                                    required>
+                                <label for="file-${index}" class="file-upload-label">
+                                    <div class="file-upload-icon">
+                                        <i class="bi bi-cloud-upload"></i>
+                                    </div>
+                                    <div class="file-upload-text">
+                                        <div class="file-upload-title">Pilih atau Seret File PDF</div>
+                                        <div class="file-upload-subtitle">Maksimal 10MB</div>
+                                    </div>
+                                </label>
+                                <div class="file-upload-info" style="display: none;">
+                                    <div class="file-info">
+                                        <i class="bi bi-file-earmark-pdf"></i>
+                                        <span class="file-name"></span>
+                                        <i class="bi bi-check-circle success-icon" title="Berkas berhasil dimasukkan"></i> <!-- Tambahan ikon success -->
+                                    </div>
+                                    <button type="button" class="btn-remove-file">
+                                        <i class="bi bi-x"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
                     return div;
                 }
-
                 // Attach event listeners to member card
                 function attachMemberEventListeners(memberCard) {
                     const removeBtn = memberCard.querySelector('.btn-remove-member');
                     const fileInput = memberCard.querySelector('.file-input');
                     const nameInput = memberCard.querySelector('.member-name');
-
                     // Remove member button
                     removeBtn.addEventListener('click', () => removeMember(memberCard));
-
                     // File input validation
                     fileInput.addEventListener('change', (e) => handleFileUpload(e.target));
-
                     // File remove button
                     const removeFileBtn = memberCard.querySelector('.btn-remove-file');
                     removeFileBtn.addEventListener('click', () => removeFile(fileInput));
-
                     // Real-time validation
                     nameInput.addEventListener('blur', () => validateField(nameInput));
                     nameInput.addEventListener('input', () => {
@@ -1849,14 +1741,11 @@
                             nameInput.classList.add('field-success');
                         }
                     });
-
                     fileInput.addEventListener('change', () => validateField(fileInput));
                 }
-
                 // Remove member
                 function removeMember(memberCard) {
                     const memberNumber = memberCard.querySelector('.member-label').textContent;
-
                     Swal.fire({
                         title: 'Hapus Anggota Tim',
                         text: `Apakah Anda yakin ingin menghapus ${memberNumber} beserta berkas NDA-nya?`,
@@ -1877,7 +1766,6 @@
                             // Add fade out animation
                             memberCard.style.opacity = '0';
                             memberCard.style.transform = 'translateX(-20px)';
-
                             setTimeout(() => {
                                 memberCard.remove();
                                 updateRemoveButtons();
@@ -1886,7 +1774,6 @@
                         }
                     });
                 }
-
                 // Update remove buttons visibility
                 function updateRemoveButtons() {
                     const memberCards = document.querySelectorAll('.member-card');
@@ -1895,29 +1782,23 @@
                         removeBtn.style.display = memberCards.length > 1 ? 'flex' : 'none';
                     });
                 }
-
                 // Reindex members after removal
                 function reindexMembers() {
                     const memberCards = document.querySelectorAll('.member-card');
                     memberCards.forEach((card, index) => {
                         card.setAttribute('data-member', index);
-                        card.querySelector('.member-label').textContent = `Anggota #${index + 1}`;
-
+                        card.querySelector('.member-label').textContent = `Anggota ke-${index + 1}`;
                         // Update form field names
                         const nameInput = card.querySelector('.member-name');
                         const fileInput = card.querySelector('.file-input');
-
                         nameInput.name = `members[${index}][name]`;
                         fileInput.name = `files[${index}]`;
                         fileInput.id = `file-${index}`;
-
                         const fileLabel = card.querySelector('.file-upload-label');
                         fileLabel.setAttribute('for', `file-${index}`);
                     });
-
                     memberCount = memberCards.length;
                 }
-
                 // Handle file upload
                 function handleFileUpload(fileInput) {
                     const file = fileInput.files[0];
@@ -1925,9 +1806,7 @@
                     const uploadLabel = uploadArea.querySelector('.file-upload-label');
                     const uploadInfo = uploadArea.querySelector('.file-upload-info');
                     const fileName = uploadInfo.querySelector('.file-name');
-
                     if (!file) return;
-
                     // Validate file type
                     if (file.type !== 'application/pdf') {
                         Swal.fire({
@@ -1940,7 +1819,6 @@
                         fileInput.value = '';
                         return;
                     }
-
                     const maxSize = 10 * 1024 * 1024; // 10MB
                     if (file.size > maxSize) {
                         Swal.fire({
@@ -1953,40 +1831,35 @@
                         fileInput.value = '';
                         return;
                     }
-
                     // Show file info
                     fileName.textContent = file.name;
                     uploadLabel.style.display = 'none';
                     uploadInfo.style.display = 'flex';
                     uploadArea.classList.add('has-file');
-
+                    // Tambahkan class success untuk highlight
+                    uploadInfo.classList.add('file-success');
                     // Remove error state
                     fileInput.classList.remove('field-error');
                     fileInput.classList.add('field-success');
-
                     // Animation
                     uploadInfo.classList.add('fade-in');
                     setTimeout(() => uploadInfo.classList.remove('fade-in'), 300);
                 }
-
                 // Remove file
                 function removeFile(fileInput) {
                     const uploadArea = fileInput.closest('.file-upload-area');
                     const uploadLabel = uploadArea.querySelector('.file-upload-label');
                     const uploadInfo = uploadArea.querySelector('.file-upload-info');
-
                     fileInput.value = '';
                     uploadLabel.style.display = 'flex';
                     uploadInfo.style.display = 'none';
                     uploadArea.classList.remove('has-file');
-
+                    uploadInfo.classList.remove('file-success'); // Hapus class success
                     fileInput.classList.remove('field-success');
                 }
-
                 // Attach field validation
                 function attachFieldValidation() {
                     const fields = document.querySelectorAll('[required]');
-
                     fields.forEach(field => {
                         field.addEventListener('blur', () => validateField(field));
                         field.addEventListener('input', () => {
@@ -1997,11 +1870,9 @@
                         });
                     });
                 }
-
                 // Handle form submission
                 function handleFormSubmit(e) {
                     e.preventDefault();
-
                     // Final validation
                     if (!validateAllSteps()) {
                         Swal.fire({
@@ -2013,22 +1884,20 @@
                         });
                         return;
                     }
-
                     // Show confirmation
                     const projectName = document.getElementById('project_name').value;
                     const memberCards = document.querySelectorAll('.member-card');
-
                     Swal.fire({
                         title: 'Konfirmasi Pembuatan Proyek',
                         html: `
-                            <div style="text-align: left; margin: 1rem 0;">
-                                <p><strong>Nama Proyek:</strong> ${projectName}</p>
-                                <p><strong>Jumlah Anggota:</strong> ${memberCards.length} orang</p>
-                                <p style="margin-top: 1rem; color: #6b7280; font-size: 0.9rem;">
-                                    Pastikan semua data sudah benar sebelum membuat proyek.
-                                </p>
-                            </div>
-                        `,
+                    <div style="text-align: left; margin: 1rem 0;">
+                        <p><strong>Nama Proyek:</strong> ${projectName}</p>
+                        <p><strong>Jumlah Anggota:</strong> ${memberCards.length} orang</p>
+                        <p style="margin-top: 1rem; color: #6b7280; font-size: 0.9rem;">
+                            Pastikan semua data sudah benar sebelum membuat proyek.
+                        </p>
+                    </div>
+                `,
                         icon: 'question',
                         showCancelButton: true,
                         confirmButtonColor: '#10b981',
@@ -2047,26 +1916,24 @@
                         }
                     });
                 }
-
                 // Submit form with loading state
                 function submitForm() {
                     // Disable submit button and show loading
                     submitBtn.disabled = true;
                     submitBtn.innerHTML = '<i class="bi bi-arrow-clockwise loading-spin me-2"></i>Membuat Proyek...';
-
                     // Show loading modal
                     Swal.fire({
                         title: 'Membuat Proyek',
                         html: `
-                            <div style="padding: 2rem 0;">
-                                <div class="d-flex justify-content-center mb-3">
-                                    <div class="spinner-border text-primary" role="status">
-                                        <span class="sr-only">Loading...</span>
-                                    </div>
-                                </div>
-                                <p>Mohon tunggu, sedang memproses data proyek dan mengunggah berkas...</p>
+                    <div style="padding: 2rem 0;">
+                        <div class="d-flex justify-content-center mb-3">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="sr-only">Loading...</span>
                             </div>
-                        `,
+                        </div>
+                        <p>Mohon tunggu, sedang memproses data proyek dan mengunggah berkas...</p>
+                    </div>
+                `,
                         allowOutsideClick: false,
                         allowEscapeKey: false,
                         showConfirmButton: false,
@@ -2074,44 +1941,35 @@
                             popup: 'swal-modern-popup'
                         }
                     });
-
                     // Submit the actual form
                     setTimeout(() => {
                         form.submit();
                     }, 1000);
                 }
-
                 // Validate all steps
                 function validateAllSteps() {
                     let isValid = true;
-
                     for (let step = 1; step <= totalSteps; step++) {
                         const stepEl = document.querySelector(`.form-step[data-step="${step}"]`);
                         const requiredFields = stepEl.querySelectorAll('[required]');
-
                         requiredFields.forEach(field => {
                             if (!validateField(field)) {
                                 isValid = false;
                             }
                         });
-
-                        if (step === 4 && !validateMembersStep()) {
+                        if (step === 3 && !validateMembersStep()) {
                             isValid = false;
                         }
                     }
-
                     return isValid;
                 }
-
                 // Initialize first member event listeners
                 const firstMemberCard = document.querySelector('.member-card[data-member="0"]');
                 if (firstMemberCard) {
                     attachMemberEventListeners(firstMemberCard);
                 }
-
                 // Update remove buttons initially
                 updateRemoveButtons();
-
                 // Keyboard shortcuts
                 document.addEventListener('keydown', function(e) {
                     // Navigate with arrow keys (Alt + Arrow)
@@ -2124,50 +1982,40 @@
                             changeStep(1);
                         }
                     }
-
                     // Submit with Ctrl/Cmd + Enter
                     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && currentStep === totalSteps) {
                         e.preventDefault();
                         handleFormSubmit(e);
                     }
                 });
-
                 // Auto-save to localStorage (optional feature)
                 function autoSave() {
                     const formData = new FormData(form);
                     const data = {};
-
                     for (let [key, value] of formData.entries()) {
                         if (key !== 'files[]') { // Don't save files
                             data[key] = value;
                         }
                     }
-
                     localStorage.setItem('nda-project-draft', JSON.stringify(data));
                 }
-
                 // Restore from localStorage
                 function restoreFromAutoSave() {
                     const saved = localStorage.getItem('nda-project-draft');
                     if (saved) {
                         try {
                             const data = JSON.parse(saved);
-
                             // Restore basic fields
                             Object.entries(data).forEach(([key, value]) => {
                                 const field = document.querySelector(`[name="${key}"]`);
                                 if (field && field.type !== 'file') {
                                     field.value = value;
-
                                     // Trigger change events for calculated fields
                                     if (key === 'start_date' || key === 'end_date') {
                                         calculateDuration();
-                                    } else if (key === 'nda_signature_date') {
-                                        updateNDAStatus();
                                     }
                                 }
                             });
-
                             // Update character counter
                             if (descriptionTextarea && descriptionCounter) {
                                 descriptionCounter.textContent = descriptionTextarea.value.length;
@@ -2177,7 +2025,6 @@
                         }
                     }
                 }
-
                 // Auto-save on input changes (debounced)
                 let autoSaveTimeout;
                 document.addEventListener('input', function(e) {
@@ -2186,107 +2033,89 @@
                         autoSaveTimeout = setTimeout(autoSave, 2000); // Save after 2 seconds of inactivity
                     }
                 });
-
                 // Clear auto-save on successful submission
                 form.addEventListener('submit', function() {
                     localStorage.removeItem('nda-project-draft');
                 });
-
                 // Restore auto-save on page load
                 restoreFromAutoSave();
-
                 // Show helpful tooltips for better UX
                 function initializeTooltips() {
                     // Add tooltips to step icons in progress indicator
                     document.querySelectorAll('.progress-step').forEach((step, index) => {
-                        const stepNames = ['Informasi Dasar', 'Timeline Proyek', 'Informasi NDA',
-                            'Tim & Berkas'
-                        ];
+                        const stepNames = ['Informasi Dasar', 'Timeline Proyek', 'Tim & Berkas'];
                         step.title = stepNames[index];
                     });
-
                     // Add tooltips to action buttons
                     document.getElementById('add-member').title =
                         'Tambah anggota tim baru (minimal 1 anggota diperlukan)';
                 }
-
                 initializeTooltips();
             });
-
             // Custom SweetAlert2 styles
             const swalStyles = document.createElement('style');
             swalStyles.innerHTML = `
-                .swal-modern-popup {
-                    border-radius: 16px !important;
-                    padding: 0 !important;
-                    font-family: 'Inter', sans-serif !important;
-                }
-
-                .swal-modern-title {
-                    font-size: 1.25rem !important;
-                    font-weight: 700 !important;
-                    color: #1f2937 !important;
-                    margin-bottom: 0.5rem !important;
-                }
-
-                .swal-modern-content {
-                    font-size: 0.9rem !important;
-                    line-height: 1.5 !important;
-                    color: #4b5563 !important;
-                }
-
-                .swal-modern-html {
-                    margin: 0 !important;
-                    padding: 0 !important;
-                }
-
-                .swal2-confirm {
-                    border-radius: 8px !important;
-                    padding: 0.75rem 1.5rem !important;
-                    font-weight: 600 !important;
-                    font-size: 0.875rem !important;
-                }
-
-                .swal2-cancel {
-                    border-radius: 8px !important;
-                    padding: 0.75rem 1.5rem !important;
-                    font-weight: 600 !important;
-                    font-size: 0.875rem !important;
-                }
-
-                .swal2-actions {
-                    gap: 0.75rem !important;
-                    margin-top: 1.5rem !important;
-                }
-
-                .spinner-border {
-                    width: 2rem;
-                    height: 2rem;
-                    border: 0.25em solid currentColor;
-                    border-right-color: transparent;
-                    border-radius: 50%;
-                    animation: spinner-border-spin 0.75s linear infinite;
-                }
-
-                @keyframes spinner-border-spin {
-                    to { transform: rotate(360deg); }
-                }
-
-                .text-primary {
-                    color: #4f46e5 !important;
-                }
-
-                .sr-only {
-                    position: absolute !important;
-                    width: 1px !important;
-                    height: 1px !important;
-                    padding: 0 !important;
-                    margin: -1px !important;
-                    overflow: hidden !important;
-                    clip: rect(0, 0, 0, 0) !important;
-                    border: 0 !important;
-                }
-            `;
+        .swal-modern-popup {
+            border-radius: 16px !important;
+            padding: 0 !important;
+            font-family: 'Inter', sans-serif !important;
+        }
+        .swal-modern-title {
+            font-size: 1.25rem !important;
+            font-weight: 700 !important;
+            color: #1f2937 !important;
+            margin-bottom: 0.5rem !important;
+        }
+        .swal-modern-content {
+            font-size: 0.9rem !important;
+            line-height: 1.5 !important;
+            color: #4b5563 !important;
+        }
+        .swal-modern-html {
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        .swal2-confirm {
+            border-radius: 8px !important;
+            padding: 0.75rem 1.5rem !important;
+            font-weight: 600 !important;
+            font-size: 0.875rem !important;
+        }
+        .swal2-cancel {
+            border-radius: 8px !important;
+            padding: 0.75rem 1.5rem !important;
+            font-weight: 600 !important;
+            font-size: 0.875rem !important;
+        }
+        .swal2-actions {
+            gap: 0.75rem !important;
+            margin-top: 1.5rem !important;
+        }
+        .spinner-border {
+            width: 2rem;
+            height: 2rem;
+            border: 0.25em solid currentColor;
+            border-right-color: transparent;
+            border-radius: 50%;
+            animation: spinner-border-spin 0.75s linear infinite;
+        }
+        @keyframes spinner-border-spin {
+            to { transform: rotate(360deg); }
+        }
+        .text-primary {
+            color: #4f46e5 !important;
+        }
+        .sr-only {
+            position: absolute !important;
+            width: 1px !important;
+            height: 1px !important;
+            padding: 0 !important;
+            margin: -1px !important;
+            overflow: hidden !important;
+            clip: rect(0, 0, 0, 0) !important;
+            border: 0 !important;
+        }
+    `;
             document.head.appendChild(swalStyles);
         </script>
     @endpush

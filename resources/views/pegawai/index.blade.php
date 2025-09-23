@@ -9,7 +9,8 @@
             <div class="header-content">
                 <div class="header-text">
                     <h1 class="page-title">Proyek NDA</h1>
-                    <p class="page-subtitle">Kelola dokumen Non-Disclosure Agreement dan detail proyek Anda dengan mudah dan
+                    <p class="page-subtitle">Kelola semua dokumen Non-Disclosure Agreement dan detail proyek Anda dengan
+                        mudah dan
                         efisien.</p>
                 </div>
                 <div class="header-action">
@@ -21,7 +22,7 @@
             </div>
         </div>
 
-        <!-- Statistics Cards -->
+        <!-- Statistics Cards (diperbaiki untuk kesatuan NDA per anggota) -->
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-content">
@@ -44,13 +45,17 @@
                         <i class="bi bi-shield-check-fill"></i>
                     </div>
                     <div class="stat-info">
-                        <div class="stat-number">{{ $ndas->where('nda_signature_date', '!=', null)->count() }}</div>
-                        <div class="stat-label">NDA Ditandatangani</div>
+                        <div class="stat-number">
+                            {{ $ndas->filter(function ($nda) {
+                                    return $nda->files->every(fn($file) => $file->signature_date !== null) && $nda->files->count() > 0;
+                                })->count() }}
+                        </div>
+                        <div class="stat-label">Proyek Selesai NDA</div>
                     </div>
                 </div>
                 <div class="stat-progress">
                     <div class="progress-bar bg-success"
-                        style="width: {{ $ndas->total() > 0 ? ($ndas->where('nda_signature_date', '!=', null)->count() / $ndas->total()) * 100 : 0 }}%">
+                        style="width: {{ $ndas->total() > 0 ? ($ndas->filter(fn($nda) => $nda->files->every(fn($file) => $file->signature_date !== null) && $nda->files->count() > 0)->count() / $ndas->total()) * 100 : 0 }}%">
                     </div>
                 </div>
             </div>
@@ -61,7 +66,7 @@
                         <i class="bi bi-files-alt"></i>
                     </div>
                     <div class="stat-info">
-                        <div class="stat-number">{{ $ndas->sum(function ($nda) {return $nda->files->count();}) }}</div>
+                        <div class="stat-number">{{ $ndas->sum(fn($nda) => $nda->files->count()) }}</div>
                         <div class="stat-label">Total Berkas</div>
                     </div>
                 </div>
@@ -100,7 +105,7 @@
             <div class="table-header">
                 <div class="table-title">
                     <h2>Daftar Proyek</h2>
-                    <p>Kelola semua proyek NDA Anda dalam satu tempat</p>
+                    <p>Kelola semua proyek Anda dalam satu tempat</p>
                 </div>
 
                 <!-- Filters & Actions -->
@@ -160,8 +165,7 @@
                                 <th class="th-project">Proyek</th>
                                 <th class="th-duration">Durasi</th>
                                 <th class="th-status">Status NDA</th>
-                                <th class="th-members">Anggota</th>
-                                <th class="th-files">Berkas</th>
+                                <th class="th-members-files">Anggota & Berkas</th>
                                 <th class="th-actions">Aksi</th>
                             </tr>
                         </thead>
@@ -201,25 +205,33 @@
                                             <span class="text-muted">Tidak diatur</span>
                                         @endif
                                     </td>
-                                    <td class="td-status project-nda-date"
-                                        data-month="{{ $nda->nda_signature_date ? $nda->nda_signature_date->format('m') : '' }}">
-                                        @if ($nda->nda_signature_date)
-                                            <div class="status-badge status-signed">
-                                                <i class="bi bi-check-circle-fill me-1"></i>
-                                                {{ $nda->nda_signature_date->translatedFormat('d M Y') }}
-                                            </div>
-                                        @else
-                                            <div class="status-badge status-pending">
-                                                <i class="bi bi-clock-fill me-1"></i>
-                                                Menunggu
-                                            </div>
-                                        @endif
+                                    <td class="td-status project-nda-date">
+                                        @php
+                                            $signedCount = $nda->files
+                                                ->filter(fn($file) => $file->signature_date !== null)
+                                                ->count();
+                                            $totalFiles = $nda->files->count();
+                                            $ndaMonth = $nda->files->first()?->signature_date?->format('m') ?? '';
+                                        @endphp
+                                        <div data-month="{{ $ndaMonth }}">
+                                            @if ($totalFiles > 0 && $signedCount === $totalFiles)
+                                                <div class="status-badge status-signed">
+                                                    <i class="bi bi-check-circle-fill me-1"></i>
+                                                    Semua Ditandatangani
+                                                </div>
+                                            @else
+                                                <div class="status-badge status-pending">
+                                                    <i class="bi bi-clock-fill me-1"></i>
+                                                    Menunggu ({{ $signedCount }}/{{ $totalFiles }})
+                                                </div>
+                                            @endif
+                                        </div>
                                     </td>
-                                    <td class="td-members">
+                                    <td class="td-members-files">
                                         @php
                                             $members = is_array($nda->members)
                                                 ? $nda->members
-                                                : (is_string($nda->members) && json_decode($nda->members) !== null
+                                                : (is_string($nda->members)
                                                     ? json_decode($nda->members, true)
                                                     : []);
                                             $members = array_map(function ($member) {
@@ -227,59 +239,52 @@
                                                     ? $member['name']
                                                     : $member;
                                             }, $members);
+                                            $files = $nda->files;
                                             $memberCount = count($members);
-                                            $fileCount = $nda->files->count();
+                                            $fileCount = $files->count();
+                                            $maxDisplay = 5; // Batasi tampilan maksimal 5 item
                                         @endphp
-                                        @if (!empty($members))
-                                            <div class="members-list">
-                                                @foreach (array_slice($members, 0, 2) as $member)
-                                                    <div class="member-item">
-                                                        <i class="bi bi-person-circle me-1"></i>
-                                                        {{ $member }}
+                                        @if (!empty($members) || $files->isNotEmpty())
+                                            <div class="members-files-list">
+                                                @for ($i = 0; $i < min($memberCount, $maxDisplay); $i++)
+                                                    <div class="member-file-item">
+                                                        <div class="member-name">
+                                                            <i class="bi bi-person-circle me-1"></i>
+                                                            {{ $members[$i] ?? 'Anggota ' . ($i + 1) }}
+                                                        </div>
+                                                        <div class="file-info">
+                                                            @if (isset($files[$i]))
+                                                                <a href="{{ Storage::url($files[$i]->file_path) }}"
+                                                                    target="_blank" class="file-link">
+                                                                    <i class="bi bi-file-earmark-pdf me-1"></i>
+                                                                    {{ Str::limit(basename($files[$i]->file_path), 20) }}
+                                                                </a>
+                                                                <span class="signature-date">
+                                                                    ({{ $files[$i]->signature_date ? $files[$i]->signature_date->translatedFormat('d M Y') : 'Belum ditandatangani' }})
+                                                                </span>
+                                                            @else
+                                                                <span class="text-muted">Tidak ada berkas</span>
+                                                            @endif
+                                                        </div>
                                                     </div>
-                                                @endforeach
-                                                @if ($memberCount > 2)
-                                                    <div class="member-more">
-                                                        +{{ $memberCount - 2 }} lainnya
-                                                    </div>
-                                                @endif
-                                            </div>
-                                            @if ($memberCount !== $fileCount)
-                                                <div class="text-warning small mt-1"
-                                                    title="Data mungkin tidak sinkron, periksa edit form">
-                                                    ⚠️ {{ $memberCount }} anggota, {{ $fileCount }} berkas
-                                                </div>
-                                            @endif
-                                        @else
-                                            <span class="text-muted">Belum ada anggota</span>
-                                        @endif
-                                    </td>
-                                    <td class="td-files">
-                                        @if ($nda->files->isNotEmpty())
-                                            <div class="files-list">
-                                                @foreach ($nda->files->take(2) as $file)
-                                                    <div class="file-item">
-                                                        <a href="{{ Storage::url($file->file_path) }}" target="_blank"
-                                                            class="file-link">
-                                                            <i class="bi bi-file-earmark-pdf me-1"></i>
-                                                            {{ Str::limit(basename($file->file_path), 20) }}
+                                                @endfor
+                                                @if ($memberCount > $maxDisplay)
+                                                    <div class="member-file-more">
+                                                        <a href="{{ route('pegawai.nda.detail', $nda) }}"
+                                                            class="text-primary text-decoration-underline">
+                                                            +{{ $memberCount - $maxDisplay }} lainnya (Lihat Selengkapnya)
                                                         </a>
                                                     </div>
-                                                @endforeach
-                                                @if ($fileCount > 2)
-                                                    <div class="file-more">
-                                                        +{{ $fileCount - 2 }} file lainnya
-                                                    </div>
                                                 @endif
                                             </div>
                                             @if ($memberCount !== $fileCount)
                                                 <div class="text-warning small mt-1"
                                                     title="Data mungkin tidak sinkron, periksa edit form">
-                                                    ⚠️ Periksa sinkronisasi
+                                                    âš ï¸ {{ $memberCount }} anggota, {{ $fileCount }} berkas
                                                 </div>
                                             @endif
                                         @else
-                                            <span class="text-muted">Belum ada berkas</span>
+                                            <span class="text-muted">Belum ada anggota atau berkas</span>
                                         @endif
                                     </td>
                                     <td class="td-actions">
@@ -306,7 +311,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="8" class="text-center text-muted">
+                                    <td colspan="7" class="text-center text-muted">
                                         Tidak ada data proyek NDA.
                                     </td>
                                 </tr>
@@ -315,7 +320,7 @@
                     </table>
                 </div>
 
-                <!-- Mobile Cards (Hidden on desktop) -->
+                <!-- Mobile Cards (Hidden on desktop) (diperbaiki serupa dengan tabel) -->
                 <div class="mobile-cards">
                     @forelse ($ndas as $key => $nda)
                         <div class="mobile-card project-row" data-project-id="{{ $nda->id }}">
@@ -370,19 +375,27 @@
                                 <div class="mobile-info-grid">
                                     <div class="mobile-info-item">
                                         <div class="mobile-info-label">Status NDA</div>
-                                        <div class="mobile-info-value project-nda-date"
-                                            data-month="{{ $nda->nda_signature_date ? $nda->nda_signature_date->format('m') : '' }}">
-                                            @if ($nda->nda_signature_date)
-                                                <div class="status-badge status-signed">
-                                                    <i class="bi bi-check-circle-fill me-1"></i>
-                                                    Ditandatangani
-                                                </div>
-                                            @else
-                                                <div class="status-badge status-pending">
-                                                    <i class="bi bi-clock-fill me-1"></i>
-                                                    Menunggu
-                                                </div>
-                                            @endif
+                                        <div class="mobile-info-value project-nda-date">
+                                            @php
+                                                $signedCount = $nda->files
+                                                    ->filter(fn($file) => $file->signature_date !== null)
+                                                    ->count();
+                                                $totalFiles = $nda->files->count();
+                                                $ndaMonth = $nda->files->first()?->signature_date?->format('m') ?? '';
+                                            @endphp
+                                            <div data-month="{{ $ndaMonth }}">
+                                                @if ($totalFiles > 0 && $signedCount === $totalFiles)
+                                                    <div class="status-badge status-signed">
+                                                        <i class="bi bi-check-circle-fill me-1"></i>
+                                                        Semua Ditandatangani
+                                                    </div>
+                                                @else
+                                                    <div class="status-badge status-pending">
+                                                        <i class="bi bi-clock-fill me-1"></i>
+                                                        Menunggu ({{ $signedCount }}/{{ $totalFiles }})
+                                                    </div>
+                                                @endif
+                                            </div>
                                         </div>
                                     </div>
 
@@ -404,7 +417,7 @@
                                     </div>
 
                                     <div class="mobile-info-item">
-                                        <div class="mobile-info-label">Anggota Tim</div>
+                                        <div class="mobile-info-label">Anggota & Berkas</div>
                                         <div class="mobile-info-value">
                                             @php
                                                 $members = is_array($nda->members)
@@ -417,24 +430,53 @@
                                                         ? $member['name']
                                                         : $member;
                                                 }, $members);
+                                                $files = $nda->files;
+                                                $memberCount = count($members);
+                                                $fileCount = $files->count();
+                                                $maxDisplay = 5; // Batasi tampilan maksimal 5 item
                                             @endphp
-                                            @if (!empty($members))
-                                                <div class="mobile-members">
-                                                    <span class="member-count">{{ count($members) }} anggota</span>
+                                            @if (!empty($members) || $files->isNotEmpty())
+                                                <div class="members-files-list">
+                                                    @for ($i = 0; $i < min($memberCount, $maxDisplay); $i++)
+                                                        <div class="member-file-item">
+                                                            <div class="member-name">
+                                                                <i class="bi bi-person-circle me-1"></i>
+                                                                {{ $members[$i] ?? 'Anggota ' . ($i + 1) }}
+                                                            </div>
+                                                            <div class="file-info">
+                                                                @if (isset($files[$i]))
+                                                                    <a href="{{ Storage::url($files[$i]->file_path) }}"
+                                                                        target="_blank" class="file-link">
+                                                                        <i class="bi bi-file-earmark-pdf me-1"></i>
+                                                                        {{ Str::limit(basename($files[$i]->file_path), 20) }}
+                                                                    </a>
+                                                                    <span class="signature-date">
+                                                                        ({{ $files[$i]->signature_date ? $files[$i]->signature_date->translatedFormat('d M Y') : 'Belum ditandatangani' }})
+                                                                    </span>
+                                                                @else
+                                                                    <span class="text-muted">Tidak ada berkas</span>
+                                                                @endif
+                                                            </div>
+                                                        </div>
+                                                    @endfor
+                                                    @if ($memberCount > $maxDisplay)
+                                                        <div class="member-file-more">
+                                                            <a href="{{ route('pegawai.nda.detail', $nda) }}"
+                                                                class="text-primary text-decoration-underline">
+                                                                +{{ $memberCount - $maxDisplay }} lainnya (Lihat
+                                                                Selengkapnya)
+                                                            </a>
+                                                        </div>
+                                                    @endif
                                                 </div>
+                                                @if ($memberCount !== $fileCount)
+                                                    <div class="text-warning small mt-1"
+                                                        title="Data mungkin tidak sinkron, periksa edit form">
+                                                        âš ï¸ {{ $memberCount }} anggota, {{ $fileCount }} berkas
+                                                    </div>
+                                                @endif
                                             @else
-                                                <span class="text-muted">Belum ada anggota</span>
-                                            @endif
-                                        </div>
-                                    </div>
-
-                                    <div class="mobile-info-item">
-                                        <div class="mobile-info-label">Berkas</div>
-                                        <div class="mobile-info-value">
-                                            @if ($nda->files->isNotEmpty())
-                                                <span class="file-count">{{ $nda->files->count() }} berkas</span>
-                                            @else
-                                                <span class="text-muted">Belum ada berkas</span>
+                                                <span class="text-muted">Belum ada anggota atau berkas</span>
                                             @endif
                                         </div>
                                     </div>
@@ -948,6 +990,11 @@
                 text-align: center;
             }
 
+            .th-members-files,
+            .td-members-files {
+                width: 300px;
+            }
+
             /* Checkbox Styling */
             .checkbox-wrapper {
                 position: relative;
@@ -1076,35 +1123,43 @@
                 color: var(--warning);
             }
 
-            /* Members List */
-            .members-list {
+            /* Members & Files List */
+            .members-files-list {
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .member-file-item {
                 display: flex;
                 flex-direction: column;
                 gap: 0.25rem;
-            }
-
-            .member-item {
                 font-size: 0.8125rem;
                 color: var(--gray-700);
+            }
+
+            */ .member-file-more a {
+                font-weight: 600;
+                font-size: 0.8125rem;
+            }
+
+            .member-file-more a:hover {
+                text-decoration: none;
+                color: var(--primary-dark);
+            }
+
+            .member-name {
                 display: flex;
                 align-items: center;
+                font-weight: 500;
             }
 
-            .member-more {
-                font-size: 0.75rem;
-                color: var(--gray-500);
-                font-style: italic;
-            }
-
-            /* Files List */
-            .files-list {
+            .file-info {
                 display: flex;
-                flex-direction: column;
-                gap: 0.25rem;
-            }
-
-            .file-item {
-                font-size: 0.8125rem;
+                align-items: center;
+                gap: 0.5rem;
+                padding-left: 1.5rem;
+                /* Indent to align under member */
             }
 
             .file-link {
@@ -1120,7 +1175,13 @@
                 text-decoration: underline;
             }
 
-            .file-more {
+            .signature-date {
+                font-size: 0.75rem;
+                color: var(--gray-500);
+                white-space: nowrap;
+            }
+
+            .member-file-more {
                 font-size: 0.75rem;
                 color: var(--gray-500);
                 font-style: italic;
@@ -1300,12 +1361,10 @@
                 color: var(--gray-900);
             }
 
-            .mobile-members,
-            .member-count,
-            .file-count {
-                font-size: 0.875rem;
-                color: var(--gray-700);
-                font-weight: 500;
+            .mobile-members-files-list {
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
             }
 
             .mobile-empty-state {
@@ -1388,10 +1447,6 @@
 
             .d-inline {
                 display: inline !important;
-            }
-
-            .d-flex {
-                display: flex !important;
             }
 
             .me-1 {
@@ -1656,6 +1711,12 @@
             .table-wrapper::-webkit-scrollbar-thumb:hover {
                 background: var(--gray-400);
             }
+
+            .warning-sync {
+                color: var(--warning);
+                font-size: 0.75rem;
+                margin-top: 0.25rem;
+            }
         </style>
     @endpush
 
@@ -1694,13 +1755,12 @@
                             const projectDuration = row.querySelector('.project-duration')?.textContent
                                 .toLowerCase() || '';
                             const ndaDateElement = row.querySelector('.project-nda-date');
-                            const ndaMonth = ndaDateElement?.dataset.month || '';
+                            const ndaMonth = ndaDateElement?.dataset.month ||
+                                ''; // Gunakan data-month dari signature_date pertama
 
-                            const matchesSearch = searchTerm === '' ||
-                                projectName.includes(searchTerm) ||
-                                projectDescription.includes(searchTerm) ||
+                            const matchesSearch = searchTerm === '' || projectName.includes(
+                                    searchTerm) || projectDescription.includes(searchTerm) ||
                                 projectDuration.includes(searchTerm);
-
                             const matchesMonth = selectedMonth === '' || ndaMonth === selectedMonth;
 
                             if (matchesSearch && matchesMonth) {

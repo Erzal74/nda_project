@@ -13,6 +13,11 @@ class NdaFile extends Model
         'nda_id',
         'file_path',
         'member_index',
+        'signature_date',
+    ];
+
+    protected $casts = [
+        'signature_date' => 'date',
     ];
 
     public function nda()

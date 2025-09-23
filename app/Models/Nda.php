@@ -24,7 +24,6 @@ class Nda extends Model
     protected $casts = [
         'start_date' => 'date',
         'end_date' => 'date',
-        'nda_signature_date' => 'date',
         'members' => 'array', // Cast members ke array
     ];
 
@@ -45,7 +44,8 @@ class Nda extends Model
             $result[] = [
                 'name' => $member['name'] ?? '',
                 'file' => $file,
-                'file_id' => $member['file_id'] ?? null
+                'file_id' => $member['file_id'] ?? null,
+                'signature_date' => $file ? $file->signature_date : null, // Tambah accessor untuk tanggal per member
             ];
         }
 
