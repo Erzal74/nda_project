@@ -31,7 +31,7 @@ class PegawaiController extends Controller
 
         if ($request->has('month') && !empty($request->month)) {
             $month = $request->month;
-            $query->whereMonth('created_at', $month); // Ubah ke created_at jika nda_signature_date dihapus
+            $query->whereMonth('created_at', $month);
         }
 
         $ndas = $query->orderBy('created_at', 'desc')->paginate(20);
@@ -53,7 +53,7 @@ class PegawaiController extends Controller
             'description' => 'nullable|string',
             'members' => 'required|array|min:1',
             'members.*.name' => 'required|string|max:255',
-            'members.*.signature_date' => 'required|date', // Tambah validasi tanggal per member
+            'members.*.signature_date' => 'required|date',
             'files' => 'required|array|min:1',
             'files.*' => 'required|file|mimetypes:application/pdf|max:10240',
         ], [
@@ -90,17 +90,22 @@ class PegawaiController extends Controller
                 'user_id' => Auth::user()->no,
             ]);
 
+            $tempMembers = session('temp_nda_members', []);
+            if (empty($tempMembers)) {
+                throw new \Exception('Tidak ada anggota yang disimpan.');
+            }
+
             $membersWithFiles = [];
-            foreach ($request->members as $index => $member) {
-                $file = $request->file('files')[$index];
-                $fileName = time() . '_' . Str::random(10) . '_' . $index . '.pdf';
-                $filePath = $file->storeAs('ndas', $fileName, 'public');
+            foreach ($tempMembers as $index => $member) {
+                // Pindah file dari temp ke permanent
+                $newFilePath = str_replace('temp_ndas/', 'ndas/', $member['file_path']);
+                Storage::disk('public')->move($member['file_path'], $newFilePath);
 
                 $ndaFile = NdaFile::create([
                     'nda_id' => $nda->id,
-                    'file_path' => $filePath,
+                    'file_path' => $newFilePath,
                     'member_index' => $index,
-                    'signature_date' => $member['signature_date'], // Simpan tanggal per anggota
+                    'signature_date' => $member['signature_date'],
                 ]);
 
                 $membersWithFiles[] = [
@@ -111,10 +116,12 @@ class PegawaiController extends Controller
 
             $nda->update(['members' => json_encode($membersWithFiles)]);
 
+            session()->forget('temp_nda_members');
+
             return $request->expectsJson() ? response()->json(['success' => true, 'message' => 'Proyek NDA berhasil ditambahkan.', 'redirect' => route('pegawai.dashboard')], 200) : redirect()->route('pegawai.dashboard')->with('success', 'Proyek NDA berhasil ditambahkan.');
         } catch (\Exception $e) {
             Log::error('Error creating NDA: ' . $e->getMessage());
-            return $request->expectsJson() ? response()->json(['success' => false, 'message' => 'Terjadi kesalahan saat membuat proyek NDA.'], 500) : back()->with('error', 'Terjadi kesalahan saat membuat proyek NDA.');
+            return $request->expectsJson() ? response()->json(['success' => false, 'message' => 'Terjadi kesalahan saat membuat proyek NDA: ' . $e->getMessage()], 500) : back()->with('error', 'Terjadi kesalahan saat membuat proyek NDA.');
         }
     }
 
@@ -146,7 +153,7 @@ class PegawaiController extends Controller
             'description' => 'nullable|string',
             'members' => 'required|array|min:1',
             'members.*.name' => 'required|string|max:255',
-            'members.*.signature_date' => 'required|date', // Tambah validasi tanggal per member
+            'members.*.signature_date' => 'required|date',
             'files.*' => 'nullable|file|mimes:pdf|max:10240',
             'delete_files.*' => 'boolean',
         ], [
@@ -179,7 +186,7 @@ class PegawaiController extends Controller
 
             foreach ($request->members as $newIndex => $member) {
                 $fileId = null;
-                $signatureDate = $member['signature_date']; // Ambil tanggal per member
+                $signatureDate = $member['signature_date'];
 
                 if ($request->hasFile("files.{$newIndex}")) {
                     $file = $request->file("files.{$newIndex}");
@@ -192,23 +199,24 @@ class PegawaiController extends Controller
                     $oldFile = NdaFile::where('nda_id', $nda->id)->where('member_index', $newIndex)->first();
                     if ($oldFile) {
                         Storage::disk('public')->delete($oldFile->file_path);
-                        $oldFile->update(['signature_date' => $signatureDate]); // Update tanggal
-                        $oldFile->file_path = $filePath;
-                        $oldFile->save();
+                        $oldFile->update([
+                            'file_path' => $filePath,
+                            'signature_date' => $signatureDate,
+                        ]);
                         $fileId = $oldFile->id;
                     } else {
                         $newFile = NdaFile::create([
                             'nda_id' => $nda->id,
                             'file_path' => $filePath,
                             'member_index' => $newIndex,
-                            'signature_date' => $signatureDate, // Simpan tanggal baru
+                            'signature_date' => $signatureDate,
                         ]);
                         $fileId = $newFile->id;
                     }
                 } else {
                     $existingFile = NdaFile::where('nda_id', $nda->id)->where('member_index', $newIndex)->first();
                     if ($existingFile) {
-                        $existingFile->update(['signature_date' => $signatureDate]); // Update tanggal jika tidak ganti file
+                        $existingFile->update(['signature_date' => $signatureDate]);
                         $fileId = $existingFile->id;
                     } else {
                         $membersWithoutFile[] = $member['name'];
@@ -227,7 +235,7 @@ class PegawaiController extends Controller
                     Storage::disk('public')->delete($file->file_path);
                     $file->delete();
                 }
-                Log::info("Deleted " . $filesToDelete->count() . " orphaned files for NDA {$nda->id}");
+                Log::info("Deleted {$filesToDelete->count()} orphaned files for NDA {$nda->id}");
             }
 
             if (!empty($membersWithoutFile)) {
@@ -322,5 +330,158 @@ class PegawaiController extends Controller
         return response()->download($filePath, basename($file->file_path), [
             'Content-Type' => 'application/pdf',
         ]);
+    }
+
+    public function saveTempMember(Request $request)
+    {
+        $request->validate([
+            'member_index' => 'required|integer|min:0',
+            'name' => 'required|string|max:255',
+            'signature_date' => 'required|date',
+            'file' => 'nullable|file|mimetypes:application/pdf|max:10240',
+        ], [
+            'member_index.required' => 'Indeks anggota wajib diisi.',
+            'member_index.integer' => 'Indeks anggota harus berupa angka.',
+            'member_index.min' => 'Indeks anggota tidak boleh negatif.',
+            'name.required' => 'Nama anggota wajib diisi.',
+            'name.max' => 'Nama anggota maksimal 255 karakter.',
+            'signature_date.required' => 'Tanggal tanda tangan NDA wajib diisi.',
+            'file.mimetypes' => 'Berkas harus berformat PDF yang valid.',
+            'file.max' => 'Ukuran berkas maksimum adalah 10MB.',
+        ]);
+
+        try {
+            $tempMembers = session('temp_nda_members', []);
+
+            // Cek jika member sudah ada
+            $member = isset($tempMembers[$request->member_index]) ? $tempMembers[$request->member_index] : [];
+
+            $filePath = $member['file_path'] ?? null;
+            $fileName = $member['file_name'] ?? null;
+
+            if ($request->hasFile('file')) {
+                $file = $request->file('file');
+                $fileName = $file->getClientOriginalName();
+                $newFileName = time() . '_' . Str::random(10) . '_' . $request->member_index . '.pdf';
+                $filePath = $file->storeAs('temp_ndas', $newFileName, 'public');
+
+                // Hapus file lama jika ada
+                if ($member && !empty($member['file_path'])) {
+                    Storage::disk('public')->delete($member['file_path']);
+                    Log::info("Deleted old temp file: {$member['file_path']} for member index {$request->member_index}");
+                }
+            } elseif (empty($member)) {
+                // Jika anggota baru dan tidak ada file, kembalikan error
+                return response()->json([
+                    'success' => false,
+                    'message' => 'File PDF wajib diunggah untuk anggota baru.'
+                ], 422);
+            }
+
+            // Simpan data anggota ke session
+            $tempMembers[$request->member_index] = [
+                'index' => $request->member_index,
+                'name' => $request->name,
+                'signature_date' => $request->signature_date,
+                'file_path' => $filePath,
+                'file_name' => $fileName ?? 'No file uploaded',
+            ];
+
+            session(['temp_nda_members' => $tempMembers]);
+
+            Log::info("Saved temp member: index={$request->member_index}, name={$request->name}, signature_date={$request->signature_date}, file_name=" . ($fileName ?? 'none'));
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Anggota berhasil disimpan sementara.',
+                'data' => [
+                    'index' => $request->member_index,
+                    'name' => $request->name,
+                    'signature_date' => $request->signature_date,
+                    'file_name' => $fileName ?? $member['file_name'] ?? 'No file uploaded',
+                ],
+            ], 200);
+        } catch (\Exception $e) {
+            Log::error('Error saving temp member: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat menyimpan anggota: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function getTempMembers(Request $request)
+    {
+        try {
+            $tempMembers = session('temp_nda_members', []);
+
+            if (!is_array($tempMembers)) {
+                Log::warning('Temp members session data is corrupted or not an array.');
+                session(['temp_nda_members' => []]);
+                $tempMembers = [];
+            }
+
+            $members = [];
+            foreach ($tempMembers as $index => $member) {
+                $members[] = [
+                    'index' => $index,
+                    'name' => $member['name'] ?? 'Unknown',
+                    'signature_date' => $member['signature_date'] ?? null,
+                    'file_name' => $member['file_name'] ?? 'No file uploaded',
+                ];
+            }
+
+            Log::info('Retrieved temp members: count=' . count($members));
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Data anggota sementara berhasil diambil.',
+                'members' => $members,
+            ], 200);
+        } catch (\Exception $e) {
+            Log::error('Error retrieving temp members: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat mengambil data anggota.',
+            ], 500);
+        }
+    }
+
+    public function deleteTempMember(Request $request, $index)
+    {
+        try {
+            $tempMembers = session('temp_nda_members', []);
+
+            if (!isset($tempMembers[$index])) {
+                Log::warning("Attempt to delete non-existent temp member index: {$index}");
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data anggota tidak ditemukan.'
+                ], 404);
+            }
+
+            // Hapus file dari storage
+            if (!empty($tempMembers[$index]['file_path'])) {
+                Storage::disk('public')->delete($tempMembers[$index]['file_path']);
+                Log::info("Deleted temp file: {$tempMembers[$index]['file_path']} for member index {$index}");
+            }
+
+            // Hapus anggota dari session tanpa reindexing
+            unset($tempMembers[$index]);
+            session(['temp_nda_members' => $tempMembers]);
+
+            Log::info("Deleted temp member: index={$index}");
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Anggota berhasil dihapus dari data sementara.',
+            ], 200);
+        } catch (\Exception $e) {
+            Log::error('Error deleting temp member: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat menghapus anggota.',
+            ], 500);
+        }
     }
 }

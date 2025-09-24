@@ -28,11 +28,14 @@ Route::middleware(['auth', 'role:pegawai'])->prefix('pegawai')->name('pegawai.')
     Route::get('/nda/create', [PegawaiController::class, 'showCreateForm'])->name('nda.create');
     Route::post('/nda', [PegawaiController::class, 'createNda'])->name('nda.store');
     Route::get('/nda/{nda}/edit', [PegawaiController::class, 'showEditForm'])->name('nda.edit');
-    Route::put('/nda/{nda}', [PegawaiController::class, 'updateNda'])->name('nda.update'); // PERBAIKAN: Gunakan PUT
+    Route::put('/nda/{nda}', [PegawaiController::class, 'updateNda'])->name('nda.update');
     Route::get('/nda/{nda}/detail', [PegawaiController::class, 'showDetail'])->name('nda.detail');
-    Route::delete('/nda/{nda}', [PegawaiController::class, 'deleteNda'])->name('nda.delete'); // PERBAIKAN: Gunakan DELETE
+    Route::delete('/nda/{nda}', [PegawaiController::class, 'deleteNda'])->name('nda.delete');
     Route::delete('/ndas/bulk-delete', [PegawaiController::class, 'bulkDeleteNdas'])->name('nda.bulk-delete');
     Route::get('/nda/{nda}/download-file/{file}', [PegawaiController::class, 'downloadFile'])->name('nda.download-file');
+    Route::post('/nda/temp-member', [PegawaiController::class, 'saveTempMember'])->name('nda.temp-member');
+    Route::delete('/nda/temp-member/{index}', [PegawaiController::class, 'deleteTempMember'])->name('nda.temp-member.delete');
+    Route::get('/nda/temp-member', [PegawaiController::class, 'getTempMembers'])->name('nda.temp-member');
 });
 
 // Routes lain
