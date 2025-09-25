@@ -1554,13 +1554,14 @@
                 const descriptionTextarea = document.getElementById('description');
                 const descriptionCounter = document.getElementById('descriptionCount');
                 let savedMembers = {};
-                const MEMBERS_DRAFT_KEY = 'nda-members-draft';
+
                 // Initialize
                 updateStepDisplay();
                 initializeCharacterCounter();
                 attachEventListeners();
                 restoreFromAutoSave();
                 loadSavedMembers();
+
                 // Restore from localStorage
                 function restoreFromAutoSave() {
                     const saved = localStorage.getItem('nda-project-draft');
@@ -1581,8 +1582,7 @@
                             console.warn('Failed to restore auto-save data:', e);
                         }
                     }
-                    // Restore members
-                    const membersDraft = localStorage.getItem(MEMBERS_DRAFT_KEY);
+                    const membersDraft = localStorage.getItem('nda-members-draft');
                     if (membersDraft) {
                         try {
                             const membersData = JSON.parse(membersDraft);
@@ -1612,6 +1612,7 @@
                         }
                     }
                 }
+
                 // Auto-save to localStorage
                 let autoSaveTimeout, membersSaveTimeout;
                 document.addEventListener('input', function(e) {
@@ -1638,7 +1639,7 @@
                             file_name: fileName
                         };
                     });
-                    localStorage.setItem(MEMBERS_DRAFT_KEY, JSON.stringify(membersData));
+                    localStorage.setItem('nda-members-draft', JSON.stringify(membersData));
                 }
 
                 function autoSave() {
@@ -1649,6 +1650,7 @@
                     }
                     localStorage.setItem('nda-project-draft', JSON.stringify(data));
                 }
+
                 // Character counter
                 function initializeCharacterCounter() {
                     if (descriptionTextarea && descriptionCounter) {
@@ -1663,6 +1665,7 @@
                         updateCount();
                     }
                 }
+
                 // Event listeners
                 function attachEventListeners() {
                     prevBtn.addEventListener('click', () => changeStep(-1));
@@ -1670,9 +1673,13 @@
                     document.getElementById('start_date').addEventListener('change', calculateDuration);
                     document.getElementById('end_date').addEventListener('change', calculateDuration);
                     document.getElementById('add-member').addEventListener('click', addMember);
-                    form.addEventListener('submit', handleFormSubmit);
+                    form.addEventListener('submit', function(e) {
+                        e.preventDefault(); // Prevent default form submission
+                        handleFormSubmit(e);
+                    });
                     attachFieldValidation();
                 }
+
                 // Load saved members from server
                 function loadSavedMembers() {
                     fetch('{{ route('pegawai.nda.temp-member') }}', {
@@ -1714,6 +1721,7 @@
                         })
                         .catch(error => console.warn('Gagal load saved members:', error));
                 }
+
                 // Step navigation
                 function changeStep(direction) {
                     const newStep = currentStep + direction;
@@ -1729,6 +1737,7 @@
                         behavior: 'smooth'
                     });
                 }
+
                 // Update step display
                 function updateStepDisplay() {
                     document.querySelectorAll('.progress-step').forEach((step, index) => {
@@ -1750,18 +1759,15 @@
                         icon.className = 'bi bi-check';
                     });
                 }
+
                 // Validate current step
                 function validateCurrentStep() {
                     const currentStepEl = document.querySelector(`.form-step[data-step="${currentStep}"]`);
                     const requiredFields = currentStepEl.querySelectorAll('[required]');
                     let isValid = true;
                     requiredFields.forEach(field => {
-                        console.log(
-                            `Validating field: ${field.name || field.id}, Value: "${field.value}", Type: ${field.type}`
-                        );
                         if (!validateField(field)) {
                             isValid = false;
-                            console.log(`Field ${field.name || field.id} failed validation`);
                         }
                     });
                     if (currentStep === 3) isValid = validateMembersStep() && isValid;
@@ -1775,6 +1781,7 @@
                     }
                     return isValid;
                 }
+
                 // Validate individual field
                 function validateField(field) {
                     let value = field.value;
@@ -1788,6 +1795,7 @@
                     field.classList.toggle('field-success', isValid && field.value.trim());
                     return isValid;
                 }
+
                 // Validate members step
                 function validateMembersStep() {
                     const memberCards = document.querySelectorAll('.member-card');
@@ -1807,6 +1815,7 @@
                     });
                     return isValid && memberCards.length > 0;
                 }
+
                 // Show validation error
                 function showValidationError() {
                     Swal.fire({
@@ -1814,14 +1823,10 @@
                         title: 'Form Belum Lengkap',
                         text: 'Harap lengkapi semua field yang wajib diisi sebelum melanjutkan.',
                         confirmButtonText: 'Mengerti',
-                        confirmButtonColor: '#4f46e5',
-                        customClass: {
-                            popup: 'swal-modern-popup',
-                            title: 'swal-modern-title',
-                            content: 'swal-modern-content'
-                        }
+                        confirmButtonColor: '#4f46e5'
                     });
                 }
+
                 // Duration calculation
                 function calculateDuration() {
                     const startDate = document.getElementById('start_date').value;
@@ -1863,6 +1868,7 @@
                         durationIcon.className = 'bi bi-clock';
                     }
                 }
+
                 // Add member
                 function addMember() {
                     const container = document.getElementById('member-container');
@@ -1878,55 +1884,57 @@
                         block: 'center'
                     });
                 }
+
                 // Create member card
                 function createMemberCard(index) {
                     const div = document.createElement('div');
                     div.className = 'member-card';
                     div.setAttribute('data-member', index);
                     div.innerHTML = `
-                    <div class="member-header">
-                        <div class="member-avatar"><i class="bi bi-person"></i></div>
-                        <div class="member-info"><div class="member-label">Anggota ke-${index + 1}</div></div>
-                        <button type="button" class="btn-remove-member"><i class="bi bi-x"></i></button>
-                    </div>
-                    <div class="member-body">
-                        <div class="member-fields">
-                            <div class="member-field">
-                                <label class="field-label required">Nama Lengkap</label>
-                                <div class="field-wrapper">
-                                    <input type="text" name="members[${index}][name]" class="field-input member-name" placeholder="Masukkan nama lengkap anggota tim" maxlength="100" required>
-                                </div>
+                <div class="member-header">
+                    <div class="member-avatar"><i class="bi bi-person"></i></div>
+                    <div class="member-info"><div class="member-label">Anggota ke-${index + 1}</div></div>
+                    <button type="button" class="btn-remove-member"><i class="bi bi-x"></i></button>
+                </div>
+                <div class="member-body">
+                    <div class="member-fields">
+                        <div class="member-field">
+                            <label class="field-label required">Nama Lengkap</label>
+                            <div class="field-wrapper">
+                                <input type="text" name="members[${index}][name]" class="field-input member-name" placeholder="Masukkan nama lengkap anggota tim" maxlength="100" required>
                             </div>
-                            <div class="member-field">
-                                <label class="field-label required">Tanggal Tanda Tangan NDA</label>
-                                <div class="field-wrapper">
-                                    <div class="field-icon"><i class="bi bi-pen"></i></div>
-                                    <input type="date" name="members[${index}][signature_date]" class="field-input" required>
-                                </div>
-                                <div class="field-hint">Tanggal ketika anggota ini menandatangani NDA</div>
+                        </div>
+                        <div class="member-field">
+                            <label class="field-label required">Tanggal Tanda Tangan NDA</label>
+                            <div class="field-wrapper">
+                                <div class="field-icon"><i class="bi bi-pen"></i></div>
+                                <input type="date" name="members[${index}][signature_date]" class="field-input" required>
                             </div>
-                            <div class="member-field">
-                                <label class="field-label required">Berkas NDA (PDF)</label>
-                                <div class="file-upload-area">
-                                    <input type="file" name="files[${index}]" class="file-input" id="file-${index}" accept="application/pdf" required>
-                                    <label for="file-${index}" class="file-upload-label">
-                                        <div class="file-upload-icon"><i class="bi bi-cloud-upload"></i></div>
-                                        <div class="file-upload-text"><div class="file-upload-title">Pilih atau Seret File PDF</div><div class="file-upload-subtitle">Maksimal 10MB</div></div>
-                                    </label>
-                                    <div class="file-upload-info" style="display: none;">
-                                        <div class="file-info"><i class="bi bi-file-earmark-pdf"></i><span class="file-name"></span><i class="bi bi-check-circle success-icon" title="Berkas berhasil dimasukkan"></i></div>
-                                        <button type="button" class="btn-remove-file"><i class="bi bi-x"></i></button>
-                                    </div>
+                            <div class="field-hint">Tanggal ketika anggota ini menandatangani NDA</div>
+                        </div>
+                        <div class="member-field">
+                            <label class="field-label required">Berkas NDA (PDF)</label>
+                            <div class="file-upload-area">
+                                <input type="file" name="files[${index}]" class="file-input" id="file-${index}" accept="application/pdf" required>
+                                <label for="file-${index}" class="file-upload-label">
+                                    <div class="file-upload-icon"><i class="bi bi-cloud-upload"></i></div>
+                                    <div class="file-upload-text"><div class="file-upload-title">Pilih atau Seret File PDF</div><div class="file-upload-subtitle">Maksimal 10MB</div></div>
+                                </label>
+                                <div class="file-upload-info" style="display: none;">
+                                    <div class="file-info"><i class="bi bi-file-earmark-pdf"></i><span class="file-name"></span><i class="bi bi-check-circle success-icon" title="Berkas berhasil dimasukkan"></i></div>
+                                    <button type="button" class="btn-remove-file"><i class="bi bi-x"></i></button>
                                 </div>
                             </div>
                         </div>
-                        <div class="member-actions">
-                            <button type="button" class="btn btn-success btn-save-member"><i class="bi bi-save me-2"></i>Save Anggota Ini</button>
-                        </div>
                     </div>
-                `;
+                    <div class="member-actions">
+                        <button type="button" class="btn btn-success btn-save-member"><i class="bi bi-save me-2"></i>Save Anggota Ini</button>
+                    </div>
+                </div>
+            `;
                     return div;
                 }
+
                 // Attach event listeners to member card
                 function attachMemberEventListeners(memberCard) {
                     const removeBtn = memberCard.querySelector('.btn-remove-member');
@@ -1953,6 +1961,7 @@
                     }
                     if (dateInput) dateInput.addEventListener('change', () => validateField(dateInput));
                 }
+
                 // Remove member
                 function removeMember(memberCard) {
                     const memberNumber = memberCard.querySelector('.member-label').textContent;
@@ -1965,12 +1974,7 @@
                         cancelButtonColor: '#6b7280',
                         confirmButtonText: 'Ya, Hapus',
                         cancelButtonText: 'Batal',
-                        reverseButtons: true,
-                        customClass: {
-                            popup: 'swal-modern-popup',
-                            title: 'swal-modern-title',
-                            content: 'swal-modern-content'
-                        }
+                        reverseButtons: true
                     }).then((result) => {
                         if (result.isConfirmed) {
                             const index = memberCard.dataset.member;
@@ -2019,6 +2023,7 @@
                         }
                     });
                 }
+
                 // Update remove buttons visibility
                 function updateRemoveButtons() {
                     const memberCards = document.querySelectorAll('.member-card');
@@ -2027,6 +2032,7 @@
                         removeBtn.style.display = memberCards.length > 1 ? 'flex' : 'none';
                     });
                 }
+
                 // Reindex members
                 function reindexMembers() {
                     const memberCards = document.querySelectorAll('.member-card');
@@ -2042,9 +2048,9 @@
                     });
                     memberCount = memberCards.length;
                 }
+
                 // Handle file upload
                 function handleFileUpload(fileInput) {
-                    console.log('handleFileUpload called');
                     const file = fileInput.files[0];
                     const uploadArea = fileInput.closest('.file-upload-area');
                     const uploadLabel = uploadArea.querySelector('.file-upload-label');
@@ -2083,13 +2089,9 @@
                     fileInput.classList.add('field-success');
                     uploadInfo.classList.add('fade-in');
                     setTimeout(() => uploadInfo.classList.remove('fade-in'), 300);
-                    const memberCard = fileInput.closest('.member-card');
-                    const index = memberCard.dataset.member;
-                    const name = memberCard.querySelector('.member-name').value;
-                    const signatureDate = memberCard.querySelector(`input[name="members[${index}][signature_date]"]`)
-                        .value;
                     autoSaveMembers();
                 }
+
                 // Remove file
                 function removeFile(fileInput) {
                     const uploadArea = fileInput.closest('.file-upload-area');
@@ -2101,13 +2103,9 @@
                     uploadArea.classList.remove('has-file');
                     uploadInfo.classList.remove('file-success');
                     fileInput.classList.remove('field-success');
-                    const memberCard = fileInput.closest('.member-card');
-                    const index = memberCard.dataset.member;
-                    const name = memberCard.querySelector('.member-name').value;
-                    const signatureDate = memberCard.querySelector(`input[name="members[${index}][signature_date]"]`)
-                        .value;
                     autoSaveMembers();
                 }
+
                 // Attach field validation
                 function attachFieldValidation() {
                     const fields = document.querySelectorAll('[required]');
@@ -2121,6 +2119,7 @@
                         });
                     });
                 }
+
                 // Save member
                 function saveMember(memberCard) {
                     const index = memberCard.dataset.member;
@@ -2177,29 +2176,97 @@
                             });
                         });
                 }
-                // Update table
+
+                // Update table - PERBAIKAN UTAMA
                 function updateTable() {
                     const savedTableBody = document.getElementById('saved-table-body');
                     const confirmationTableBody = document.getElementById('confirmation-table-body');
                     savedTableBody.innerHTML = '';
                     confirmationTableBody.innerHTML = '';
                     Object.values(savedMembers).forEach((member, idx) => {
-                        const row =
-                            `<tr><td>${idx + 1}</td><td>${member.name}</td><td>${member.signature_date}</td><td>${member.file_name}</td></tr>`;
+                        const row = `
+                    <tr>
+                        <td>${idx + 1}</td>
+                        <td>${member.name}</td>
+                        <td>${member.signature_date}</td>
+                        <td>${member.file_name}</td>
+                    </tr>`;
                         savedTableBody.innerHTML += row;
-                        const actionRow =
-                            `<tr><td>${idx + 1}</td><td>${member.name}</td><td>${member.signature_date}</td><td>${member.file_name}</td><td><button class="btn btn-primary btn-sm" onclick="editMember(${member.index})">Edit</button> <button class="btn btn-danger btn-sm" onclick="deleteMemberByIndex(${member.index})">Hapus</button></td></tr>`;
+                        const actionRow = `
+                    <tr>
+                        <td>${idx + 1}</td>
+                        <td>${member.name}</td>
+                        <td>${member.signature_date}</td>
+                        <td>${member.file_name}</td>
+                        <td>
+                            <button type="button" class="btn btn-primary btn-sm btn-edit-member" data-index="${member.index}">Edit</button>
+                            <button type="button" class="btn btn-danger btn-sm btn-delete-member" data-index="${member.index}">Hapus</button>
+                        </td>
+                    </tr>`;
                         confirmationTableBody.innerHTML += actionRow;
                     });
-                }
-                // Edit member (placeholder)
-                function editMember(index) {
-                    Swal.fire({
-                        icon: 'info',
-                        title: 'Edit',
-                        text: 'Fitur edit: Load data ke form Step 3. (Implementasi lanjutan).'
+
+                    // Attach event listeners to buttons in confirmation table
+                    document.querySelectorAll('.btn-edit-member').forEach(button => {
+                        button.addEventListener('click', function(e) {
+                            e.preventDefault(); // Prevent form submission
+                            e.stopPropagation(); // Stop event bubbling
+                            const index = this.getAttribute('data-index');
+                            editMember(index);
+                        });
+                    });
+                    document.querySelectorAll('.btn-delete-member').forEach(button => {
+                        button.addEventListener('click', function(e) {
+                            e.preventDefault(); // Prevent form submission
+                            e.stopPropagation(); // Stop event bubbling
+                            const index = this.getAttribute('data-index');
+                            deleteMemberByIndex(index);
+                        });
                     });
                 }
+
+                // Edit member
+                function editMember(index) {
+                    currentStep = 3;
+                    updateStepDisplay();
+                    const memberCard = document.querySelector(`.member-card[data-member="${index}"]`);
+                    if (memberCard) {
+                        memberCard.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center'
+                        });
+                        memberCard.style.backgroundColor = 'var(--primary-bg)';
+                        setTimeout(() => {
+                            memberCard.style.backgroundColor = '';
+                        }, 2000);
+                    } else {
+                        addMember();
+                        const newCard = document.querySelector(`.member-card[data-member="${index}"]`);
+                        if (newCard && savedMembers[index]) {
+                            newCard.querySelector('.member-name').value = savedMembers[index].name;
+                            newCard.querySelector('input[type="date"]').value = savedMembers[index].signature_date;
+                            const uploadInfo = newCard.querySelector('.file-upload-info');
+                            const fileNameSpan = uploadInfo.querySelector('.file-name');
+                            fileNameSpan.textContent = savedMembers[index].file_name;
+                            uploadInfo.style.display = 'flex';
+                            newCard.querySelector('.file-upload-label').style.display = 'none';
+                            newCard.querySelector('.file-upload-area').classList.add('has-file');
+                            newCard.querySelector('.btn-save-member').textContent = 'Re-Save jika Ganti';
+                            newCard.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'center'
+                            });
+                        }
+                    }
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Edit Anggota',
+                        text: 'Anda sekarang di Step 3. Edit data lalu klik "Re-Save jika Ganti" untuk update.',
+                        confirmButtonText: 'Mengerti',
+                        confirmButtonColor: '#4f46e5'
+                    });
+                }
+
                 // Delete member by index
                 function deleteMemberByIndex(index) {
                     Swal.fire({
@@ -2256,6 +2323,7 @@
                         }
                     });
                 }
+
                 // Handle form submission
                 function handleFormSubmit(e) {
                     e.preventDefault();
@@ -2290,12 +2358,7 @@
                         cancelButtonColor: '#6b7280',
                         confirmButtonText: 'Ya, Buat Proyek',
                         cancelButtonText: 'Batal',
-                        reverseButtons: true,
-                        customClass: {
-                            popup: 'swal-modern-popup',
-                            title: 'swal-modern-title',
-                            htmlContainer: 'swal-modern-html'
-                        }
+                        reverseButtons: true
                     }).then((result) => {
                         if (result.isConfirmed) {
                             submitForm();
@@ -2304,6 +2367,7 @@
                         }
                     });
                 }
+
                 // Submit form
                 function submitForm() {
                     submitBtn.disabled = true;
@@ -2313,13 +2377,11 @@
                         html: `<div style="padding: 2rem 0;"><div class="d-flex justify-content-center mb-3"><div class="spinner-border text-primary" role="status"><span class="sr-only">Loading...</span></div></div><p>Mohon tunggu, sedang memproses data proyek dan mengunggah berkas...</p></div>`,
                         allowOutsideClick: false,
                         allowEscapeKey: false,
-                        showConfirmButton: false,
-                        customClass: {
-                            popup: 'swal-modern-popup'
-                        }
+                        showConfirmButton: false
                     });
                     setTimeout(() => form.submit(), 1000);
                 }
+
                 // Validate all steps
                 function validateAllSteps() {
                     let isValid = true;
@@ -2333,10 +2395,12 @@
                     }
                     return isValid;
                 }
+
                 // Initialize first member
                 const firstMemberCard = document.querySelector('.member-card[data-member="0"]');
                 if (firstMemberCard) attachMemberEventListeners(firstMemberCard);
                 updateRemoveButtons();
+
                 // Keyboard shortcuts
                 document.addEventListener('keydown', function(e) {
                     if (e.altKey) {
@@ -2353,6 +2417,7 @@
                         handleFormSubmit(e);
                     }
                 });
+
                 // Initialize tooltips
                 function initializeTooltips() {
                     document.querySelectorAll('.progress-step').forEach((step, index) => {
@@ -2363,10 +2428,10 @@
                         'Tambah anggota tim baru (minimal 1 anggota diperlukan)';
                 }
                 initializeTooltips();
-            });
-            // Custom SweetAlert2 styles
-            const swalStyles = document.createElement('style');
-            swalStyles.innerHTML = `
+
+                // Custom SweetAlert2 styles
+                const swalStyles = document.createElement('style');
+                swalStyles.innerHTML = `
             .swal-modern-popup { border-radius: 16px !important; padding: 0 !important; font-family: 'Inter', sans-serif !important; }
             .swal-modern-title { font-size: 1.25rem !important; font-weight: 700 !important; color: #1f2937 !important; margin-bottom: 0.5rem !important; }
             .swal-modern-content { font-size: 0.9rem !important; line-height: 1.5 !important; color: #4b5563 !important; }
@@ -2379,7 +2444,8 @@
             .text-primary { color: #4f46e5 !important; }
             .sr-only { position: absolute !important; width: 1px !important; height: 1px !important; padding: 0 !important; margin: -1px !important; overflow: hidden !important; clip: rect(0, 0, 0, 0) !important; border: 0 !important; }
         `;
-            document.head.appendChild(swalStyles);
+                document.head.appendChild(swalStyles);
+            });
         </script>
     @endpush
 @endsection
