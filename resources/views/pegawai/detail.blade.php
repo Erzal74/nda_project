@@ -266,7 +266,7 @@
             display: flex;
             align-items: flex-start;
             gap: 1.5rem;
-            padding: 2rem;
+            padding: 2rem 2.5rem;
             border-bottom: 1px solid var(--gray-200);
             background: linear-gradient(135deg, var(--gray-50) 0%, white 100%);
         }
@@ -896,13 +896,12 @@
 
             .quick-stats-grid {
                 flex-direction: column;
-                align-items: center;
             }
 
             .quick-stat {
                 width: 100%;
                 max-width: 200px;
-                margin-bottom: 1rem;
+                margin-bottom: 1.5rem;
             }
 
             .quick-stat:last-child {
@@ -1380,12 +1379,7 @@
                                 @foreach ($members as $index => $member)
                                     @php
                                         $memberFiles = $nda->files->filter(function ($file) use ($member, $index) {
-                                            return (isset($file->member_name) && $file->member_name === $member) ||
-                                                (isset($file->member_index) && $file->member_index === $index) ||
-                                                str_contains(
-                                                    strtolower($file->file_path),
-                                                    strtolower(str_replace(' ', '_', $member)),
-                                                );
+                                            return isset($file->member_index) && $file->member_index === $index;
                                         });
                                         $isSigned = $memberFiles->every(fn($file) => $file->signature_date !== null);
                                         $firstSignatureDate = $memberFiles->whereNotNull('signature_date')->first()
@@ -1501,7 +1495,7 @@
                             $totalMembers = count($members);
                             $signedMembers = $nda->files
                                 ->filter(fn($file) => $file->signature_date !== null)
-                                ->unique('member_index') // Perbaikan: ganti dari 'member_name' ke 'member_index'
+                                ->unique('member_index') // Konsisten dengan member_index
                                 ->count();
                             $allSigned = $totalMembers > 0 && $signedMembers === $totalMembers;
                             $firstSignatureDate = $nda->files
@@ -1548,7 +1542,7 @@
                     <div class="card-body">
                         @php
                             $totalMembers = count($members);
-                            $membersWithDocs = $nda->files->groupBy('member_index')->count(); // Perbaikan: ganti dari 'member_name' ke 'member_index'
+                            $membersWithDocs = $nda->files->groupBy('member_index')->count(); // Konsisten dengan member_index
                             $completionPercentage = $totalMembers > 0 ? ($membersWithDocs / $totalMembers) * 100 : 0;
                         @endphp
                         <div class="completion-progress">

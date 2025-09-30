@@ -339,6 +339,7 @@ class PegawaiController extends Controller
             'name' => 'required|string|max:255',
             'signature_date' => 'required|date',
             'file' => 'nullable|file|mimetypes:application/pdf|max:10240',
+            'is_resave' => 'nullable|in:true,false', // Ubah ke string
         ], [
             'member_index.required' => 'Indeks anggota wajib diisi.',
             'member_index.integer' => 'Indeks anggota harus berupa angka.',
@@ -348,16 +349,24 @@ class PegawaiController extends Controller
             'signature_date.required' => 'Tanggal tanda tangan NDA wajib diisi.',
             'file.mimetypes' => 'Berkas harus berformat PDF yang valid.',
             'file.max' => 'Ukuran berkas maksimum adalah 10MB.',
+            'is_resave.in' => 'Parameter is_resave tidak valid.',
         ]);
 
         try {
             $tempMembers = session('temp_nda_members', []);
-
-            // Cek jika member sudah ada
             $member = isset($tempMembers[$request->member_index]) ? $tempMembers[$request->member_index] : [];
-
             $filePath = $member['file_path'] ?? null;
             $fileName = $member['file_name'] ?? null;
+            $isResave = $request->input('is_resave', 'false') === 'true'; // Konversi string ke boolean
+
+            Log::info('Received request:', $request->all());
+            if ($isResave && empty($filePath) && !$request->hasFile('file')) {
+                Log::warning('Re-save failed: No file found.');
+                return response()->json([
+                    'success' => false,
+                    'message' => 'File PDF wajib diunggah karena file sebelumnya tidak ditemukan.'
+                ], 422);
+            }
 
             if ($request->hasFile('file')) {
                 $file = $request->file('file');
@@ -365,20 +374,22 @@ class PegawaiController extends Controller
                 $newFileName = time() . '_' . Str::random(10) . '_' . $request->member_index . '.pdf';
                 $filePath = $file->storeAs('temp_ndas', $newFileName, 'public');
 
-                // Hapus file lama jika ada
                 if ($member && !empty($member['file_path'])) {
                     Storage::disk('public')->delete($member['file_path']);
                     Log::info("Deleted old temp file: {$member['file_path']} for member index {$request->member_index}");
                 }
-            } elseif (empty($member)) {
-                // Jika anggota baru dan tidak ada file, kembalikan error
+            } elseif (empty($member) && !$request->hasFile('file')) {
                 return response()->json([
                     'success' => false,
                     'message' => 'File PDF wajib diunggah untuk anggota baru.'
                 ], 422);
+            } elseif (empty($filePath) && !$request->hasFile('file')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'File PDF wajib diunggah karena tidak ada file sebelumnya.'
+                ], 422);
             }
 
-            // Simpan data anggota ke session
             $tempMembers[$request->member_index] = [
                 'index' => $request->member_index,
                 'name' => $request->name,

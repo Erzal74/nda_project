@@ -11,19 +11,19 @@ Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// PERBAIKAN: Group admin dengan middleware dan prefix
-Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+// Group admin dengan middleware dan prefix
+Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
     Route::get('/pegawai/create', [AdminController::class, 'showCreatePegawaiForm'])->name('pegawai.create');
     Route::post('/pegawai', [AdminController::class, 'createPegawai'])->name('pegawai.store');
     Route::get('/pegawai/{user}/edit', [AdminController::class, 'showEditPegawaiForm'])->name('pegawai.edit');
-    Route::put('/pegawai/{user}', [AdminController::class, 'updatePegawai'])->name('pegawai.update'); // PERBAIKAN: Gunakan PUT untuk update
-    Route::delete('/pegawai/{user}', [AdminController::class, 'deletePegawai'])->name('pegawai.delete'); // PERBAIKAN: Gunakan DELETE untuk hapus
-    Route::get('/pegawai/{user}/detail', [AdminController::class, 'showDetailPegawai'])->name('pegawai.detail'); // TAMBAH: Route untuk detail pegawai
+    Route::put('/pegawai/{user}', [AdminController::class, 'updatePegawai'])->name('pegawai.update');
+    Route::delete('/pegawai/{user}', [AdminController::class, 'deletePegawai'])->name('pegawai.delete');
+    Route::get('/pegawai/{user}/detail', [AdminController::class, 'showDetailPegawai'])->name('pegawai.detail');
 });
 
-// PERBAIKAN: Group pegawai dengan middleware dan prefix
-Route::middleware(['auth', 'role:pegawai'])->prefix('pegawai')->name('pegawai.')->group(function () {
+// Group pegawai dengan middleware dan prefix
+Route::middleware(['auth', 'verified', 'role:pegawai'])->prefix('pegawai')->name('pegawai.')->group(function () {
     Route::get('/dashboard', [PegawaiController::class, 'dashboard'])->name('dashboard');
     Route::get('/nda/create', [PegawaiController::class, 'showCreateForm'])->name('nda.create');
     Route::post('/nda', [PegawaiController::class, 'createNda'])->name('nda.store');
@@ -32,15 +32,15 @@ Route::middleware(['auth', 'role:pegawai'])->prefix('pegawai')->name('pegawai.')
     Route::get('/nda/{nda}/detail', [PegawaiController::class, 'showDetail'])->name('nda.detail');
     Route::delete('/nda/{nda}', [PegawaiController::class, 'deleteNda'])->name('nda.delete');
     Route::delete('/ndas/bulk-delete', [PegawaiController::class, 'bulkDeleteNdas'])->name('nda.bulk-delete');
-    Route::get('/nda/{nda}/download-file/{file}', [PegawaiController::class, 'downloadFile'])->name('nda.download-file');
+    Route::get('/nda/{nda}/download-file/{file}', [PegawaiController::class, 'downloadFile'])->name('nda.download-file')->where(['nda' => '[0-9]+', 'file' => '[0-9a-zA-Z\.\-]+']);
     Route::post('/nda/temp-member', [PegawaiController::class, 'saveTempMember'])->name('nda.temp-member');
     Route::delete('/nda/temp-member/{index}', [PegawaiController::class, 'deleteTempMember'])->name('nda.temp-member.delete');
     Route::get('/nda/temp-member', [PegawaiController::class, 'getTempMembers'])->name('nda.temp-member');
 });
 
 // Routes lain
-Route::get('/file/preview/{token}', [FileController::class, 'preview'])->name('file.preview');
-Route::get('/file/download/{token}', [FileController::class, 'download'])->name('file.download');
+Route::get('/file/preview/{token}', [FileController::class, 'preview'])->name('file.preview.token');
+Route::get('/file/download/{token}', [FileController::class, 'download'])->name('file.download.token');
 
 Route::get('/', function () {
     return redirect()->route('login');
